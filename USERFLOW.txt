@@ -1,0 +1,737 @@
+================================================================================
+  InfraMind — Complete Site User Flow & Architecture Documentation
+  Generated: 2026-05-24
+================================================================================
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 1 — WHAT IS INFRAMIND?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+InfraMind is an AI-powered system architecture design tool. Users describe a 
+software product idea in plain English, and InfraMind — powered by Google Gemini 
+2.5 Pro — instantly generates:
+
+  • A visual system architecture topology (Mermaid.js diagram)
+  • A user flow sequence diagram
+  • REST API route specifications
+  • Relational database schema models
+  • Deployment environment strategies (Dev / Staging / Production)
+  • Scalability guidelines and MVP roadmap phases
+  • Technology stack recommendations with rationale
+
+All output is interactive, exportable as a PDF, and saved to the user's personal
+cloud account for later retrieval.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 2 — APPLICATION STRUCTURE (Pages, Routes & Shells)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The application implements client-side routing using React Router v6:
+
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │  URL Route       │  Component Rendered          │  Access Controls       │
+  ├──────────────────────────────────────────────────────────────────────────┤
+  │  /               │  <LandingPage>               │  Public / Redirects    │
+  │  /dashboard      │  <Dashboard>                 │  Protected (Auth)      │
+  │  /workspace/:id  │  <AppShell> → <Workspace>    │  Protected (Auth)      │
+  │  /p/:shareId     │  <PublicShare>               │  Public (Read-Only)    │
+  └──────────────────────────────────────────────────────────────────────────┘
+
+State transitions (e.g. from Dashboard to Workspace) are navigated via URL path
+changes, keeping deep-linkable URLs and browser history intact.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 3 — LANDING PAGE USER FLOW (Public / Unauthenticated)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+URL: / (root, when not logged in)
+
+FLOW:
+
+  1. VISITOR ARRIVES
+     └─ Sees the InfraMind landing page (LandingPage.jsx)
+     └─ Ambient animated background, animated architecture preview diagram
+
+  2. NAVBAR
+     ├─ Logo (left) — InfraMind brand
+     ├─ Features, Pricing, Docs (center links — scroll anchors or modal)
+     ├─ Sign In button → opens AuthModal (Sign In tab)
+     └─ Get Started Free button → opens AuthModal (Sign Up tab)
+
+  3. HERO SECTION
+     ├─ Headline: "Design Production Infrastructure in Seconds."
+     ├─ Sub-text: Platform description
+     ├─ Stats bar: 10k+ architectures, 98% accuracy, 45s avg gen time
+     ├─ [Start Building for Free] → opens AuthModal
+     ├─ [See how it works] → scrolls to #features section
+     └─ Animated architecture diagram card (right side)
+
+  4. TRUST BAR
+     └─ "Trusted by engineers at Stripe, Vercel, Linear, Supabase, Railway..."
+
+  5. FEATURES SECTION (#features)
+     └─ 6 capability cards:
+        1. Network Topologies
+        2. API Route Specs
+        3. Schema Models
+        4. Deployment Strategies
+        5. Observability & Roadmaps
+        6. Stack Fit Analysis
+
+  6. HOW IT WORKS SECTION
+     └─ 3-step guide:
+        Step 01: Describe Your System
+        Step 02: AI Designs the Architecture
+        Step 03: Review, Export & Build
+
+  7. TESTIMONIALS SECTION
+     └─ 3 engineer testimonial cards with star ratings
+
+  8. PRICING SECTION (#pricing)
+     ├─ Developer (Free): 5 generations/day, Mermaid diagrams, REST API specs
+     ├─ Professional ($29/mo): Unlimited generations, private storage, PDF export
+     └─ Enterprise (Custom): VPC deployment, SSO, priority support
+
+  9. FAQ SECTION
+     └─ Accordion with 5 common questions about the platform
+
+  10. CTA BANNER
+      └─ [Start Building — It's Free] → opens AuthModal
+
+  11. FOOTER
+      └─ Copyright, links
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 4 — AUTH MODAL FLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Triggered by: Any CTA button on Landing Page
+
+  ┌─ AUTH MODAL (AuthModal.jsx) ─────────────────────────────────────────────┐
+  │                                                                          │
+  │  Tabs: [Sign In]  [Create Account]                                       │
+  │                                                                          │
+  │  SIGN IN TAB:                                                            │
+  │    - Email + Password fields                                             │
+  │    - [Sign In] → Firebase Auth email/password login                     │
+  │    - On success: App state transitions to "idle + authenticated"        │
+  │    - Renders <Dashboard> instead of <LandingPage>                       │
+  │                                                                          │
+  │  CREATE ACCOUNT TAB:                                                     │
+  │    - Display Name + Email + Password fields                              │
+  │    - Segmented Onboarding selections:                                    │
+  │       • User Role (Software Engineer, Solutions Architect, DevOps/SRE,  │
+  │         CTO / Founder)                                                   │
+  │       • Primary Goal (Prototyping MVPs, System Documentation,            │
+  │         Exploring Tech Stacks)                                           │
+  │    - [Create Account] → Firebase Auth createUserWithEmailAndPassword    │
+  │    - On success: Saves choices to client-side localStorage as            │
+  │      `inframind_role` and `inframind_goal` to customize dashboard greetings│
+  │      and workspace parameters. State changes to "idle + authenticated".  │
+  │                                                                          │
+  │  Close button (×) dismisses modal without action                        │
+  └──────────────────────────────────────────────────────────────────────────┘
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 5 — PRIVATE DASHBOARD USER FLOW (Authenticated)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Rendered when: User is logged in AND state === 'idle'
+Component: Dashboard.jsx
+
+NAVBAR (top):
+  - Logo (left)
+  - [Templates] [Docs] [Settings] pill buttons (center)
+    └─ On mobile viewports (<= 768px), these center nav pills and the Sign Out
+       action are housed in a toggleable hamburger menu dropdown overlay.
+  - User chip showing display name (right)
+  - Sign Out button (right)
+
+MAIN CONTENT:
+
+  1. SEGMENTED GREETING BANNER
+     └─ Time-aware and role-based customized greeting (e.g. Good morning, [Name]):
+         • Software Engineer: "Scaffold app boilerplates."
+         • Solutions Architect: "Design system topologies."
+         • DevOps / SRE: "Optimize cloud environments."
+         • CTO / Founder: "Model your MVP roadmap."
+     └─ Read from `localStorage.inframind_role` captured at signup.
+
+  2. COMPOSER SECTION (Calm Design Layout)
+     └─ Heading: "What are we building today?"
+     └─ Sub-text explanation
+     └─ [⚙ Customize Stack & Presets] Toggle Button:
+        • Progressive Disclosure: Hides preferred stack tags, presets, templates grid,
+          and quick actions by default to reduce visual overload and maintain focus.
+        • Click to toggle display of the secondary panels.
+
+     FORM:
+       a. Textarea — describe the system
+          └─ Keyboard shortcut: ⌘+Enter to submit
+
+       [IF toggled open via "Customize Stack & Presets"]
+       b. Preset chips (inline): 🚗 Ride Sharing | 🛍️ E-Commerce | 
+          📈 IoT Pipeline | 📝 Doc Editor
+          └─ Click preset → fills textarea + tech stack tags
+
+       c. Stack Preferences input (optional)
+          └─ Tag-based tech input (React, AWS, PostgreSQL...)
+          └─ Autocomplete dropdown with common technologies
+          └─ Tech brand icons shown alongside each tag
+          └─ Max 8 tags allowed
+
+       d. [⚡ Generate Architecture Blueprint →] button
+          └─ Disabled when textarea is empty
+          └─ On click: calls handleSubmit() → checks auth token
+          └─ Triggers AI generation → state changes to 'loading'
+
+       e. Trust Badges Row (always visible below generation button)
+          └─ displays compliance & security: "✓ SOC 2 Type II Certified · ✓ AES 256 SSL Encrypted · ✓ Isolated Cloud Datastore"
+
+  3. ACTIVE ONBOARDING CHECKLIST (displays if any checklist item is incomplete)
+     └─ Tracking panel showing 4 core actions to guide the user's first platform wins:
+        1. "Generate your first system architecture blueprint" (ticks if history exists)
+        2. "Inspect dynamic node details inside the diagram layout" (ticks when a node is clicked or diagram modal is opened)
+        3. "Download a zipped boilerplate code scaffold" (ticks on scaffold download click)
+        4. "Configure custom Gemini credentials in Settings" (ticks on saving custom Gemini key override)
+     └─ Ticks read and update in real-time from local storage triggers.
+
+  4. RECENT ARCHITECTURES (shows if history.length > 0)
+     └─ Grid of past project cards (up to 3 shown)
+     └─ Each card: title, summary, layers/APIs/models metrics
+     └─ Click card → loads that project into workspace
+     └─ [View all →] → opens SavedArchitecturesModal
+
+  [IF toggled open via "Customize Stack & Presets"]
+  5. ARCHITECTURE TEMPLATES
+     └─ 4 preset template cards:
+        - Ride Sharing Platform (React, Node.js, PostgreSQL, Redis)
+        - Multi-Tenant B2B SaaS (Next.js, Express, MongoDB, Stripe)
+        - IoT Telemetry Pipeline (Kafka, Apache Spark, InfluxDB)
+        - Collaborative Doc Editor (React, WebSockets, Yjs, Redis)
+     └─ Each card: color accent, icon, title, description, tech tags
+     └─ Click → immediately generates that template's architecture
+
+  [IF toggled open via "Customize Stack & Presets"]
+  6. QUICK ACTIONS
+     └─ 4 shortcut buttons:
+        - Browse Templates → opens TemplatesModal
+        - Documentation → opens DocsModal
+        - API Key Settings → opens SettingsModal
+        - Generate SaaS Demo → auto-generates a SaaS architecture
+
+MODALS available from Dashboard:
+  - TemplatesModal (via Templates nav pill or Browse Templates)
+  - DocsModal (via Docs nav pill or Documentation quick action)
+  - SettingsModal (via Settings nav pill or API Key Settings)
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 6 — GENERATION LOADING STATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Triggered when: User submits a prompt
+Component: GenerationStream.jsx
+
+  └─ Full-screen animated loading overlay
+  └─ Shows streaming progress steps:
+     • Parsing requirements
+     • Designing architecture layers
+     • Generating API specifications
+     • Modeling database schemas
+     • Finalizing deployment strategies
+  └─ Animated spinner / beam effects
+  └─ Auto-transitions to workspace when generation completes
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 7 — ARCHITECTURE WORKSPACE USER FLOW (Result State)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Rendered when: state === 'result'
+Layout: AppShell (Sidebar + Topbar + Workspace main area)
+
+─────────────────────────────────────────────────────────────────────────────
+  7.1 SIDEBAR (left panel, 260px wide, collapsible)
+─────────────────────────────────────────────────────────────────────────────
+
+  Layout from TOP to BOTTOM:
+
+  - The Sidebar is globally persistent and remains mounted. In desktop mode,
+    it can be collapsed to a 52px width view showing only centered icons
+    and chevron-right toggle. In mobile mode (<= 1024px), the sidebar slides
+    offscreen as a drawer, closeable via backdrop clicks.
+
+  ┌─ TOP: USER PROFILE ────────────────────────────────────────────────────┐
+  │  Avatar (initial) | Display Name | Email | [Sign Out icon]             │
+  │  (Meta text & sign out are hidden when collapsed)                      │
+  └────────────────────────────────────────────────────────────────────────┘
+  ┌─ NEW ARCHITECTURE BUTTON ──────────────────────────────────────────────┐
+  │  [+] button → resets workspace, navigates back to /dashboard           │
+  └────────────────────────────────────────────────────────────────────────┘
+  ┌─ ACTIVE PROJECT BRIEF (if architecture loaded) ────────────────────────┐
+  │  Blue left-border card showing current project prompt (hidden on collapse)│
+  └────────────────────────────────────────────────────────────────────────┘
+  ┌─ PAST PROJECTS (scrollable list, hidden on collapse) ──────────────────┐
+  │  Section label: "Past Projects"                                        │
+  │  Up to 8 past projects listed                                          │
+  │  Each item: dot indicator, project name (truncated), layers/APIs count │
+  │  Click → loads that project into the workspace                        │
+  └────────────────────────────────────────────────────────────────────────┘
+  ┌─ SETTINGS / DOCS (bottom nav) ─────────────────────────────────────────┐
+  │  [📖 Documentation] → opens DocsModal                                  │
+  │  [⚙ Settings] → opens SettingsModal                                   │
+  │  (Sign out button is displayed here only when collapsed)               │
+  └────────────────────────────────────────────────────────────────────────┘
+  ┌─ COMPANY BRAND (very bottom) ──────────────────────────────────────────┐
+  │  InfraMind logo (hidden on collapse) + collapse/expand chevron button  │
+  └────────────────────────────────────────────────────────────────────────┘
+
+─────────────────────────────────────────────────────────────────────────────
+  7.2 TOPBAR (top of main content area)
+─────────────────────────────────────────────────────────────────────────────
+
+  - Left: Menu toggle (when sidebar collapsed) | "AI Architecture Workspace" 
+         title | current state label
+  - Center: Search input (for workspace filtering)
+  - Right: Cmd+K shortcut button | Workspace button | User avatar | 
+           AI Engine: Online status pill
+
+─────────────────────────────────────────────────────────────────────────────
+  7.3 WORKSPACE MAIN AREA (ArchitectureTabs.jsx)
+─────────────────────────────────────────────────────────────────────────────
+
+  CONTENT STRUCTURE (top to bottom):
+
+  1. PROJECT IDEATION HEADER
+     ├─ Eyebrow: "AI ARCHITECT CONTROL DECK"
+     ├─ Project title (from AI response)
+     ├─ [Export Blueprint PDF] button (top right)
+     ├─ Project summary paragraph
+     └─ Architecture Rationale card (AI explanation)
+
+  2. TECH STACK SECTION
+     └─ Tagged chips for each technology: "Frontend: React" "Backend: Node.js"
+        └─ Each chip shows tech brand icon + layer label + recommendation
+
+  3. FLOW DIAGRAM BUTTONS (opens as popup modals)
+     ├─ [System Architecture Flow] → opens System Architecture Modal
+     └─ [User Flow Sequence] → opens User Flow Modal (if available)
+
+  4. KEY SYSTEM DECISIONS (accordion list)
+     └─ Bullet points of AI-generated architecture decisions
+
+  5. SYSTEM SPECIFICATIONS & MODULES (4 clickable cards)
+     ├─ API Interfaces → opens APIs Modal
+     ├─ Database Schemas → opens Database Schemas Modal
+     ├─ Deployment Environment → opens Deployment Modal
+     └─ Scalability & MVP Roadmap → opens Scalability Modal
+
+  6. FLOATING REFINEMENT BAR (bottom)
+     └─ Text input: "Refine this architecture..."
+     └─ [Send] → appends refinement to original prompt, re-generates
+
+─────────────────────────────────────────────────────────────────────────────
+  7.4 RIGHT-SIDE INSPECTOR PANEL (InspectorPanel.jsx)
+─────────────────────────────────────────────────────────────────────────────
+
+  - Displayed on the right side of the workspace when a node in the Mermaid
+    topology diagram is clicked (or when selectedNode is active).
+  - On mobile/tablet screen widths (<= 1024px), it behaves as an absolute drawer
+    sliding in from the right, preventing layout crowding.
+  - Close button (×) clears node selection and dismisses the panel.
+
+  INSPECTOR CONTENT:
+    • Status: Shows current blueprint generation status.
+    • Tech Stack Tags: List of recommended technology names.
+    • Complexity Profile: Graph showing simple/medium/enterprise system weight.
+    • AI Tradeoffs: Key design tradeoffs made by the model.
+    • Quick Actions: Buttons to copy project title or export current PDF.
+    • Dynamic Node Details:
+       ├─ Tech fits, alternatives, and model rationale if a layer node is selected.
+       ├─ Interactive schema table (fields and types) if a DB node is selected.
+       ├─ REST route HTTP method and path listing if an API node is selected.
+       └─ Contextual AI Optimizer ("Invisible AI"):
+          • Input field: "How should we optimize [selectedNode]?"
+          • Submitting this form triggers a targeted modification appending the
+            refinement instruction to the original prompt:
+            `${originalIdea} (Refinement: Optimize component [${selectedNode}]: ${refinementText})`
+          • Re-triggers AI generation automatically to redraw/update the system.
+
+─────────────────────────────────────────────────────────────────────────────
+  7.5 HUMAN-VOICED GLITCH RECOVERY VIEW
+─────────────────────────────────────────────────────────────────────────────
+
+  - Shown when AI generation fails (rate limits, timeouts, empty keys, etc.).
+  - Dismisses generic "Generation Failed" titles in favor of warm, human-voiced microcopy.
+  - Explains the likely root cause (Gemini rate limits, server connection errors)
+    and gives clear recovery steps.
+  - Interactive Action buttons:
+     ├─ [Retry Generation] (automatically re-submits the last idea prompt)
+     └─ [Return to Dashboard] (resets workspace state and navigates back)
+  - Pro Tip Box: Points developers to the settings modal to customize a client-side
+    Gemini API Key override, which bypasses shared backend limits.
+
+─────────────────────────────────────────────────────────────────────────────
+  7.6 MODAL WINDOWS (all closeable)
+─────────────────────────────────────────────────────────────────────────────
+
+  All modals share a consistent design:
+  - Dark backdrop (click outside to close)
+  - Header with icon + title + [×] close button
+  - Scrollable body
+  - Footer with tip text + [Close View] button
+
+  MODAL 1: System Architecture Topology
+    - Full-width Mermaid.js diagram (1100px wide, 60vh height)
+    - Scroll to zoom, drag to pan
+    - Click a node → closes modal, inspects that node
+
+  MODAL 2: User Flow Sequence
+    - Mermaid.js sequence diagram
+    - Same scroll/pan controls
+
+  MODAL 3: REST API Interface Specs
+    - Table with: Method pill | Route path (code) | Description
+    - Color-coded HTTP method badges (GET=green, POST=blue, DELETE=red...)
+
+  MODAL 4: Database Schemas
+    - Cards per collection/table
+    - Each card: table name header | Fields table (Name, Type, Note)
+    - Click table name → closes modal, selects that node in workspace
+
+  MODAL 5: Deployment Environment Strategy
+    - Rows per environment (Development, Staging, Production)
+    - Badge label + description text
+
+  MODAL 6: Scalability & MVP Milestone
+    - Section A: Scaling Guidelines (area + detail pairs)
+    - Section B: MVP Milestone Phases (Phase 1-N with tasks list)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 8 — GLOBAL MODALS (accessible from anywhere)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+These modals are rendered at App.jsx level and available across all views:
+
+  SETTINGS MODAL (SettingsModal.jsx)
+  ───────────────────────────────────
+  - Configure custom Google Gemini API key
+  - API key validation status indicator
+  - "Using custom key" toggle
+  - Save / reset API key
+
+  TEMPLATES MODAL (TemplatesModal.jsx)
+  ─────────────────────────────────────
+  - Grid of pre-built architecture templates
+  - Click template → dismisses modal, auto-generates that architecture
+
+  DOCUMENTATION MODAL (DocsModal.jsx)
+  ─────────────────────────────────────
+  - Tabbed documentation interface
+  - Tabs: Getting Started | API Reference | Architecture Guide | FAQ
+  - Formatted markdown-style docs with code examples
+
+  SAVED ARCHITECTURES MODAL (SavedArchitecturesModal.jsx)
+  ────────────────────────────────────────────────────────
+  - Lists all user's past generated architectures from Firestore
+  - Each item: title, date, metrics (layers, APIs, models)
+  - Click → loads that architecture into workspace
+
+  COMMAND PALETTE (CommandPalette.jsx)
+  ─────────────────────────────────────
+  - Triggered by: Ctrl+K / Cmd+K keyboard shortcut
+  - Quick-search interface for workspace actions
+  - Navigate to templates, settings, docs, etc.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 9 — COMPLETE USER JOURNEY (End-to-End)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  NEW USER JOURNEY:
+  ─────────────────
+  1. Visits site → LandingPage shown
+  2. Reads hero, features, pricing
+  3. Clicks "Get Started Free"
+  4. AuthModal opens → fills Create Account form
+  5. Creates account → Firebase auth succeeds
+  6. Redirected to Dashboard (idle + authenticated state)
+  7. Sees greeting + composer form
+  8. Types project idea or clicks a preset chip
+  9. Optionally adds tech stack tags
+  10. Clicks "Generate Architecture Blueprint"
+  11. App checks auth token (getFreshToken)
+  12. GenerationStream loading screen shown
+  13. API call to backend (POST /api/generate with idea + stack + token)
+  14. Backend validates Firebase token → calls Gemini API
+  15. Gemini generates JSON architecture response
+  16. Backend returns structured data
+  17. Frontend saves project to Firestore
+  18. State transitions to 'result'
+  19. AppShell renders with Sidebar + Topbar + Workspace
+  20. User explores: clicks diagram buttons → modals open
+  21. User inspects API specs, DB schemas, deployment strategies
+  22. User refines via the floating prompt bar
+  23. User exports PDF → full blueprint downloaded
+  24. User starts new project via sidebar "New Architecture" button
+  25. Past projects appear in sidebar list for quick access
+
+  RETURNING USER JOURNEY:
+  ────────────────────────
+  1. Visits site → Firebase checks auth session
+  2. If session valid → skips landing page → shows Dashboard directly
+  3. Sees "Recent Architectures" section with past projects
+  4. Clicks a past project card → loads it into workspace instantly
+  5. OR starts a new generation from the composer
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 10 — TECHNICAL ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  FRONTEND (client/)
+  ──────────────────
+  Framework:    React + Vite
+  Styling:      CSS Modules (no Tailwind)
+  State:        React useState/useCallback + Zustand (useArchitectureStore)
+  Auth hook:    useAuth.js → Firebase Authentication
+  Arch hook:    useArchitecture.js → manages generate/load/reset lifecycle
+  Store:        useArchitectureStore.js → Zustand store for projects list (VITE_API_BASE_URL)
+  Router:       React Router v6 (BrowserRouter) with SPA vercel.json catch-all rewrites
+  Diagrams:     Mermaid.js rendered via MermaidDiagram.jsx (using dynamic callback ref)
+  Diagram Zoom: Clamped minScale to initialScale to lock zooming out below fit layout
+  Diagram Tap:  PointerEvents (pointerdown/pointerup) tracking to bypass drag interception
+  Diagram Fix:  Pre-render sanitizer for SubGraph/End casing & unquoted space-separated titles
+  PDF Export:   html2canvas + jsPDF via exportPdf.js
+  Icons:        lucide-react + SimpleIcons CDN (getTechIconUrl mapped to aws/amazonaws)
+
+  BACKEND (server/)
+  ─────────────────
+  Runtime:      Node.js + Express
+  Auth:         Firebase Admin SDK (verifies ID tokens)
+  AI:           Google Generative AI SDK (@google/generative-ai)
+  Model:        Gemini 2.5 Pro (or user-configured key)
+  Storage:      Firebase Firestore (projects collection per user)
+  Key Endpoint: POST /api/generate
+                  Body: { idea, knownStack, idToken }
+                  Auth: verifyIdToken(idToken) → uid
+                  AI:   generateContent(prompt) → JSON architecture
+                  DB:   saveProject(uid, data) → Firestore
+
+  DATA FLOW:
+  ──────────
+  User Input → App.jsx handleSubmit()
+             → useArchitecture.generate({ idea, knownStack, idToken })
+             → fetch('/api/generate', { method: 'POST', body: JSON })
+             → server/index.js: verifyToken → callGemini → saveToFirestore
+             → returns { data: ArchitectureData }
+             → App state = 'result'
+             → Workspace renders ArchitectureTabs with data
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 11 — KEY FILE MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  client/src/
+  ├── App.jsx                          Main app — state machine, routing
+  ├── index.css                        Global design system (CSS variables)
+  ├── App.css                          (cleared — not used)
+  │
+  ├── hooks/
+  │   ├── useAuth.js                   Firebase auth (login/signup/logout)
+  │   └── useArchitecture.js           Generate/load/reset architecture
+  │
+  ├── store/
+  │   └── useArchitectureStore.js      Zustand: projects list, currentProjectId
+  │
+  ├── utils/
+  │   ├── techIcons.js                 Tech name → SimpleIcons CDN URL
+  │   └── exportPdf.js                 PDF export via html2canvas + jsPDF
+  │
+  ├── components/
+  │   ├── layout/
+  │   │   ├── AppShell.jsx             Main 2-col layout (Sidebar + Content)
+  │   │   ├── AppShell.module.css
+  │   │   ├── Sidebar.jsx              Collapsible sidebar (workspace state)
+  │   │   ├── Sidebar.module.css
+  │   │   ├── Topbar.jsx               Top navigation bar (workspace state)
+  │   │   ├── Topbar.module.css
+  │   │   ├── InspectorPanel.jsx       Node details inspector panel
+  │   │   └── InspectorPanel.module.css
+  │   │
+  │   ├── workspace/
+  │   │   ├── LandingPage.jsx          Public marketing landing page
+  │   │   ├── LandingPage.module.css
+  │   │   ├── Dashboard.jsx            Private user dashboard
+  │   │   ├── Dashboard.module.css
+  │   │   ├── ArchitectureTabs.jsx     Main workspace content area
+  │   │   ├── Workspace.jsx            Wrapper for ArchitectureTabs
+  │   │   ├── Workspace.module.css     All workspace + modal styles
+  │   │   ├── AuthModal.jsx            Sign In / Create Account modal
+  │   │   ├── AuthModal.module.css
+  │   │   ├── SettingsModal.jsx        API key settings modal
+  │   │   ├── SettingsModal.module.css
+  │   │   ├── TemplatesModal.jsx       Architecture templates browser
+  │   │   ├── TemplatesModal.module.css
+  │   │   ├── DocsModal.jsx            Documentation modal
+  │   │   ├── DocsModal.module.css
+  │   │   ├── SavedArchitecturesModal.jsx  Past projects browser
+  │   │   ├── SavedArchitecturesModal.module.css
+  │   │   ├── GenerationStream.jsx     Loading animation during AI generation
+  │   │   └── PromptComposer.jsx       (legacy, not in active use)
+  │   │
+  │   ├── ui/
+  │   │   ├── Logo.jsx                 InfraMind logo component
+  │   │   └── CommandPalette.jsx       Ctrl+K command search overlay
+  │   │
+  │   ├── MermaidDiagram.jsx           Renders Mermaid.js diagrams
+  │   ├── MermaidDiagram.module.css
+  │   ├── ResultView.jsx               (legacy result view)
+  │   ├── LoadingState.jsx             (legacy loading state)
+  │   └── Footer.jsx                   Shared footer component
+
+  server/
+  ├── index.js                         Express API server
+  └── .env                             GEMINI_API_KEY, Firebase credentials
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 12 — KEYBOARD SHORTCUTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Ctrl+K / Cmd+K    Open Command Palette (quick navigation)
+  Ctrl+Enter        Submit composer form (generate architecture)
+  Escape            Close any open modal
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 13 — ARCHITECTURE JSON DATA SHAPE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  The AI returns a structured JSON object with this shape:
+
+  {
+    projectTitle: string,
+    projectSummary: string,
+    architectureExplanation: {
+      whyThisStack: string,
+      keyDecisions: string[]
+    },
+    stack: [
+      { layer: string, recommendation: string }
+    ],
+    mermaidDiagram: string,       // System architecture Mermaid code
+    userFlowDiagram: string,      // User flow sequence Mermaid code
+    apis: [
+      { method: 'GET'|'POST'|'PUT'|'PATCH'|'DELETE', route: string, description: string }
+    ],
+    dbSchema: [
+      {
+        collection: string,
+        fields: [
+          { name: string, type: string, note: string }
+        ]
+      }
+    ],
+    deploymentStrategy: {
+      Development: string,
+      Staging: string,
+      Production: string
+    },
+    scalability: [
+      { area: string, detail: string }
+    ],
+    mvpRoadmap: [
+      { phase: string, duration: string, tasks: string[] }
+    ]
+  }
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 14 — PLATFORM TECHNICAL SUMMARY & UI SPECIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+InfraMind is a production-grade, AI-powered system architecture design SaaS.
+Users enter plain-text product descriptions (e.g., "A real-time ride-sharing
+application with payment integrations and redis caching"), and the application
+dynamically models, generates, and renders comprehensive system topologies,
+sequence flows, database schemas, REST APIs, deployment guides, and scalability
+roadmaps using the Google Gemini 2.5 Pro model.
+
+TECHNICAL ARCHITECTURE STACK:
+  • Frontend: React 18 (Vite-powered bundle)
+  • Routing: React Router v6 (BrowserRouter) with route protections, parameters
+    extraction, and deep-linking (e.g. /workspace/:projectId)
+  • State Management: Zustand (useArchitectureStore.js) for cache orchestration
+    + custom React Context hook (AuthContext.jsx) for Firebase sessions
+  • Diagrams: Mermaid.js rendering with drag-to-pan and scroll-to-zoom controls
+  • Boilerplate: jszip for boilerplate zip scaffolding compiling in-browser
+  • Styling: Vanilla CSS Modules (modular CSS scopes, zero Tailwind)
+  • Backend: Node.js + Express (Firebase Admin SDK, Gemini SDK, Firestore)
+
+GLOBAL ROUTING & NAVIGATION STATES:
+  1. PUBLIC MARKETING PAGE (/)
+     - Hero: Outcome-first copy, stats, single "Start Building Free" CTA.
+     - Navbar: Logo, pricing/features anchors, and responsive "Get Started" cta.
+       On mobile (<= 768px), the Sign In option is hidden and padding decreases
+       to prevent visual cutting off.
+     - Footer: Single-row branding footer showing copyright and System Status.
+  2. PRIVATE USER DASHBOARD (/dashboard)
+     - Time-aware greetings, preset chips, customizable stack tags with auto-
+       complete suggestions and SimpleIcons CDN brand-colored logos.
+     - Recent projects card grid. The "View all" action launches the Saved
+       Architectures modal.
+     - Mobile menu (<= 768px): Hamburger button toggle displaying a glassmorphic
+       dropdown overlay to access templates, docs, settings, and logout.
+  3. WORKSPACE CANVAS DECK (/workspace/:projectId)
+     - Split-layout (Persistent Sidebar + Content Area + Topbar).
+     - Sidebar keeps mounted to allow smooth transitions: narrows to 52px
+       (showing centered icons) on desktop collapse, and slides off-screen
+       as drawer on mobile. Chevron toggle button changes direction.
+     - Main Area: Project summary, Stack badges, embedded system diagrams,
+       API specs, DB schema models, multi-stage deployment tiers, and MVP roadmaps.
+     - Overlapping title row is stacked vertically on mobile.
+     - Floating prompt bar at bottom for iterations and modifications.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 15 — USER PROFILE & INTERACTIVE PUBLIC SHARING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. USER PROFILE MANAGEMENT
+   - Form fields: Name, Unique Username (required, regex alphanumeric + underscore), 
+     Photo URL (paste input or direct file upload), and developer social links (GitHub, 
+     Twitter/X, LinkedIn).
+   - Cloudinary Uploads: Direct file uploads from the profile settings form are sent to 
+     Cloudinary via client-side uploads. If Cloudinary configurations are invalid or fail, 
+     a fallback reader compiles the file into a Base64 data string, ensuring zero blockage.
+   - Unique Usernames: Backend endpoints (POST /api/profile) enforce lowercase uniqueness 
+     for usernames in the Firestore collection. Checks are executed during profiles saves, 
+     rejecting duplicates with a 400 Bad Request error.
+   - Sidebar & Navbar Avatars: Dynamic avatars show the user's custom photo URL if set. 
+     Displays name or email fallback initials if not.
+
+2. DYNAMIC INTERACTIVE PUBLIC SHARE VIEW (/p/:shareId)
+   - Read-only control deck mirroring the full creator experience:
+      • Restricts prompt revisions by hiding the bottom floating refiner bar.
+      • Renders full Mermaid system diagram topologies and user sequence flows.
+      • Inspects API routes tables and database collection schemas in read-only modals.
+      • Permits exporting layout documents (PDF) and code scaffolds (.zip) directly.
+   - Creator Profile Card: A custom glassmorphic badge at the top header displaying the 
+     creator's custom avatar, display name, username (@handle), and direct links to their 
+     social profiles (GitHub, LinkedIn, Twitter/X) if configured.
+   - Backend resolution: Public shares automatically query and embed the owner's active 
+     profile details on request, ensuring up-to-date handles and photo url modifications.
+
+================================================================================
+  END OF DOCUMENT
+================================================================================

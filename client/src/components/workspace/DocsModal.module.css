@@ -1,0 +1,401 @@
+/* src/components/workspace/DocsModal.module.css */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 400;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.content {
+  width: 100%;
+  max-width: 820px;
+  height: 560px;
+  background: rgba(10, 10, 12, 0.9);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0px; /* Rect based */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  animation: scaleIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
+  flex-shrink: 0;
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.titleIcon {
+  color: var(--secondary);
+}
+
+.header h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 0px; /* Rect based */
+  display: flex;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.closeBtn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  flex: 1;
+  min-height: 0;
+}
+
+.sidebar {
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.15);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 0px; /* Rect based */
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  background: transparent;
+}
+
+.navItem:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.navItemActive {
+  color: var(--secondary);
+  background: rgba(37, 99, 235, 0.08);
+  font-weight: 600;
+  border-left: 2px solid var(--secondary);
+  padding-left: 10px; /* Offset border */
+}
+
+.navIcon {
+  flex-shrink: 0;
+}
+
+.main {
+  padding: 24px;
+  overflow-y: auto;
+  background: #030304;
+}
+
+.article {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.articleTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+
+.articleContent {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Documentation Content Section Styling */
+.docsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.docsLead {
+  color: var(--text-dim);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin: 0 0 8px;
+}
+
+.docsCard {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 0px; /* Rect based */
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cardHeader {
+  margin: 0 0 4px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardHeader svg {
+  color: var(--secondary);
+}
+
+.docsCard p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.45;
+}
+
+.sectionSubtitle {
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  color: var(--secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 12px 0 0;
+}
+
+.codeBlock {
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 0px;
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: #38bdf8;
+  line-height: 1.5;
+  overflow-x: auto;
+  margin: 0;
+}
+
+/* Grid layout for diagrams description */
+.docsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+.gridCard {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 0px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gridCard p {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--text-dim);
+  line-height: 1.45;
+}
+
+.badge {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 4px 8px;
+  border-radius: 0px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.badgeBlue {
+  background: rgba(56, 189, 248, 0.08);
+  color: var(--secondary);
+}
+
+.badgePurple {
+  background: rgba(139, 92, 246, 0.08);
+  color: #a78bfa;
+}
+
+.infoCallout {
+  background: rgba(37, 99, 235, 0.05);
+  border-left: 3px solid var(--secondary);
+  padding: 12px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+/* Table styling */
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 0px;
+}
+
+.docsTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.docsTable th {
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.docsTable td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--text-dim);
+}
+
+.fitBadge {
+  padding: 2px 8px;
+  border-radius: 0px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.fitHigh {
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+}
+
+.fitMedium {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+}
+
+.fitLow {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+}
+
+/* Deployment environment tiers */
+.envTiers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.envTierCard {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  padding: 14px;
+  border-radius: 0px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.envTierCard p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.tierHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+
+.tierBadge {
+  padding: 2px 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  background: var(--primary);
+  color: white;
+  border-radius: 0px;
+  font-family: var(--font-mono);
+}
+
+.codeSnippet {
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 8px 12px;
+  border-radius: 0px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: #34d399;
+  margin: 4px 0 0;
+}
+
+@media (max-width: 640px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    display: none;
+  }
+  .docsGrid {
+    grid-template-columns: 1fr;
+  }
+}

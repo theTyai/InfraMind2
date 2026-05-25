@@ -1,0 +1,393 @@
+/* Sidebar.module.css — InfraMind workspace sidebar */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+  height: 100vh;
+  background: #09090b;
+  border-right: 1px solid rgba(255, 255, 255, 0.055);
+  overflow: hidden;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── User Profile Block (Top) ──────────────────────────────── */
+.userBlock {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.userAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  letter-spacing: 0;
+}
+
+.userMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.userName {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userEmail {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logoutBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+}
+
+.logoutBtn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* ── User Avatar Custom Image ── */
+.userAvatarImg {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.userUsername {
+  font-size: 0.7rem;
+  color: var(--secondary);
+  font-weight: 500;
+}
+
+/* ── Home & New Buttons Group ──────────────────────────────── */
+.navButtonsGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 12px 8px;
+  flex-shrink: 0;
+}
+
+.newBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.newBtn:hover {
+  background: var(--primary-hover);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+}
+
+.homeBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.homeBtn:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Active Project Card ──────────────────────────────────── */
+.activeCard {
+  margin: 0 12px 4px;
+  padding: 10px 12px;
+  background: rgba(37, 99, 235, 0.05);
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  border-left: 3px solid var(--secondary);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.activeCardLabel {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--secondary);
+  margin-bottom: 5px;
+}
+
+.activeCardText {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+/* ── Projects Section ─────────────────────────────────────── */
+.projectsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sectionLabel {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 14px 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.projectList {
+  overflow-y: auto;
+  flex: 1;
+  padding: 0 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.projectList::-webkit-scrollbar {
+  width: 3px;
+}
+.projectList::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.07);
+  border-radius: 2px;
+}
+
+.projectItem {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 8px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.12s;
+}
+
+.projectItem:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.projectDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  flex-shrink: 0;
+}
+
+.projectMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.projectName {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.projectItem:hover .projectName {
+  color: var(--text-primary);
+}
+
+.projectStats {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.emptyState {
+  padding: 16px 8px;
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* ── Spacer ───────────────────────────────────────────────── */
+.spacer {
+  flex-shrink: 0;
+}
+
+/* ── Bottom Navigation ────────────────────────────────────── */
+.bottomNav {
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.bottomNavBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s, color 0.12s;
+}
+
+.bottomNavBtn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+/* ── Brand Footer (bottom) ────────────────────────────────── */
+.brandFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.collapseBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s, background 0.15s;
+}
+
+.collapseBtn:hover {
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.05);
+}
+
+/* Collapsed Sidebar overrides */
+.sidebar.collapsed {
+  width: 52px;
+}
+
+.sidebar.collapsed .userBlock {
+  padding: 14px 0;
+  justify-content: center;
+}
+
+.sidebar.collapsed .navButtonsGroup {
+  margin: 12px 0;
+  align-items: center;
+}
+
+.sidebar.collapsed .newBtn,
+.sidebar.collapsed .homeBtn {
+  margin: 0 auto;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar.collapsed .bottomNav {
+  padding: 6px 0;
+  align-items: center;
+}
+
+.sidebar.collapsed .bottomNavBtn {
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar.collapsed .brandFooter {
+  padding: 10px 0;
+  justify-content: center;
+}
+
+.sidebar.collapsed .collapseBtn {
+  padding: 6px;
+}
+

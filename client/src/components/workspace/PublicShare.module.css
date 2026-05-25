@@ -1,0 +1,198 @@
+/* PublicShare.module.css */
+.page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #050507;
+  color: #e2e8f0;
+  position: relative;
+  overflow: hidden;
+}
+
+.ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.orb1 {
+  position: absolute; top: -10%; left: 20%; width: 60vw; height: 60vw;
+  max-width: 600px; max-height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(37,99,235,0.06) 0%, transparent 65%);
+}
+.orb2 {
+  position: absolute; bottom: -15%; right: 10%; width: 45vw; height: 45vw;
+  max-width: 450px; max-height: 450px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(139,92,246,0.05) 0%, transparent 70%);
+}
+
+/* Nav */
+.nav {
+  position: relative; z-index: 100;
+  background: rgba(5,5,7,0.85); backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  height: 56px;
+  flex-shrink: 0;
+}
+.navInner {
+  max-width: 1400px; margin: 0 auto; padding: 0 32px;
+  height: 100%; display: flex; align-items: center; gap: 16px;
+}
+.navBadge {
+  display: flex; align-items: center; gap: 5px;
+  padding: 3px 10px; background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07); border-radius: 999px;
+  font-size: 0.72rem; color: rgba(255,255,255,0.4);
+}
+.navRightActions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.navCta {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 16px; background: #2563eb; color: #fff;
+  border-radius: 8px; font-size: 0.82rem; font-weight: 600;
+  text-decoration: none; transition: background 0.15s;
+}
+.navCta:hover { background: #1d4ed8; }
+
+/* Author Badge */
+.authorBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+  margin-left: 8px;
+}
+.authorAvatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  overflow: hidden;
+}
+.authorAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.authorMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+}
+.authorName {
+  color: #fff;
+  font-weight: 500;
+}
+.authorUsername {
+  color: rgba(255, 255, 255, 0.4);
+}
+.authorSocials {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  padding-left: 8px;
+  margin-left: 4px;
+}
+.authorSocials a {
+  color: rgba(255, 255, 255, 0.45);
+  transition: color 0.15s;
+  display: flex;
+  align-items: center;
+}
+.authorSocials a:hover {
+  color: #fff;
+}
+
+/* Split Interactive Viewport Layout */
+.mainLayout {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.workspaceContent {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  padding: 32px 32px 60px;
+}
+
+.inspectorSlot {
+  width: 360px;
+  flex-shrink: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  background: #060608;
+  height: 100%;
+  overflow-y: auto;
+  animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+/* Center / loading / error */
+.center {
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px;
+  background: #050507; color: rgba(255,255,255,0.5); font-size: 0.88rem;
+}
+.spinner {
+  width: 32px; height: 32px; border: 2px solid rgba(255,255,255,0.1);
+  border-top-color: #2563eb; border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.errorCard {
+  text-align: center; display: flex; flex-direction: column;
+  align-items: center; gap: 12px; max-width: 400px;
+}
+.errorIcon { color: #f87171; }
+.errorCard h2 { font-size: 1.4rem; font-weight: 700; color: #fff; margin: 0; }
+.errorCard p  { font-size: 0.88rem; color: rgba(255,255,255,0.4); margin: 0; }
+.homeBtn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 22px; background: #2563eb; color: #fff;
+  border-radius: 8px; font-size: 0.88rem; font-weight: 600;
+  text-decoration: none; margin-top: 8px;
+}
+
+@media (max-width: 1024px) {
+  .mainLayout {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .workspaceContent {
+    height: auto;
+    overflow-y: visible;
+    padding: 20px;
+  }
+  .inspectorSlot {
+    width: 100%;
+    height: auto;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .navInner {
+    padding: 0 16px;
+  }
+  .authorBadge {
+    display: none; /* Hide author badge in narrow navbars to save space */
+  }
+}

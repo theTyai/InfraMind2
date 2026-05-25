@@ -1,0 +1,544 @@
+.panel {
+  background: rgba(10, 10, 12, 0.65);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0px rgba(255, 255, 255, 0.05);
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 10px;
+  margin-bottom: 4px;
+}
+
+.title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 260px;
+}
+
+.closePanelBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.closePanelBtn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Node Inspector Card */
+.nodeInspectorWrapper {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(37, 99, 235, 0.01));
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 6px;
+  animation: fadeIn 0.25s ease-out;
+  box-shadow: inset 0 0 12px rgba(37, 99, 235, 0.05);
+}
+
+.nodeInspectorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(37, 99, 235, 0.15);
+  padding-bottom: 6px;
+}
+
+.nodeInspectorTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--secondary);
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+
+.nodeIconBlue {
+  color: var(--secondary);
+}
+
+.clearNodeBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.clearNodeBtn:hover {
+  color: var(--text-primary);
+}
+
+.inspectCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inspectLayerLabel {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.inspectTechVal {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.fitRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.fitBadge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+
+.high {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.medium {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.low {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.inspectDescGroup {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.inspectDescTitle {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.inspectDescText {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.inspectAltBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.altBadge {
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text-dim);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+}
+
+/* Schema Mini Table */
+.schemaTableWrap {
+  overflow-x: auto;
+  margin-top: 2px;
+}
+
+.schemaMiniTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.schemaMiniTable th,
+.schemaMiniTable td {
+  padding: 5px 6px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.schemaMiniTable th {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+.fieldCol code {
+  color: var(--secondary);
+  font-family: var(--font-mono);
+}
+
+.typeCol {
+  color: var(--text-dim);
+}
+
+/* API Mini List */
+.apiMiniList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.apiMiniItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.methodBadge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+}
+
+.GET { background: rgba(96, 165, 250, 0.15); color: var(--secondary); }
+.POST { background: rgba(37, 99, 235, 0.15); color: var(--primary); }
+.PUT { background: rgba(96, 165, 250, 0.15); color: var(--secondary); }
+.PATCH { background: rgba(37, 99, 235, 0.15); color: var(--primary); }
+.DELETE { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+.routeCode {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Accordion sections */
+.accordionSection {
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.01);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.accordionHeader {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: background-color 0.2s;
+}
+
+.accordionHeader:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.sectionTitle {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.accordionContent {
+  padding: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.result {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.loading {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.idle {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-dim);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.badgeCloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.techTagPill {
+  font-size: 0.75rem;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  color: var(--secondary);
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+}
+
+.text {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.scoreCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.scoreDetails {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.scoreDetails strong {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.scorePercentLabel {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.meterTrack {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.meterFill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.enterprise {
+  background: linear-gradient(90deg, #3b82f6, #6366f1);
+}
+
+.medium {
+  background: linear-gradient(90deg, #f59e0b, #3b82f6);
+}
+
+.simple {
+  background: linear-gradient(90deg, #10b981, #3b82f6);
+}
+
+.tradeoffList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tradeoffItem {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.tradeoffIcon {
+  color: var(--warning);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.actionsBox {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.actionBtn {
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.actionBtn:hover:not(:disabled) {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.25);
+  color: var(--text-primary);
+}
+
+.actionBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Contextual AI Optimizer Styles */
+.contextualAiBlock {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(37, 99, 235, 0.15);
+}
+
+.contextualAiHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--secondary);
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  margin-bottom: 8px;
+}
+
+.sparklesIcon {
+  color: var(--secondary);
+}
+
+.contextualAiForm {
+  display: flex;
+  gap: 8px;
+}
+
+.contextualInput {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: 6px;
+  color: var(--text-primary);
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.contextualInput:focus {
+  border-color: rgba(37, 99, 235, 0.5);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.contextualSubmitBtn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.contextualSubmitBtn:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.contextualSubmitBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+

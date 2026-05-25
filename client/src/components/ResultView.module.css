@@ -1,0 +1,573 @@
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 24px 80px;
+}
+
+.workspaceShell {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr) 300px;
+  gap: 16px;
+  align-items: start;
+}
+
+.sidebar,
+.hero,
+.tabBar,
+.card,
+.phase,
+.inspector {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-lg);
+}
+
+.sidebar,
+.inspector {
+  position: sticky;
+  top: 96px;
+  border-radius: 24px;
+  padding: 16px;
+  display: grid;
+  gap: 16px;
+}
+
+.sidebarBlock,
+.inspectorBlock {
+  display: grid;
+  gap: 10px;
+}
+
+.sidebarTitle,
+.inspectorTitle,
+.kicker,
+.stackLayer,
+.archLabel,
+.envBadge,
+.phaseDuration,
+.collName,
+.route,
+.fieldName,
+.fieldType,
+.method,
+.fitBadge {
+  font-family: var(--font-mono);
+}
+
+.sidebarTitle,
+.inspectorTitle,
+.kicker,
+.archLabel {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.resetButton,
+.navItem,
+.primaryButton,
+.secondaryButton,
+.tab,
+.segmentButton {
+  min-height: 40px;
+  border-radius: 14px;
+  border: 1px solid var(--border-default);
+  background: rgba(17, 24, 39, 0.92);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.resetButton,
+.navItem,
+.primaryButton,
+.secondaryButton,
+.segmentButton {
+  padding: 0 14px;
+}
+
+.resetButton:hover,
+.navItem:hover,
+.secondaryButton:hover,
+.segmentButton:hover,
+.tab:hover {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.resetButton {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.navList,
+.historyList,
+.actionList {
+  display: grid;
+  gap: 8px;
+}
+
+.navItem {
+  text-align: left;
+}
+
+.navItemActive {
+  color: var(--text-primary);
+  border-color: rgba(var(--primary-rgb), 0.4);
+  background: rgba(var(--primary-rgb), 0.12);
+}
+
+.historyItem,
+.emptyHistory {
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(17, 24, 39, 0.62);
+}
+
+.historyName {
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.historyMeta,
+.emptyHistory,
+.inspectorText,
+.sectionCopy,
+.stackReason,
+.apiDesc,
+.fieldNote,
+.archText,
+.deployDetail,
+.scaleDetail,
+.phaseTask,
+.archItem,
+.projectIdea,
+.summaryText {
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.historyMeta,
+.emptyHistory {
+  font-size: 0.84rem;
+}
+
+.mainPane {
+  display: grid;
+  gap: 16px;
+}
+
+.hero {
+  border-radius: 28px;
+  padding: 24px;
+}
+
+.heroTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.projectTitle {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 0.96;
+  letter-spacing: -0.07em;
+  margin: 8px 0 10px;
+}
+
+.heroActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.primaryButton {
+  background: linear-gradient(135deg, #6d7cff, #38bdf8);
+  color: var(--text-primary);
+  border-color: transparent;
+  box-shadow: 0 10px 25px rgba(109, 124, 255, 0.35);
+}
+
+.primaryButton:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.heroStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.statCard {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--border-default);
+  background: rgba(24, 34, 53, 0.76);
+}
+
+.statCard strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 1.2rem;
+}
+
+.statCard span {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.tabBar {
+  padding: 8px;
+  border-radius: 20px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 0 14px;
+}
+
+.tabActive {
+  background: rgba(var(--primary-rgb), 0.14);
+  border-color: rgba(var(--primary-rgb), 0.4);
+  color: var(--text-primary);
+}
+
+.sectionStack {
+  display: grid;
+  gap: 16px;
+}
+
+.section {
+  display: grid;
+  gap: 14px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.sectionTitle {
+  font-size: 1.24rem;
+  letter-spacing: -0.03em;
+}
+
+.diagramToggle {
+  display: flex;
+  gap: 8px;
+}
+
+.diagramGrid {
+  display: grid;
+  gap: 14px;
+}
+
+.card {
+  border-radius: 24px;
+  padding: 20px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.apiTable,
+.schemaTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.apiTable th,
+.schemaTable th {
+  text-align: left;
+  padding: 0 12px 12px 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.apiTable td,
+.schemaTable td {
+  padding: 12px 12px 12px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: top;
+}
+
+.apiTable tr:last-child td,
+.schemaTable tr:last-child td {
+  border-bottom: none;
+}
+
+.method {
+  display: inline-flex;
+  min-width: 66px;
+  justify-content: center;
+  padding: 5px 8px;
+  border-radius: 999px;
+  border: 1px solid;
+  font-size: 10px;
+}
+
+.methodGet { color: var(--accent-green); background: rgba(34, 197, 94, 0.08); border-color: rgba(34, 197, 94, 0.18); }
+.methodPost { color: var(--brand); background: rgba(var(--primary-rgb), 0.08); border-color: rgba(var(--primary-rgb), 0.18); }
+.methodPut,
+.methodPatch { color: var(--accent-amber); background: rgba(245, 158, 11, 0.08); border-color: rgba(245, 158, 11, 0.18); }
+.methodDelete { color: var(--accent-red); background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.18); }
+
+.route { font-size: 12px; color: var(--text-primary); }
+
+.stackGrid,
+.schemaGrid,
+.scaleGrid,
+.archGrid,
+.roadmap {
+  display: grid;
+  gap: 14px;
+}
+
+.stackGrid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.schemaGrid { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.scaleGrid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.archGrid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+.stackCard,
+.schemaCard,
+.scaleCard,
+.archCard {
+  display: grid;
+  gap: 10px;
+}
+
+.stackTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.stackLayer {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.fitBadge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  border: 1px solid;
+}
+
+.fitHigh { color: var(--accent-green); background: rgba(34, 197, 94, 0.08); border-color: rgba(34, 197, 94, 0.18); }
+.fitMed { color: var(--accent-amber); background: rgba(245, 158, 11, 0.08); border-color: rgba(245, 158, 11, 0.18); }
+.fitLow { color: var(--text-secondary); background: rgba(18, 26, 43, 0.72); border-color: var(--border-default); }
+
+.stackTech {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.stackAlts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.altChip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(18, 26, 43, 0.88);
+  border: 1px solid var(--border-default);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.collName { font-size: 13px; color: var(--text-primary); }
+.fieldName { color: var(--secondary); }
+.fieldType { color: var(--primary-hover); }
+
+.archList,
+.phaseTasks,
+.inspectorList {
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.archItem,
+.phaseTask,
+.inspectorList li {
+  position: relative;
+  padding-left: 16px;
+}
+
+.archItem::before,
+.phaseTask::before,
+.inspectorList li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(var(--primary-rgb), 0.55);
+}
+
+.scaleIcon,
+.phaseNum {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: rgba(var(--primary-rgb), 0.12);
+  color: var(--brand);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.scaleArea,
+.phaseTitle {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.deployRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.deployRow:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.envBadge {
+  min-width: 98px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-default);
+  font-size: 10px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.env_development { color: var(--text-secondary); }
+.env_staging { color: var(--accent-amber); border-color: rgba(245, 158, 11, 0.18); }
+.env_production { color: var(--accent-green); border-color: rgba(34, 197, 94, 0.18); }
+
+.phase {
+  padding: 18px 20px;
+  border-radius: 22px;
+}
+
+.phaseHead {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.phaseDuration {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.inspectorMetrics {
+  display: grid;
+  gap: 10px;
+}
+
+.inspectorMetrics div {
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(17, 24, 39, 0.74);
+  border: 1px solid var(--border-subtle);
+}
+
+.inspectorMetrics span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.inspectorMetrics strong {
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 1180px) {
+  .workspaceShell {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .inspector {
+    grid-column: 1 / -1;
+    position: static;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .workspaceShell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar,
+  .inspector {
+    position: static;
+  }
+
+  .heroStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .inspector {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .page {
+    padding: 16px;
+  }
+
+  .sidebar,
+  .inspector,
+  .hero,
+  .tabBar,
+  .card,
+  .phase {
+    border-radius: 20px;
+  }
+
+  .heroStats,
+  .inspector {
+    grid-template-columns: 1fr;
+  }
+}

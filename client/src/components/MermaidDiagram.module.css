@@ -1,0 +1,136 @@
+.wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.title {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.01);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  margin: 0;
+}
+
+.diagramBox {
+  flex: 1;
+  width: 100%;
+  min-height: 420px;
+  background: #000000;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.grab {
+  cursor: grab;
+}
+
+.grabbing {
+  cursor: grabbing;
+}
+
+.mermaid {
+  user-select: none;
+}
+
+.mermaid svg {
+  background: transparent !important;
+}
+
+/* Floating controls panel */
+.canvasControls {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(5, 5, 5, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 4px;
+  border-radius: 6px;
+  z-index: 5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.canvasControls button {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.canvasControls button:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.zoomPercent {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  padding: 0 6px;
+  user-select: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.placeholderDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.3);
+  animation: pulse-dot 1.2s ease-in-out infinite;
+}
+
+.error {
+  padding: 16px;
+  width: 100%;
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+.error code {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--danger);
+  margin-bottom: 12px;
+}
+
+.errorCode {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: #0a0a0a;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+}

@@ -1,0 +1,210 @@
+/* CommandPalette.module.css */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 80px 20px 20px;
+}
+
+.panel {
+  width: 100%;
+  max-width: 580px;
+  background: #0d0d14;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255,255,255,0.03) inset;
+  animation: slideDown 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  max-height: 70vh;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-16px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Search row */
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.searchIcon { color: rgba(255,255,255,0.25); flex-shrink: 0; }
+
+.searchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 0.95rem;
+  font-family: var(--font-sans, 'Inter', sans-serif);
+  caret-color: #3b82f6;
+}
+.searchInput::placeholder { color: rgba(255,255,255,0.2); }
+
+.escKbd {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 4px;
+  color: rgba(255,255,255,0.2);
+  flex-shrink: 0;
+  font-family: var(--font-mono, monospace);
+}
+
+/* List */
+.list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 6px;
+}
+.list::-webkit-scrollbar { width: 3px; }
+.list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 2px; }
+
+/* Groups */
+.group { margin-bottom: 4px; }
+
+.groupLabel {
+  padding: 6px 10px 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.2);
+}
+
+.empty {
+  padding: 20px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.25);
+}
+
+/* Items */
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.itemActive {
+  background: rgba(37, 99, 235, 0.12);
+  color: #fff;
+}
+
+.itemIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  display: grid;
+  place-items: center;
+  color: rgba(255,255,255,0.35);
+  flex-shrink: 0;
+  transition: all 0.1s;
+}
+
+.itemIconActive {
+  background: rgba(37, 99, 235, 0.15);
+  border-color: rgba(37, 99, 235, 0.3);
+  color: #60a5fa;
+}
+
+.itemText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.itemLabel {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemDesc {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemActive .itemDesc { color: rgba(255,255,255,0.4); }
+
+.itemKbd {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 4px;
+  color: rgba(255,255,255,0.2);
+  flex-shrink: 0;
+  font-family: monospace;
+}
+
+.itemArrow {
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  flex-shrink: 0;
+}
+
+.footer span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.2);
+}
+
+.footer kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 5px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 4px;
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.3);
+  font-family: monospace;
+}
