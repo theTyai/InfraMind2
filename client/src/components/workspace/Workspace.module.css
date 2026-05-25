@@ -421,10 +421,18 @@
 .tabsBar {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
   padding-bottom: 12px;
   border-bottom: 1px solid rgba(159, 176, 208, 0.1);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+
+.tabsBar::-webkit-scrollbar {
+  display: none;
+}
+
 
 .tabItem {
   padding: 10px 16px;
@@ -1024,8 +1032,8 @@
 }
 
 .sequenceDiagramFrame {
-  background: #050505;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 12px;
   padding: 16px;
   margin-top: 4px;
@@ -1059,8 +1067,8 @@
 }
 
 .specsTableContainer {
-  background: #050505;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -1075,7 +1083,7 @@
 .specsTable th,
 .specsTable td {
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .specsTable th {
@@ -1131,7 +1139,7 @@
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--text-primary);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-subtle);
   padding-bottom: 8px;
   margin-bottom: 4px;
   text-transform: uppercase;
@@ -1145,8 +1153,8 @@
 }
 
 .dbModelCard {
-  background: #050505;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
   padding: 14px;
 }
@@ -1155,7 +1163,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-subtle);
   padding-bottom: 6px;
   cursor: pointer;
 }
@@ -1197,8 +1205,8 @@
 }
 
 .strategySectionCard {
-  background: #050505;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
   padding: 14px;
   display: flex;
@@ -1576,13 +1584,13 @@
 .modalContent {
   width: 100%;
   max-width: 820px;
-  background: #050505;
-  border: 1px solid rgba(37, 99, 235, 0.3);
-  border-radius: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(37, 99, 235, 0.15);
+  box-shadow: var(--shadow-lg);
   animation: zoomInModal 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
   max-height: 90vh;
 }
@@ -1596,8 +1604,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 14px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  background: #0a0a0a;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
 }
 
 .modalHeaderTitleGroup {
@@ -1637,7 +1645,7 @@
 
 .modalBody {
   padding: 20px;
-  overflow: hidden;
+  overflow-y: auto !important;
   display: flex;
   justify-content: center;
   background: #000000;
@@ -1662,11 +1670,90 @@
   }
 }
 
+/* Decisions Ticker Bar */
+.decisionsTicker {
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px 16px;
+  gap: 12px;
+  font-size: 0.8rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  margin-bottom: 12px;
+}
+.tickerLabel {
+  color: var(--secondary);
+  font-weight: 500;
+  font-family: var(--font-mono);
+}
+.tickerContent {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.tickerItem {
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+}
+
+/* Tabbed Spec Navigation */
+.specTabsRow {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 8px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+.specTabsRow::-webkit-scrollbar {
+  display: none;
+}
+.specTabBtn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.specTabBtn:hover {
+  color: var(--text-primary);
+}
+.specTabBtnActive {
+  border-color: var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+.tabContentBlock {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  background: transparent;
+  margin-bottom: 24px;
+}
+.tabSubHeader {
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
 /* Control Deck Hub Styling */
 .controlDeckWrapper {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 12px;
   height: 100%;
   min-height: 0;
   position: relative;
@@ -1681,21 +1768,21 @@
   align-items: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   padding-bottom: 20px;
-  gap: 24px;
+  gap: 12px;
 }
 
 .deckEyebrow {
   font-size: 0.76rem;
   font-family: var(--font-mono);
   color: var(--secondary);
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0.15em;
   margin-bottom: 8px;
 }
 
 .deckTitle {
   font-size: 2.1rem;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-primary);
   margin: 0 0 10px;
   line-height: 1.15;
@@ -1716,7 +1803,7 @@
   background: var(--brand-soft);
   color: var(--secondary);
   border: 1px solid rgba(37, 99, 235, 0.2);
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
   font-size: 0.85rem;
@@ -1733,40 +1820,37 @@
 .deckGridContainer {
   display: grid;
   grid-template-columns: 1fr 1.15fr;
-  gap: 24px;
+  gap: 12px;
   align-items: start;
 }
 
 .deckLeftColumn {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
 }
 
 .deckRightColumn {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 12px;
 }
 
 /* Brief Cards (Left Column) */
 .briefCard {
-  background: rgba(10, 10, 12, 0.45);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 16px;
-  padding: 24px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  gap: 12px;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .briefCard:hover {
-  border-color: rgba(37, 99, 235, 0.2);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
-  transform: translateY(-2px);
+  border-color: #555555;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.02);
 }
 
 .briefCardHeader {
@@ -1778,7 +1862,7 @@
 
 .briefCardHeader h3 {
   font-size: 0.92rem;
-  font-weight: 600;
+  font-weight: 500;
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -2068,13 +2152,13 @@
 .modalContent {
   width: 100%;
   max-width: 820px;
-  background: #050505;
-  border: 1px solid rgba(37, 99, 235, 0.25);
-  border-radius: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.95), 0 0 40px rgba(37, 99, 235, 0.1);
+  box-shadow: var(--shadow-lg);
   animation: zoomInModal 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
   max-height: 90vh;
 }
@@ -2173,10 +2257,11 @@
 }
 
 .ideationRationale {
-  background: rgba(30, 41, 59, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
   padding: 16px;
-  border-radius: 0px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   margin-top: 12px;
 }
 
@@ -2222,7 +2307,7 @@
 .flowTogglesRow {
   display: flex;
   gap: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-glass);
   padding-bottom: 12px;
   width: 100%;
 }
@@ -2232,40 +2317,42 @@
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-glass);
   color: var(--text-secondary);
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease-out;
-  border-radius: 0px;
+  transition: all var(--transition-med);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .flowToggleBtnActive {
-  background: var(--brand-soft);
-  color: var(--secondary);
-  border-color: rgba(37, 99, 235, 0.3);
-  box-shadow: 0 0 12px rgba(37, 99, 235, 0.12);
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-3d);
 }
 
 .flowToggleBtn:hover:not(.flowToggleBtnActive) {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-surface);
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--primary);
+  transform: translateY(-1px);
 }
 
 /* Canvas Card */
 .canvasCard {
-  background: rgba(15, 23, 42, 0.45);
+  background: var(--bg-glass);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-glass);
   padding: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-3d);
   display: flex;
   flex-direction: column;
   gap: 16px;
-  border-radius: 0px;
+  border-radius: var(--radius-lg);
 }
 
 .canvasHeader {
@@ -2287,22 +2374,23 @@
 
 .canvasEmbed {
   height: 480px;
-  background: #06080e;
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  background: var(--bg-base);
+  border: 1px solid var(--border-glass);
   overflow: hidden;
   position: relative;
-  border-radius: 0px;
+  border-radius: var(--radius-md);
 }
 
 /* Decisions Checklist */
 .decisionsCard {
-  background: rgba(15, 23, 42, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  border-radius: 0px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-3d);
 }
 
 @media (max-width: 1024px) {
@@ -2418,23 +2506,23 @@
 }
 
 .modalContent {
-  background: #0d0d12;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
   width: 100%;
   max-width: 760px;
-  max-height: 85vh;
+  max-height: 80vh !important;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.04) inset;
+  box-shadow: var(--shadow-lg);
   animation: fadeInUp 0.22s ease;
 }
 
 /* Wider modal variant for diagrams */
 .modalDiagram {
   max-width: 1100px;
-  max-height: 90vh;
+  max-height: 85vh !important;
 }
 
 .modalHeader {
@@ -2442,7 +2530,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 22px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0;
 }
 
@@ -2487,8 +2575,9 @@
 
 .modalBody {
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto !important;
   padding: 20px 22px;
+  min-height: 0;
 }
 
 .modalScrollContent {
@@ -2954,17 +3043,21 @@
 /* ── Phase 9: Operations Panel Styles ── */
 .opsCard {
   margin-top: 24px;
-  padding: 24px;
-  border-radius: 20px;
-  background: rgba(10, 10, 12, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.opsCard:hover {
+  border-color: #555555;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.02);
 }
 
 .opsHeaderTitle {
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-primary);
   margin-bottom: 16px;
   display: flex;
@@ -2975,7 +3068,7 @@
 .opsTabsRow {
   display: flex;
   gap: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border-subtle);
   padding-bottom: 12px;
   margin-bottom: 20px;
 }
@@ -2987,7 +3080,7 @@
   background: transparent;
   color: var(--text-dim);
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -2996,7 +3089,7 @@
 }
 
 .opsTabBtn:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-elevated);
   color: var(--text-primary);
 }
 
@@ -3099,9 +3192,10 @@
 
 .vulnCard {
   padding: 14px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -3658,4 +3752,56 @@
   color: #10b981;
   margin-top: 2px;
 }
+
+/* Two Column split workspace layout */
+.twoColumnWorkspace {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  margin-top: 16px;
+  margin-bottom: 24px;
+}
+
+.primaryCanvas {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: #0a0a0a;
+  min-height: 500px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  transition: all var(--transition-med);
+}
+
+.canvasSplit {
+  width: 70%;
+}
+
+.canvasFull {
+  width: 100%;
+}
+
+.contextualInspector {
+  width: 30%;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-md);
+  height: max-content;
+  position: sticky;
+  top: 16px;
+  animation: slideInRight var(--transition-med);
+}
+
+@media (max-width: 992px) {
+  .twoColumnWorkspace {
+    flex-direction: column;
+  }
+  .canvasSplit, .canvasFull, .contextualInspector {
+    width: 100% !important;
+  }
+}
+
 

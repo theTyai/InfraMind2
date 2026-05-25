@@ -27,7 +27,9 @@ export const useArchitectureStore = create((set, get) => ({
       currentNodes: [],
       currentEdges: [],
       currentSchemas: [],
-      currentRoutes: []
+      currentRoutes: [],
+      securityHistory: [],
+      driftHistory: []
     });
   },
 
@@ -37,7 +39,9 @@ export const useArchitectureStore = create((set, get) => ({
       currentNodes: [],
       currentEdges: [],
       currentSchemas: [],
-      currentRoutes: []
+      currentRoutes: [],
+      securityHistory: [],
+      driftHistory: []
     });
   },
 
@@ -72,7 +76,9 @@ export const useArchitectureStore = create((set, get) => ({
         currentNodes: [],
         currentEdges: [],
         currentSchemas: [],
-        currentRoutes: []
+        currentRoutes: [],
+        securityHistory: [],
+        driftHistory: []
       });
       return;
     }
@@ -103,6 +109,8 @@ export const useArchitectureStore = create((set, get) => ({
         currentEdges: [],
         currentSchemas: [],
         currentRoutes: [],
+        securityHistory: [],
+        driftHistory: [],
         loading: false
       }));
     } catch (err) {
@@ -130,13 +138,15 @@ export const useArchitectureStore = create((set, get) => ({
         headers['x-byok-model'] = customModel;
       }
 
+      const isStartupMode = localStorage.getItem('inframind_startup_mode') === 'true';
       const res = await fetch(`${API_BASE_URL}/ai/generate`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
           projectId,
           idea,
-          knownStack
+          knownStack,
+          startupMode: isStartupMode
         })
       });
 
@@ -190,6 +200,8 @@ export const useArchitectureStore = create((set, get) => ({
           projects: updatedProjects,
           currentProjectId: data.projectId,
           currentArchitecture: data.geminiResponse,
+          securityHistory: [],
+          driftHistory: [],
           loading: false
         };
       });
@@ -267,6 +279,8 @@ export const useArchitectureStore = create((set, get) => ({
           projects: updatedProjects,
           currentProjectId: data.projectId,
           currentArchitecture: data.geminiResponse,
+          securityHistory: [],
+          driftHistory: [],
           loading: false
         };
       });

@@ -203,7 +203,7 @@ export default function PublicShare({ embed }) {
           <AlertCircle size={32} className={styles.errorIcon} />
           <h2>Not Found</h2>
           <p>{error}</p>
-          <Link to="/" className={styles.homeBtn}>Go to InfraMind →</Link>
+          <Link to={appUser ? "/dashboard" : "/"} className={styles.homeBtn}>Go to InfraMind →</Link>
         </div>
       </div>
     )

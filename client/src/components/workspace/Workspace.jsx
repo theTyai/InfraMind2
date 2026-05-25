@@ -4,7 +4,7 @@ import styles from './Workspace.module.css'
 export default function Workspace(props) {
   if (props.state === 'error' && props.error) {
     return (
-      <div className={styles.errorContainer}>
+      <div className={styles.errorContainer} role="alert">
         <div className={styles.errorIcon}>⚡</div>
         <h3 className={styles.errorTitle}>We hit a bump in the connection</h3>
         <p className={styles.errorDesc}>

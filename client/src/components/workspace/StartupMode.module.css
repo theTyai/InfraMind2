@@ -1,0 +1,158 @@
+/* StartupMode.module.css */
+
+.card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  padding: 18px 20px;
+  transition: all 0.25s ease;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.cardOn {
+  background: rgba(37, 99, 235, 0.06);
+  border-color: rgba(37, 99, 235, 0.25);
+  box-shadow: 0 0 20px rgba(37, 99, 235, 0.08);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.cardTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rocketBig {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.cardTitle {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.cardSubtitle {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 2px;
+}
+
+/* Toggle switch */
+.toggle {
+  width: 42px;
+  height: 24px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.25s;
+  padding: 0;
+}
+
+.toggleOn {
+  background: #2563eb;
+}
+
+.toggleThumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.25s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+.toggleOn .toggleThumb {
+  transform: translateX(18px);
+}
+
+.toggle:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+/* Active hints */
+.activeHints {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hint {
+  font-size: 0.78rem;
+  color: rgba(96, 165, 250, 0.9);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Description when disabled */
+.desc {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.3);
+  margin-top: 12px;
+  line-height: 1.55;
+}
+
+/* Compact toggle variant (for Topbar or Sidebar) */
+.compactToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s;
+}
+
+.compactOn {
+  background: rgba(37, 99, 235, 0.12);
+  border-color: rgba(37, 99, 235, 0.35);
+  color: #60a5fa;
+}
+
+.compactToggle:hover {
+  border-color: rgba(37, 99, 235, 0.3);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.rocketIcon {
+  font-size: 0.9rem;
+}
+
+.compactLabel {
+  white-space: nowrap;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.dotOn {
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+}

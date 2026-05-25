@@ -1,108 +1,73 @@
 // server/utils/cacheManager.js
 // Redis-backed CQRS Read Cache for architecture project snapshots.
 // Provides near-instant canvas reads by caching the full project JSON in Redis.
-// Falls back gracefully to returning null (caller queries Firestore) if Redis is unavailable.
+// Falls back gracefully when Redis is unavailable.
 
 const { getRedisClient } = require('./redisClient');
 
-const CACHE_PREFIX = 'inframind:snapshot:';
-const CACHE_TTL_SECONDS = 3600; // 1 hour
+const CACHE_TTL = 3600; // 1 hour
 
-/**
- * Writes a flattened project architecture snapshot to Redis.
- * Called after every successful AI generation.
- * @param {string} projectId
- * @param {object} data - The full architecture JSON (geminiResponse shape)
- */
 async function setProjectSnapshot(projectId, data) {
-  const redis = getRedisClient();
-  if (!redis) return; // Graceful no-op
-
+  const client = getRedisClient();
+  if (!client) return;
   try {
-    const key = `${CACHE_PREFIX}${projectId}`;
-    await redis.set(key, JSON.stringify(data), 'EX', CACHE_TTL_SECONDS);
-    console.log(`[Cache] Snapshot SET for project ${projectId} (TTL: ${CACHE_TTL_SECONDS}s)`);
+    const key = `project:snapshot:${projectId}`;
+    await client.setex(key, CACHE_TTL, JSON.stringify(data));
   } catch (err) {
-    console.warn(`[Cache] Failed to write snapshot for ${projectId}:`, err.message);
+    console.error('[Cache Set Error]', err);
   }
 }
 
-/**
- * Retrieves a cached project snapshot from Redis.
- * Returns null on cache miss or Redis unavailability.
- * @param {string} projectId
- * @returns {object|null}
- */
 async function getProjectSnapshot(projectId) {
-  const redis = getRedisClient();
-  if (!redis) return null; // Graceful miss
-
+  const client = getRedisClient();
+  if (!client) return null;
   try {
-    const key = `${CACHE_PREFIX}${projectId}`;
-    const raw = await redis.get(key);
-    if (!raw) {
-      console.log(`[Cache] MISS for project ${projectId}`);
-      return null;
-    }
-    console.log(`[Cache] HIT for project ${projectId}`);
-    return JSON.parse(raw);
+    const key = `project:snapshot:${projectId}`;
+    const cached = await client.get(key);
+    return cached ? JSON.parse(cached) : null;
   } catch (err) {
-    console.warn(`[Cache] Failed to read snapshot for ${projectId}:`, err.message);
+    console.error('[Cache Get Error]', err);
     return null;
   }
 }
 
-/**
- * Deletes a cached snapshot (call on re-generation or manual update).
- * @param {string} projectId
- */
 async function invalidateProjectSnapshot(projectId) {
-  const redis = getRedisClient();
-  if (!redis) return;
-
+  const client = getRedisClient();
+  if (!client) return;
   try {
-    const key = `${CACHE_PREFIX}${projectId}`;
-    await redis.del(key);
-    console.log(`[Cache] Invalidated snapshot for project ${projectId}`);
+    const key = `project:snapshot:${projectId}`;
+    const subkeys = [
+      `project:sub:${projectId}:nodes`,
+      `project:sub:${projectId}:apis`,
+      `project:sub:${projectId}:dbSchema`,
+      `project:sub:${projectId}:models`
+    ];
+    await client.del(key, ...subkeys);
   } catch (err) {
-    console.warn(`[Cache] Failed to invalidate snapshot for ${projectId}:`, err.message);
+    console.error('[Cache Del Error]', err);
   }
 }
 
-/**
- * Writes multiple key-value pairs with the same TTL (bulk set for subcollection data).
- * @param {string} projectId
- * @param {string} subKey - e.g. 'nodes', 'edges', 'schemas', 'routes'
- * @param {Array} data
- */
-async function setSubcollectionCache(projectId, subKey, data) {
-  const redis = getRedisClient();
-  if (!redis) return;
-
+async function setSubcollectionCache(projectId, subcollection, data) {
+  const client = getRedisClient();
+  if (!client) return;
   try {
-    const key = `${CACHE_PREFIX}${projectId}:${subKey}`;
-    await redis.set(key, JSON.stringify(data), 'EX', CACHE_TTL_SECONDS);
+    const key = `project:sub:${projectId}:${subcollection}`;
+    await client.setex(key, CACHE_TTL, JSON.stringify(data));
   } catch (err) {
-    console.warn(`[Cache] Failed to write ${subKey} cache for ${projectId}:`, err.message);
+    console.error('[Cache Set Sub Error]', err);
   }
 }
 
-/**
- * Reads subcollection cache.
- * @param {string} projectId
- * @param {string} subKey
- * @returns {Array|null}
- */
-async function getSubcollectionCache(projectId, subKey) {
-  const redis = getRedisClient();
-  if (!redis) return null;
-
+async function getSubcollectionCache(projectId, subcollection) {
+  const client = getRedisClient();
+  if (!client) return null;
   try {
-    const key = `${CACHE_PREFIX}${projectId}:${subKey}`;
-    const raw = await redis.get(key);
-    return raw ? JSON.parse(raw) : null;
+    const key = `project:sub:${projectId}:${subcollection}`;
+    const cached = await client.get(key);
+    return cached ? JSON.parse(cached) : null;
   } catch (err) {
-    console.warn(`[Cache] Failed to read ${subKey} cache for ${projectId}:`, err.message);
+    console.error('[Cache Get Sub Error]', err);
     return null;
   }
 }

@@ -7,7 +7,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #050507;
+  background: var(--bg-base);
   color: var(--text-primary);
   overflow-x: hidden;
   position: relative;
@@ -235,16 +235,17 @@
 }
 
 .textareaBox {
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  transition: border-color var(--transition-med), box-shadow var(--transition-med);
+  box-shadow: var(--shadow-3d);
+  transition: all var(--transition-med);
 }
 
 .textareaBox:focus-within {
-  border-color: rgba(37, 99, 235, 0.4);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-3d-hover), 0 0 0 3px var(--primary-soft);
 }
 
 .textarea {
@@ -527,7 +528,7 @@
 .recentGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 12px;
 }
 
 .recentCard {
@@ -535,20 +536,24 @@
   flex-direction: column;
   gap: 10px;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: var(--radius-lg);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   text-align: left;
   cursor: pointer;
   color: inherit;
-  transition: all var(--transition-med);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.recentCard:first-child {
+  grid-column: span 2;
 }
 
 .recentCard:hover {
-  background: rgba(37, 99, 235, 0.04);
-  border-color: rgba(37, 99, 235, 0.2);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  background: transparent;
+  border-color: #555555;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.02);
 }
 
 .recentCardTop {
@@ -560,7 +565,7 @@
 .recentCardIcon {
   width: 30px;
   height: 30px;
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-sm);
   background: rgba(37, 99, 235, 0.1);
   border: 1px solid rgba(37, 99, 235, 0.2);
   display: grid;
@@ -570,7 +575,7 @@
 }
 
 .recentCardTitle {
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.9rem;
   color: var(--text-primary);
   overflow: hidden;
@@ -606,7 +611,7 @@
   align-items: center;
   gap: 4px;
   font-size: 0.78rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--secondary);
   margin-top: 2px;
   opacity: 0;
@@ -621,7 +626,7 @@
 .templatesGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: 12px;
 }
 
 .templateCard {
@@ -630,14 +635,23 @@
   flex-direction: column;
   gap: 10px;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: var(--radius-lg);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   text-align: left;
   cursor: pointer;
   color: inherit;
   overflow: hidden;
-  transition: all var(--transition-med);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.templateCard:nth-child(1) {
+  grid-column: span 2;
+}
+
+.templateCard:nth-child(4) {
+  grid-column: span 2;
 }
 
 .templateCardAccent {
@@ -652,10 +666,8 @@
 }
 
 .templateCard:hover {
-  background: rgba(255, 255, 255, 0.035);
-  border-color: rgba(255, 255, 255, 0.09);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+  background: transparent;
+  border-color: #555555;
 }
 
 .templateCard:hover .templateCardAccent {
@@ -676,7 +688,7 @@
 
 .templateTitle {
   font-size: 0.88rem;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-primary);
 }
 
@@ -717,7 +729,7 @@
   align-items: center;
   gap: 4px;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--secondary);
   opacity: 0;
   transition: opacity var(--transition-fast);
@@ -740,22 +752,21 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  padding: 24px 16px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: var(--radius-lg);
+  padding: 20px 16px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   color: var(--text-dim);
   cursor: pointer;
   font-size: 0.85rem;
-  font-weight: 600;
-  transition: all var(--transition-med);
+  font-weight: 500;
+  transition: all var(--transition-fast);
 }
 
 .quickBtn:hover {
-  background: rgba(37, 99, 235, 0.06);
-  border-color: rgba(37, 99, 235, 0.2);
+  background: transparent;
+  border-color: #555555;
   color: var(--text-primary);
-  transform: translateY(-2px);
 }
 
 /* ── Mobile ──────────────────────────────────────────────── */
@@ -907,7 +918,7 @@
   color: var(--text-dim);
   font-size: 0.8rem;
   font-weight: 500;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-subtle);
   padding: 6px 12px;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -916,8 +927,8 @@
 
 .advancedToggleBtn:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: var(--bg-card);
+  border-color: var(--border-dim);
 }
 
 .advancedOptionsPanel {
@@ -925,8 +936,8 @@
   flex-direction: column;
   gap: 20px;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.01);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   margin-top: 4px;
   box-sizing: border-box;
@@ -969,9 +980,9 @@
   width: 100%;
   max-width: 720px;
   padding: 24px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px dashed rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   text-align: left;
   display: flex;
   flex-direction: column;
@@ -1018,9 +1029,9 @@
   align-items: center;
   gap: 10px;
   padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
   transition: all var(--transition-fast);
   font-size: 0.82rem;
   color: var(--text-muted);
@@ -1069,5 +1080,53 @@
   object-fit: cover;
 }
 
+/* Logo as clickable button */
+.logoBtnLink {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  transition: opacity 0.2s;
+}
+.logoBtnLink:hover { opacity: 0.8; }
+.logoBtnLink:focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; }
 
+/* Trust badges: column on tiny screens */
+@media (max-width: 480px) {
+  .trustBadgesRow { flex-direction: column; gap: 6px; }
+  .trustDivider { display: none; }
+  .navInner { padding: 0 16px; }
+  .main { padding: 28px 16px 48px; gap: 36px; }
+  .composerTitle { font-size: 1.7rem; }
+  .generateBtn { font-size: 0.9rem; padding: 14px; }
+}
 
+/* Hamburger button — mobile only */
+.hamburgerBtn {
+  display: none;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text-dim);
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 640px) {
+  .hamburgerBtn { display: flex; }
+  .signOutBtn { display: none; }
+}
+
+/* Focus visible */
+.navPill:focus-visible,
+.generateBtn:focus-visible,
+.recentCard:focus-visible,
+.templateCard:focus-visible,
+.quickBtn:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}

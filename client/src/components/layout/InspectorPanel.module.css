@@ -1,7 +1,6 @@
 .panel {
-  background: rgba(10, 10, 12, 0.65);
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 20px;
   padding: 24px;
   display: flex;
@@ -9,7 +8,7 @@
   gap: 20px;
   height: 100%;
   overflow-y: auto;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0px rgba(255, 255, 255, 0.05);
+  box-shadow: var(--shadow-md);
   box-sizing: border-box;
 }
 
@@ -247,10 +246,10 @@
   align-items: center;
   gap: 6px;
   font-size: 0.8rem;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-elevated);
   padding: 4px 8px;
   border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
 }
 
 .methodBadge {
@@ -277,9 +276,9 @@
 
 /* Accordion sections */
 .accordionSection {
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.01);
+  background: var(--bg-card);
   overflow: hidden;
   margin-bottom: 8px;
 }
@@ -311,8 +310,8 @@
 
 .accordionContent {
   padding: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-  background: rgba(0, 0, 0, 0.15);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
 }
 
 .statusBadge {
@@ -506,7 +505,7 @@
 
 .contextualInput {
   flex: 1;
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--bg-elevated);
   border: 1px solid rgba(37, 99, 235, 0.2);
   border-radius: 6px;
   color: var(--text-primary);
@@ -580,8 +579,8 @@
 .commentItem {
   display: flex;
   gap: 8px;
-  background: rgba(0, 0, 0, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
   padding: 8px 10px;
   border-radius: 8px;
 }

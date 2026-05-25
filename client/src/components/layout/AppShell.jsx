@@ -8,8 +8,8 @@ import { useArchitectureStore } from '../../store/useArchitectureStore.js'
 import { useAuthContext } from '../../context/AuthContext.jsx'
 
 export default function AppShell(props) {
-  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth <= 1024 : false)
-  const [sidebarOpen, setSidebarOpen] = useState(() => typeof window !== 'undefined' ? window.innerWidth > 1024 : true)
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth <= 768 : false)
+  const [sidebarOpen, setSidebarOpen] = useState(() => typeof window !== 'undefined' ? window.innerWidth > 768 : true)
 
   const { appUser, getFreshToken } = useAuthContext()
   const currentProjectId = useArchitectureStore(s => s.currentProjectId)
@@ -131,7 +131,7 @@ export default function AppShell(props) {
 
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth <= 1024
+      const mobile = window.innerWidth <= 768
       setIsMobile(mobile)
       if (mobile) {
         setSidebarOpen(false)
@@ -158,11 +158,10 @@ export default function AppShell(props) {
           onClick={() => setSidebarOpen(false)}
         />
       )}
-
       {/* Sidebar Slot */}
       <aside className={`${styles.sidebarSlot} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
         <Sidebar
-          collapsed={!sidebarOpen && !isMobile}
+          collapsed={isMobile ? false : !sidebarOpen}
           history={props.history}
           onNewProject={props.onReset}
           onToggle={() => setSidebarOpen(p => !p)}
@@ -200,23 +199,6 @@ export default function AppShell(props) {
             <div className={styles.workspaceContent}>
               <Workspace {...props} />
             </div>
-            {props.selectedNode && (
-              <div className={styles.inspectorSlot}>
-                <InspectorPanel
-                  state={props.state}
-                  data={props.data}
-                  exporting={props.exporting}
-                  onExport={props.onExport}
-                  selectedNode={props.selectedNode}
-                  onSelectNode={props.onSelectNode}
-                  onClose={() => props.onSelectNode(null)}
-                  onSubmit={props.onSubmit}
-                  lastIdea={props.lastIdea}
-                  comments={allComments.filter(c => c.nodeId === props.selectedNode)}
-                  onAddComment={handleAddComment}
-                />
-              </div>
-            )}
           </div>
         </div>
       </div>

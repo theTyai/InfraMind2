@@ -1,5 +1,5 @@
-// src/App.jsx — Stable single AuthenticatedApp instance + correct prop names
-import { useCallback, useEffect, useState } from 'react'
+// src/App.jsx — Fixed: single AuthenticatedApp instance, home navigation, security, a11y
+import { useCallback, useEffect, useState, useRef } from 'react'
 import { Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom'
 
 import { useAuthContext } from './context/AuthContext.jsx'
@@ -22,30 +22,53 @@ import DocsModal from './components/workspace/DocsModal.jsx'
 import SavedArchitecturesModal from './components/workspace/SavedArchitecturesModal.jsx'
 import ShareModal from './components/workspace/ShareModal.jsx'
 import ProfileModal from './components/workspace/ProfileModal.jsx'
+import OfflineIndicator from './components/ui/OfflineIndicator.jsx'
+import SkipLink from './components/ui/SkipLink.jsx'
+import Toast from './components/ui/Toast.jsx'
 
 // ── Loader ───────────────────────────────────────────────────────────────────
 function Loader({ text = 'Loading…' }) {
   return (
-    <div style={{
-      display: 'flex', height: '100vh', alignItems: 'center',
-      justifyContent: 'center', background: '#050507',
-      color: 'rgba(255,255,255,0.35)', fontFamily: 'Inter, sans-serif', fontSize: '0.88rem',
-      gap: '10px'
-    }}>
-      <span style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#2563eb', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} />
+    <div
+      role="status"
+      aria-live="polite"
+      aria-label={text}
+      style={{
+        display: 'flex', height: '100vh', alignItems: 'center',
+        justifyContent: 'center', background: '#050507',
+        color: 'rgba(255,255,255,0.35)', fontFamily: 'Inter, sans-serif', fontSize: '0.88rem',
+        gap: '10px'
+      }}
+    >
+      <span
+        aria-hidden="true"
+        style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#2563eb', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' }}
+      />
       {text}
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }
 
-// ── The single authenticated shell — mounted ONCE, never torn down ────────────
-// It reads location to decide which view to show, keeping all state alive.
+// ── Toast hook ───────────────────────────────────────────────────────────────
+function useToast() {
+  const [toast, setToast] = useState(null)
+  const show = useCallback((message, type = 'info') => {
+    setToast({ message, type, id: Date.now() })
+  }, [])
+  const clear = useCallback(() => setToast(null), [])
+  return { toast, show, clear }
+}
+
+// ── The single authenticated shell — mounted ONCE via wildcard route ──────────
+// Reads location to decide which view to show, keeping all state alive.
 function AuthenticatedApp({ modals, setModals, onAuthRequired }) {
   const { appUser, idToken, getFreshToken, logout } = useAuthContext()
   const { state, data, error, generate, reset, load } = useArchitecture()
   const navigate = useNavigate()
   const location = useLocation()
   const { projectId } = useParams()
+  const { toast, show: showToast, clear: clearToast } = useToast()
 
   const [lastIdea, setLastIdea]         = useState('')
   const [exporting, setExporting]       = useState(false)
@@ -62,24 +85,19 @@ function AuthenticatedApp({ modals, setModals, onAuthRequired }) {
 
   // Determine current view from URL
   const isWorkspace = location.pathname.startsWith('/workspace')
-  const isDashboard = location.pathname === '/dashboard' || location.pathname === '/'
+  const isDashboard = location.pathname.startsWith('/dashboard')
 
   const [profile, setProfile] = useState(null)
 
   const fetchProfile = useCallback(async (token) => {
-    if (!token || token === 'null' || token === 'undefined') {
-      console.warn('[App] fetchProfile aborted: invalid token');
-      return;
-    }
+    if (!token || token === 'null' || token === 'undefined') return
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/profile`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
-        const data = await res.json()
-        setProfile(data.profile || null)
+        const d = await res.json()
+        setProfile(d.profile || null)
       }
     } catch (err) {
       console.error('Failed to fetch profile:', err)
@@ -91,27 +109,33 @@ function AuthenticatedApp({ modals, setModals, onAuthRequired }) {
     if (appUser && idToken) {
       fetchProjects(idToken)
       fetchProfile(idToken)
-      identifyUser(appUser.uid, { email: appUser.email, name: appUser.name })
+      identifyUser(appUser.uid, { email: appUser.email, name: appUser.displayName })
     } else {
       clearStore()
       setProfile(null)
     }
   }, [appUser, idToken, fetchProjects, clearStore, fetchProfile])
 
-  // Handle GitHub OAuth Redirect Callbacks
+  // Apply saved theme on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('inframind_theme') || 'dark'
+    document.documentElement.setAttribute('data-theme', savedTheme)
+  }, [])
+
+  // Handle GitHub OAuth Redirect Callbacks — use toast instead of alert()
   useEffect(() => {
     const params = new URLSearchParams(location.search)
     const githubStatus = params.get('github')
     if (githubStatus) {
       if (githubStatus === 'success') {
-        alert('🎉 GitHub account linked successfully!')
+        showToast('🎉 GitHub account linked successfully!', 'success')
       } else {
         const msg = params.get('message') || 'GitHub OAuth authorization failed.'
-        alert(`❌ Integration Error: ${decodeURIComponent(msg)}`)
+        showToast(`GitHub error: ${decodeURIComponent(msg)}`, 'error')
       }
       navigate(location.pathname, { replace: true })
     }
-  }, [location.search, location.pathname, navigate])
+  }, [location.search, location.pathname, navigate, showToast])
 
   // Sync lastIdea from project history
   useEffect(() => {
@@ -122,15 +146,7 @@ function AuthenticatedApp({ modals, setModals, onAuthRequired }) {
     }
   }, [currentProjectId, chatHistories])
 
-  // Navigate to workspace once generation/load completes
-  useEffect(() => {
-    if (state === 'result' && currentProjectId) {
-      const target = `/workspace/${currentProjectId}`
-      if (location.pathname !== target) {
-        navigate(target, { replace: true })
-      }
-    }
-  }, [state, currentProjectId, navigate, location.pathname])
+
 
   // Deep-linking: Load project from URL parameter on mount/change
   useEffect(() => {
@@ -141,7 +157,7 @@ function AuthenticatedApp({ modals, setModals, onAuthRequired }) {
     }
   }, [isWorkspace, projectId, idToken, currentProjectId, state, load])
 
-  // Ctrl+K
+  // Ctrl+K / Cmd+K
   useEffect(() => {
     const handler = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -159,33 +175,46 @@ function AuthenticatedApp({ modals, setModals, onAuthRequired }) {
     try {
       const token = await getFreshToken()
       if (!token) { onAuthRequired(); return }
-      await generate({ idea, knownStack, idToken: token })
+      const newId = await generate({ idea, knownStack, idToken: token })
+      if (newId) {
+        navigate(`/workspace/${newId}`)
+      }
       trackEvent(EVENTS.ARCHITECTURE_GENERATED, { stackCount: knownStack?.length || 0 })
     } catch (err) {
       console.error(err)
+      showToast(err.message || 'Generation failed', 'error')
     }
-  }, [generate, getFreshToken, onAuthRequired])
+  }, [generate, getFreshToken, onAuthRequired, showToast, navigate])
 
-  // ← THE KEY FIX: this handler loads a project AND navigates
   const handleSelectRecent = useCallback(async (project) => {
     setSelectedNode(null)
     try {
       const token = await getFreshToken()
       if (!token) { onAuthRequired(); return }
       await load({ projectId: project.id, idToken: token })
-      // Navigation happens via the useEffect above when state → 'result'
+      navigate(`/workspace/${project.id}`)
       trackEvent(EVENTS.PROJECT_LOADED, { projectId: project.id })
     } catch (err) {
       console.error('Load project error:', err)
     }
-  }, [load, getFreshToken, onAuthRequired])
+  }, [load, getFreshToken, onAuthRequired, navigate])
 
+  // Reset architecture workspace state and return to dashboard
   const handleReset = useCallback(() => {
     setSelectedNode(null)
-    useArchitectureStore.getState().setCurrentProjectId(null)
+    useArchitectureStore.setState({
+      currentProjectId: null,
+      currentArchitecture: null,
+      currentNodes: [],
+      currentEdges: [],
+      currentSchemas: [],
+      currentRoutes: [],
+      securityHistory: [],
+      driftHistory: []
+    })
     reset()
     navigate('/dashboard')
-  }, [reset, navigate])
+  }, [navigate, reset])
 
   const handleExport = useCallback(async () => {
     if (!data) return
@@ -195,11 +224,11 @@ function AuthenticatedApp({ modals, setModals, onAuthRequired }) {
       trackEvent(EVENTS.PDF_EXPORTED, { projectId: currentProjectId })
     } catch (e) {
       console.error('PDF export failed:', e)
-      alert('PDF export failed: ' + e.message)
+      showToast('PDF export failed: ' + e.message, 'error')
     } finally {
       setExporting(false)
     }
-  }, [data, lastIdea, currentProjectId])
+  }, [data, lastIdea, currentProjectId, showToast])
 
   const handleScaffold = useCallback(async () => {
     if (!data) return
@@ -208,9 +237,9 @@ function AuthenticatedApp({ modals, setModals, onAuthRequired }) {
       trackEvent(EVENTS.SCAFFOLD_DOWNLOADED, { projectId: currentProjectId })
     } catch (e) {
       console.error('Scaffold failed:', e)
-      alert('Scaffold failed: ' + e.message)
+      showToast('Scaffold failed: ' + e.message, 'error')
     }
-  }, [data, currentProjectId])
+  }, [data, currentProjectId, showToast])
 
   const handleLogout = useCallback(async () => {
     try { await logout(); handleReset() } catch (err) { console.error(err) }
@@ -223,20 +252,27 @@ function AuthenticatedApp({ modals, setModals, onAuthRequired }) {
   if (state === 'loading') return <GenerationStream />
 
   // Decide which view to render based on URL
-  // Dashboard: /dashboard or /workspace with no data yet
-  // Workspace: /workspace/* with data
   const showWorkspace = isWorkspace && (effectiveData || state === 'error')
   const showDashboard = isDashboard || (isWorkspace && !effectiveData && state !== 'error')
 
   return (
     <>
+      {/* Toast notifications — replaces all alert() calls */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onDismiss={clearToast}
+        />
+      )}
+
       {showDashboard && (
         <Dashboard
           onSubmit={handleSubmit}
           user={appUser}
           onLogout={handleLogout}
           history={projects}
-          onSelectRecent={handleSelectRecent}   // ← correct prop name for Dashboard
+          onSelectRecent={handleSelectRecent}
           onOpenTemplates={() => setModals(m => ({ ...m, templates: true }))}
           onOpenSaved={() => setModals(m => ({ ...m, saved: true }))}
           onOpenDocs={() => setModals(m => ({ ...m, docs: true }))}
@@ -267,7 +303,7 @@ function AuthenticatedApp({ modals, setModals, onAuthRequired }) {
           onOpenCommand={() => setCommandOpen(true)}
           selectedNode={selectedNode}
           onSelectNode={setSelectedNode}
-          onSelectProject={handleSelectRecent}   // ← correct prop name for Sidebar
+          onSelectProject={handleSelectRecent}
           user={appUser}
           onLogout={handleLogout}
           onOpenTemplates={() => setModals(m => ({ ...m, templates: true }))}
@@ -326,62 +362,66 @@ export default function App() {
   if (loading) return <Loader text="Loading secure session…" />
 
   return (
-    <Routes>
-      {/* ── Public: Landing ── */}
-      <Route
-        path="/"
-        element={
-          appUser
-            ? <Navigate to="/dashboard" replace />
-            : <>
-                <LandingPage
-                  onOpenAuth={() => setModals(m => ({ ...m, auth: true }))}
-                  onOpenDocs={() => setModals(m => ({ ...m, docs: true }))}
+    <>
+      <SkipLink />
+      <OfflineIndicator />
+      <Routes>
+        {/* ── Public: Landing ── */}
+        <Route
+          path="/"
+          element={
+            appUser
+              ? <Navigate to="/dashboard" replace />
+              : <>
+                  <LandingPage
+                    onOpenAuth={() => setModals(m => ({ ...m, auth: true }))}
+                    onOpenDocs={() => setModals(m => ({ ...m, docs: true }))}
+                  />
+                  <AuthModal
+                    isOpen={modals.auth}
+                    onClose={() => setModals(m => ({ ...m, auth: false }))}
+                    login={login} signup={signup}
+                  />
+                  <DocsModal isOpen={modals.docs} onClose={() => setModals(m => ({ ...m, docs: false }))} />
+                </>
+          }
+        />
+
+        {/* ── Public: Shared architecture ── */}
+        <Route path="/p/:shareId" element={<PublicShare />} />
+        <Route path="/embed/:shareId" element={<PublicShare embed />} />
+
+        {/* ── Protected: Single AuthenticatedApp instance for ALL protected routes ──
+             A single wildcard catch handles both /dashboard and /workspace/:id
+             so state NEVER resets during navigation between the two views. ── */}
+        <Route
+          path="/dashboard"
+          element={
+            !appUser
+              ? <Navigate to="/" replace />
+              : <AuthenticatedApp
+                  modals={modals}
+                  setModals={setModals}
+                  onAuthRequired={() => setModals(m => ({ ...m, auth: true }))}
                 />
-                <AuthModal
-                  isOpen={modals.auth}
-                  onClose={() => setModals(m => ({ ...m, auth: false }))}
-                  login={login} signup={signup}
+          }
+        />
+        <Route
+          path="/workspace/:projectId?"
+          element={
+            !appUser
+              ? <Navigate to="/" replace />
+              : <AuthenticatedApp
+                  modals={modals}
+                  setModals={setModals}
+                  onAuthRequired={() => setModals(m => ({ ...m, auth: true }))}
                 />
-                <DocsModal isOpen={modals.docs} onClose={() => setModals(m => ({ ...m, docs: false }))} />
-              </>
-        }
-      />
+          }
+        />
 
-      {/* ── Public: Shared architecture ── */}
-      <Route path="/p/:shareId" element={<PublicShare />} />
-      <Route path="/embed/:shareId" element={<PublicShare embed />} />
-
-      {/* ── Protected: Dashboard + Workspace share ONE AuthenticatedApp instance ──
-           Both routes render the same component — URL determines which view shows.
-           State (useArchitecture) lives here and never unmounts on navigation. ── */}
-      <Route
-        path="/dashboard"
-        element={
-          !appUser
-            ? <Navigate to="/" replace />
-            : <AuthenticatedApp
-                modals={modals}
-                setModals={setModals}
-                onAuthRequired={() => setModals(m => ({ ...m, auth: true }))}
-              />
-        }
-      />
-      <Route
-        path="/workspace/:projectId?"
-        element={
-          !appUser
-            ? <Navigate to="/" replace />
-            : <AuthenticatedApp
-                modals={modals}
-                setModals={setModals}
-                onAuthRequired={() => setModals(m => ({ ...m, auth: true }))}
-              />
-        }
-      />
-
-      {/* ── Catch-all ── */}
-      <Route path="*" element={<Navigate to={appUser ? '/dashboard' : '/'} replace />} />
-    </Routes>
+        {/* ── Catch-all ── */}
+        <Route path="*" element={<Navigate to={appUser ? '/dashboard' : '/'} replace />} />
+      </Routes>
+    </>
   )
 }

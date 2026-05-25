@@ -9,82 +9,68 @@ try {
   Redis = null;
 }
 
-let _client = null;
-let _publisher = null;
-let _subscriber = null;
-let _initialized = false;
+let client = null;
+let publisher = null;
+let subscriber = null;
 
-function createClient(url, role = 'client') {
-  if (!Redis || !url) return null;
-  try {
-    const client = new Redis(url, {
-      maxRetriesPerRequest: 3,
-      retryStrategy(times) {
-        if (times > 5) return null; // Stop retrying after 5 attempts
-        return Math.min(times * 200, 2000);
-      },
-      lazyConnect: true,
-    });
-
-    client.on('connect', () => console.log(`[Redis] ${role} connected.`));
-    client.on('error', (err) => console.warn(`[Redis] ${role} error (non-fatal):`, err.message));
-    client.on('close', () => console.warn(`[Redis] ${role} connection closed.`));
-
-    return client;
-  } catch (err) {
-    console.warn(`[Redis] Failed to create ${role} client:`, err.message);
-    return null;
-  }
-}
-
-function init() {
-  if (_initialized) return;
-  _initialized = true;
-
-  const url = process.env.REDIS_URL;
-  if (!url) {
-    console.warn('[Redis] REDIS_URL not set. All Redis features will use in-memory fallback.');
-    return;
-  }
-
-  _client = createClient(url, 'main');
-  _publisher = createClient(url, 'publisher');
-  _subscriber = createClient(url, 'subscriber');
-}
-
-/**
- * Returns the general-purpose Redis client (get/set/del/expire).
- * Returns null if Redis is unavailable.
- */
 function getRedisClient() {
-  init();
-  return _client;
+  if (!process.env.REDIS_URL || !Redis) return null;
+  if (!client) {
+    try {
+      client = new Redis(process.env.REDIS_URL, {
+        maxRetriesPerRequest: 1,
+        enableOfflineQueue: false
+      });
+      client.on('error', (err) => console.error('[Redis Client Error]', err));
+    } catch (err) {
+      console.error('[Redis Initialization Error]', err);
+      return null;
+    }
+  }
+  return client;
 }
 
-/**
- * Returns the Pub/Sub publisher client.
- * Returns null if Redis is unavailable.
- */
 function getPublisher() {
-  init();
-  return _publisher;
+  if (!process.env.REDIS_URL || !Redis) return null;
+  if (!publisher) {
+    try {
+      publisher = new Redis(process.env.REDIS_URL, {
+        maxRetriesPerRequest: 1,
+        enableOfflineQueue: false
+      });
+      publisher.on('error', (err) => console.error('[Redis Publisher Error]', err));
+    } catch (err) {
+      console.error('[Redis Publisher Initialization Error]', err);
+      return null;
+    }
+  }
+  return publisher;
 }
 
-/**
- * Returns the Pub/Sub subscriber client.
- * Returns null if Redis is unavailable.
- */
 function getSubscriber() {
-  init();
-  return _subscriber;
+  if (!process.env.REDIS_URL || !Redis) return null;
+  if (!subscriber) {
+    try {
+      subscriber = new Redis(process.env.REDIS_URL, {
+        maxRetriesPerRequest: 1,
+        enableOfflineQueue: false
+      });
+      subscriber.on('error', (err) => console.error('[Redis Subscriber Error]', err));
+    } catch (err) {
+      console.error('[Redis Subscriber Initialization Error]', err);
+      return null;
+    }
+  }
+  return subscriber;
 }
 
-/**
- * Returns true if Redis is configured and available.
- */
 function isRedisAvailable() {
-  init();
-  return !!_client;
+  return !!(process.env.REDIS_URL && Redis);
 }
 
-module.exports = { getRedisClient, getPublisher, getSubscriber, isRedisAvailable };
+module.exports = {
+  getRedisClient,
+  getPublisher,
+  getSubscriber,
+  isRedisAvailable
+};

@@ -78,7 +78,8 @@ export default function Dashboard({
   onOpenDocs,
   onOpenSettings,
   onOpenProfile,
-  profile
+  profile,
+  onHome        // ← NEW: navigate back to dashboard / reset
 }) {
   const [idea, setIdea] = useState('')
   const [tagInput, setTagInput] = useState('')
@@ -184,7 +185,15 @@ export default function Dashboard({
       <nav className={styles.navbar}>
         <div className={styles.navInner}>
           <div className={styles.logoBlock}>
-            <Logo size={30} showText={true} />
+            <button
+              type="button"
+              onClick={onHome}
+              className={styles.logoBtnLink}
+              aria-label="InfraMind — go to home dashboard"
+              title="Home Dashboard"
+            >
+              <Logo size={30} showText={true} />
+            </button>
           </div>
 
           <div className={styles.navCenter}>
@@ -264,7 +273,7 @@ export default function Dashboard({
       </nav>
 
       {/* ── Main ── */}
-      <main className={styles.main}>
+      <main className={styles.main} id="main-content" tabIndex={-1}>
         {/* ── Composer Hero ── */}
         <section className={styles.composerSection}>
           <div className={styles.composerInner}>

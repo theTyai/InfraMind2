@@ -12,11 +12,46 @@ if (fs.existsSync(clientEnvPath)) {
 
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const admin = require('firebase-admin');
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+
+// Secure headers with Helmet
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https://*"],
+      connectSrc: ["'self'", "https://*"]
+    }
+  }
+}));
+
+// Restrict CORS origins to localhost and configuration variables
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
+// Restrict request body size to 10MB to prevent DoS
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Initialize Firebase Admin
 const serviceAccountVar = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -30,8 +65,8 @@ if (serviceAccountVar && serviceAccountVar !== 'your_firebase_service_account_js
       console.log('Firebase Admin initialized with service account JSON from environment.');
     } else {
       // Treat as filepath
-      const resolvedPath = path.isAbsolute(serviceAccountVar) 
-        ? serviceAccountVar 
+      const resolvedPath = path.isAbsolute(serviceAccountVar)
+        ? serviceAccountVar
         : path.join(__dirname, serviceAccountVar);
       admin.initializeApp({
         credential: admin.credential.cert(require(resolvedPath))
@@ -88,7 +123,6 @@ require('./routes/githubAuth')(app, db, admin, authMiddleware);
 require('./routes/drift')(app, db, admin, authMiddleware);
 require('./routes/security')(app, db, admin, authMiddleware);
 require('./routes/badge')(app, db, admin);
-require('./routes/githubAction')(app, db, admin, authMiddleware);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -105,7 +139,7 @@ app.get('/api/projects', authMiddleware, async (req, res) => {
   try {
     const projectsRef = db.collection('users').doc(userId).collection('projects');
     const snapshot = await projectsRef.orderBy('updatedAt', 'desc').get();
-    
+
     const projects = [];
     snapshot.forEach(doc => {
       const data = doc.data();
@@ -123,56 +157,7 @@ app.get('/api/projects', authMiddleware, async (req, res) => {
       });
     });
 
-    // Fetch shared projects references
-    const sharedRef = db.collection('users').doc(userId).collection('sharedProjects');
-    const sharedSnap = await sharedRef.get();
-    const sharedPromises = [];
-
-    sharedSnap.forEach(doc => {
-      const sData = doc.data();
-      const ownerId = sData.ownerId;
-      const projectId = sData.projectId || doc.id;
-
-      if (ownerId && projectId) {
-        sharedPromises.push((async () => {
-          try {
-            const pRef = db.collection('users').doc(ownerId).collection('projects').doc(projectId);
-            const pSnap = await pRef.get();
-            if (pSnap.exists) {
-              const data = pSnap.data();
-              return {
-                id: projectId,
-                ownerId,
-                isShared: true,
-                title: data.title,
-                summary: data.summary,
-                shareId: data.shareId || null,
-                isPublic: !!data.isPublic,
-                metrics: {
-                  layers: data.layersCount || 0,
-                  apis: data.apisCount || 0
-                },
-                timestamp: data.updatedAt ? data.updatedAt.toDate().toISOString() : null
-              };
-            }
-          } catch (e) {
-            console.error(`Failed to fetch shared project details for ${projectId}:`, e);
-          }
-          return null;
-        })());
-      }
-    });
-
-    const sharedProjects = (await Promise.all(sharedPromises)).filter(Boolean);
-    const allProjects = [...projects, ...sharedProjects];
-
-    allProjects.sort((a, b) => {
-      const tA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
-      const tB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
-      return tB - tA;
-    });
-    
-    res.json(allProjects);
+    res.json(projects);
   } catch (error) {
     console.error('Error fetching projects:', error);
     res.status(500).json({ error: 'Failed to fetch projects' });
@@ -187,24 +172,17 @@ app.get('/api/projects/:projectId/history', authMiddleware, async (req, res) => 
 
   const userId = req.user.uid;
   const { projectId } = req.params;
-  
+
   try {
-    const { resolveProjectOwner } = require('./utils/projectResolver');
-    const ownerData = await resolveProjectOwner(projectId, userId, db);
-    if (!ownerData || (ownerData.ownerId !== userId && !ownerData.collaborators.includes(userId))) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-    const ownerId = ownerData.ownerId;
-
     const { lazyMigrateProject } = require('./utils/dbNormalizer');
-    await lazyMigrateProject(ownerId, projectId, db, admin);
+    await lazyMigrateProject(userId, projectId, db, admin);
 
-    const historyRef = db.collection('users').doc(ownerId)
+    const historyRef = db.collection('users').doc(userId)
       .collection('projects').doc(projectId)
       .collection('chatHistory');
-      
+
     const snapshot = await historyRef.orderBy('timestamp', 'asc').get();
-    
+
     const history = [];
     snapshot.forEach(doc => {
       const data = doc.data();
@@ -215,7 +193,7 @@ app.get('/api/projects/:projectId/history', authMiddleware, async (req, res) => 
         timestamp: data.timestamp ? data.timestamp.toDate().toISOString() : null
       });
     });
-    
+
     res.json(history);
   } catch (error) {
     console.error('Error fetching project history:', error);
@@ -231,40 +209,27 @@ app.post('/api/projects/history', authMiddleware, async (req, res) => {
 
   const userId = req.user.uid;
   let { projectId, projectTitle, projectSummary, prompt, geminiResponse } = req.body;
-  
+
   if (!projectTitle || !prompt || !geminiResponse) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
-  
+
   try {
-    let targetUserId = userId;
-    if (projectId) {
-      const { resolveProjectOwner } = require('./utils/projectResolver');
-      const ownerData = await resolveProjectOwner(projectId, userId, db);
-      if (!ownerData || (ownerData.ownerId !== userId && !ownerData.collaborators.includes(userId))) {
-        return res.status(403).json({ error: 'Access denied' });
-      }
-      targetUserId = ownerData.ownerId;
-    } else {
-      const userProjectsRef = db.collection('users').doc(userId).collection('projects');
+    const userProjectsRef = db.collection('users').doc(userId).collection('projects');
+
+    // Generate new projectId if not provided
+    if (!projectId) {
       const newProjDoc = userProjectsRef.doc();
       projectId = newProjDoc.id;
-      
-      // Register new project in projectOwners
-      await db.collection('projectOwners').doc(projectId).set({
-        ownerId: userId,
-        collaborators: [],
-        collaboratorEmails: []
-      });
     }
 
-    const projectDocRef = db.collection('users').doc(targetUserId).collection('projects').doc(projectId);
+    const projectDocRef = userProjectsRef.doc(projectId);
     const serverTimestamp = admin.firestore.FieldValue.serverTimestamp();
-    
+
     // Extract layers and apis count
     const layersCount = Array.isArray(geminiResponse.stack) ? geminiResponse.stack.length : 0;
     const apisCount = Array.isArray(geminiResponse.apis) ? geminiResponse.apis.length : 0;
-    
+
     // Save project metadata
     await projectDocRef.set({
       title: projectTitle,
@@ -273,12 +238,12 @@ app.post('/api/projects/history', authMiddleware, async (req, res) => {
       apisCount,
       updatedAt: serverTimestamp
     }, { merge: true });
-    
+
     // Add to chat history subcollection
     const chatHistoryRef = projectDocRef.collection('chatHistory');
     const newMsgDoc = chatHistoryRef.doc();
     const messageId = newMsgDoc.id;
-    
+
     await newMsgDoc.set({
       prompt,
       geminiResponse,
@@ -288,13 +253,13 @@ app.post('/api/projects/history', authMiddleware, async (req, res) => {
     // Normalize and save project details to subcollections
     const { normalizeAndSaveProject } = require('./utils/dbNormalizer');
     try {
-      await normalizeAndSaveProject(targetUserId, projectId, geminiResponse, db, admin);
+      await normalizeAndSaveProject(userId, projectId, geminiResponse, db, admin);
     } catch (normErr) {
       console.error('[Server] Subcollection normalization failed, continuing to save history snapshot:', normErr);
     }
-    
+
     const timestampISO = new Date().toISOString();
-    
+
     res.status(201).json({
       messageId,
       projectId,
@@ -316,20 +281,13 @@ app.get('/api/projects/:projectId/nodes', authMiddleware, async (req, res) => {
   const userId = req.user.uid;
   const { projectId } = req.params;
   try {
-    const { resolveProjectOwner } = require('./utils/projectResolver');
-    const ownerData = await resolveProjectOwner(projectId, userId, db);
-    if (!ownerData || (ownerData.ownerId !== userId && !ownerData.collaborators.includes(userId))) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-    const ownerId = ownerData.ownerId;
-
     const { lazyMigrateProject } = require('./utils/dbNormalizer');
-    await lazyMigrateProject(ownerId, projectId, db, admin);
+    await lazyMigrateProject(userId, projectId, db, admin);
 
-    const nodesRef = db.collection('users').doc(ownerId)
+    const nodesRef = db.collection('users').doc(userId)
       .collection('projects').doc(projectId)
       .collection('nodes');
-      
+
     const snapshot = await nodesRef.get();
     const nodes = [];
     snapshot.forEach(doc => {
@@ -350,20 +308,13 @@ app.get('/api/projects/:projectId/edges', authMiddleware, async (req, res) => {
   const userId = req.user.uid;
   const { projectId } = req.params;
   try {
-    const { resolveProjectOwner } = require('./utils/projectResolver');
-    const ownerData = await resolveProjectOwner(projectId, userId, db);
-    if (!ownerData || (ownerData.ownerId !== userId && !ownerData.collaborators.includes(userId))) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-    const ownerId = ownerData.ownerId;
-
     const { lazyMigrateProject } = require('./utils/dbNormalizer');
-    await lazyMigrateProject(ownerId, projectId, db, admin);
+    await lazyMigrateProject(userId, projectId, db, admin);
 
-    const edgesRef = db.collection('users').doc(ownerId)
+    const edgesRef = db.collection('users').doc(userId)
       .collection('projects').doc(projectId)
       .collection('edges');
-      
+
     const snapshot = await edgesRef.get();
     const edges = [];
     snapshot.forEach(doc => {
@@ -384,20 +335,13 @@ app.get('/api/projects/:projectId/schemas', authMiddleware, async (req, res) => 
   const userId = req.user.uid;
   const { projectId } = req.params;
   try {
-    const { resolveProjectOwner } = require('./utils/projectResolver');
-    const ownerData = await resolveProjectOwner(projectId, userId, db);
-    if (!ownerData || (ownerData.ownerId !== userId && !ownerData.collaborators.includes(userId))) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-    const ownerId = ownerData.ownerId;
-
     const { lazyMigrateProject } = require('./utils/dbNormalizer');
-    await lazyMigrateProject(ownerId, projectId, db, admin);
+    await lazyMigrateProject(userId, projectId, db, admin);
 
-    const schemasRef = db.collection('users').doc(ownerId)
+    const schemasRef = db.collection('users').doc(userId)
       .collection('projects').doc(projectId)
       .collection('schemas');
-      
+
     const snapshot = await schemasRef.get();
     const schemas = [];
     snapshot.forEach(doc => {
@@ -418,20 +362,13 @@ app.get('/api/projects/:projectId/routes', authMiddleware, async (req, res) => {
   const userId = req.user.uid;
   const { projectId } = req.params;
   try {
-    const { resolveProjectOwner } = require('./utils/projectResolver');
-    const ownerData = await resolveProjectOwner(projectId, userId, db);
-    if (!ownerData || (ownerData.ownerId !== userId && !ownerData.collaborators.includes(userId))) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-    const ownerId = ownerData.ownerId;
-
     const { lazyMigrateProject } = require('./utils/dbNormalizer');
-    await lazyMigrateProject(ownerId, projectId, db, admin);
+    await lazyMigrateProject(userId, projectId, db, admin);
 
-    const routesRef = db.collection('users').doc(ownerId)
+    const routesRef = db.collection('users').doc(userId)
       .collection('projects').doc(projectId)
       .collection('routes');
-      
+
     const snapshot = await routesRef.orderBy('index', 'asc').get();
     const routes = [];
     snapshot.forEach(doc => {
@@ -455,12 +392,6 @@ app.post('/api/projects/:projectId/share', authMiddleware, async (req, res) => {
   const { projectId } = req.params;
 
   try {
-    const { resolveProjectOwner } = require('./utils/projectResolver');
-    const ownerData = await resolveProjectOwner(projectId, userId, db);
-    if (!ownerData || ownerData.ownerId !== userId) {
-      return res.status(403).json({ error: 'Only the project owner can share this project.' });
-    }
-
     const projectRef = db.collection('users').doc(userId).collection('projects').doc(projectId);
     const projectSnap = await projectRef.get();
     if (!projectSnap.exists) return res.status(404).json({ error: 'Project not found' });
@@ -510,12 +441,6 @@ app.delete('/api/projects/:projectId/share', authMiddleware, async (req, res) =>
   const { projectId } = req.params;
 
   try {
-    const { resolveProjectOwner } = require('./utils/projectResolver');
-    const ownerData = await resolveProjectOwner(projectId, userId, db);
-    if (!ownerData || ownerData.ownerId !== userId) {
-      return res.status(403).json({ error: 'Only the project owner can revoke the share link.' });
-    }
-
     const projectRef = db.collection('users').doc(userId).collection('projects').doc(projectId);
     const snap = await projectRef.get();
     if (!snap.exists) return res.status(404).json({ error: 'Project not found' });
@@ -566,7 +491,7 @@ app.post('/api/profile', authMiddleware, async (req, res) => {
     const usernameQuery = await db.collection('users')
       .where('profile.username', '==', cleanUsername)
       .get();
-    
+
     const isTaken = !usernameQuery.empty && usernameQuery.docs.some(doc => doc.id !== userId);
     if (isTaken) {
       return res.status(400).json({ error: 'Username is already taken' });
@@ -658,7 +583,11 @@ app.get('/api/notifications', authMiddleware, async (req, res) => {
     const snapshot = await notificationsRef.orderBy('timestamp', 'desc').limit(50).get();
     const notifications = [];
     snapshot.forEach(doc => {
-      notifications.push(doc.data());
+      const data = doc.data();
+      notifications.push({
+        id: doc.id,
+        ...data
+      });
     });
     res.json(notifications);
   } catch (err) {
@@ -679,200 +608,6 @@ app.post('/api/notifications/:notificationId/read', authMiddleware, async (req, 
   } catch (err) {
     console.error('Mark notification read failed:', err);
     res.status(500).json({ error: 'Failed to update notification' });
-  }
-});
-
-// GET /api/projects/:projectId/collaborators — Fetch collaborators list
-app.get('/api/projects/:projectId/collaborators', authMiddleware, async (req, res) => {
-  if (!db) return res.status(500).json({ error: 'Database not initialized' });
-  const userId = req.user.uid;
-  const { projectId } = req.params;
-
-  try {
-    const { resolveProjectOwner } = require('./utils/projectResolver');
-    const ownerData = await resolveProjectOwner(projectId, userId, db);
-    if (!ownerData || (ownerData.ownerId !== userId && !ownerData.collaborators.includes(userId))) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    // Get owner email
-    let ownerEmail = 'Owner';
-    try {
-      const ownerUser = await admin.auth().getUser(ownerData.ownerId);
-      ownerEmail = ownerUser.email || ownerUser.displayName || 'Owner';
-    } catch (e) {
-      // Ignore
-    }
-
-    res.json({
-      ownerId: ownerData.ownerId,
-      ownerEmail,
-      collaborators: ownerData.collaborators || [],
-      collaboratorsList: ownerData.collaboratorsList || []
-    });
-  } catch (err) {
-    console.error('Fetch collaborators failed:', err);
-    res.status(500).json({ error: 'Failed to fetch collaborators' });
-  }
-});
-
-// POST /api/projects/:projectId/collaborators — Invite collaborator by email
-app.post('/api/projects/:projectId/collaborators', authMiddleware, async (req, res) => {
-  if (!db) return res.status(500).json({ error: 'Database not initialized' });
-  const userId = req.user.uid;
-  const { projectId } = req.params;
-  const { email } = req.body;
-
-  if (!email || !email.trim()) {
-    return res.status(400).json({ error: 'Email address is required' });
-  }
-  const cleanEmail = email.trim().toLowerCase();
-
-  try {
-    const { resolveProjectOwner } = require('./utils/projectResolver');
-    const ownerData = await resolveProjectOwner(projectId, userId, db);
-    if (!ownerData || ownerData.ownerId !== userId) {
-      return res.status(403).json({ error: 'Only the project owner can invite collaborators.' });
-    }
-
-    // Find target user by email in Firebase Auth
-    const targetUser = await admin.auth().getUserByEmail(cleanEmail).catch(() => null);
-    if (!targetUser) {
-      return res.status(404).json({ error: 'User is not registered on InfraMind yet. Ask them to sign up first.' });
-    }
-    const targetUid = targetUser.uid;
-
-    if (targetUid === userId) {
-      return res.status(400).json({ error: 'You cannot invite yourself.' });
-    }
-
-    const registryRef = db.collection('projectOwners').doc(projectId);
-    const regSnap = await registryRef.get();
-    let regData = regSnap.exists ? regSnap.data() : { ownerId: userId, collaborators: [], collaboratorsList: [] };
-
-    if (!regData.collaborators) regData.collaborators = [];
-    if (!regData.collaboratorsList) regData.collaboratorsList = [];
-
-    if (regData.collaborators.includes(targetUid)) {
-      return res.status(400).json({ error: 'User is already a collaborator.' });
-    }
-
-    regData.collaborators.push(targetUid);
-    regData.collaboratorsList.push({ uid: targetUid, email: cleanEmail });
-
-    await registryRef.set(regData, { merge: true });
-
-    // Also update project doc under users/{ownerId}/projects/{projectId}
-    const projectRef = db.collection('users').doc(userId).collection('projects').doc(projectId);
-    const projectSnap = await projectRef.get();
-    const projectTitle = projectSnap.exists ? (projectSnap.data().title || 'Project') : 'Shared Project';
-    const projectSummary = projectSnap.exists ? (projectSnap.data().summary || '') : '';
-
-    await projectRef.update({
-      collaborators: regData.collaborators,
-      collaboratorsList: regData.collaboratorsList
-    });
-
-    // Write shared project link to target user's sharedProjects
-    const targetSharedRef = db.collection('users').doc(targetUid).collection('sharedProjects').doc(projectId);
-    await targetSharedRef.set({
-      projectId,
-      ownerId: userId,
-      title: projectTitle,
-      summary: projectSummary,
-      invitedAt: admin.firestore.FieldValue.serverTimestamp()
-    });
-
-    // Write notification for the invited user
-    const notifRef = db.collection('users').doc(targetUid).collection('notifications').doc();
-    await notifRef.set({
-      id: notifRef.id,
-      type: 'collab_invite',
-      title: 'Collaboration Invitation',
-      message: `${req.user.email || 'A teammate'} added you to the project "${projectTitle}".`,
-      link: `/workspace/${projectId}`,
-      read: false,
-      timestamp: admin.firestore.FieldValue.serverTimestamp()
-    });
-
-    res.json({
-      success: true,
-      collaborator: { uid: targetUid, email: cleanEmail }
-    });
-  } catch (err) {
-    console.error('Add collaborator failed:', err);
-    res.status(500).json({ error: `Failed to add collaborator: ${err.message}` });
-  }
-});
-
-// DELETE /api/projects/:projectId/collaborators/:collaboratorUid — Remove collaborator
-app.delete('/api/projects/:projectId/collaborators/:collaboratorUid', authMiddleware, async (req, res) => {
-  if (!db) return res.status(500).json({ error: 'Database not initialized' });
-  const userId = req.user.uid;
-  const { projectId, collaboratorUid } = req.params;
-
-  try {
-    const { resolveProjectOwner } = require('./utils/projectResolver');
-    const ownerData = await resolveProjectOwner(projectId, userId, db);
-    if (!ownerData || ownerData.ownerId !== userId) {
-      return res.status(403).json({ error: 'Only the project owner can remove collaborators.' });
-    }
-
-    const registryRef = db.collection('projectOwners').doc(projectId);
-    const regSnap = await registryRef.get();
-    if (regSnap.exists) {
-      const regData = regSnap.data();
-      regData.collaborators = (regData.collaborators || []).filter(c => c !== collaboratorUid);
-      regData.collaboratorsList = (regData.collaboratorsList || []).filter(c => c.uid !== collaboratorUid);
-      
-      await registryRef.set(regData);
-
-      // Update owner project doc
-      const projectRef = db.collection('users').doc(userId).collection('projects').doc(projectId);
-      await projectRef.update({
-        collaborators: regData.collaborators,
-        collaboratorsList: regData.collaboratorsList
-      });
-    }
-
-    // Delete project reference from collaborator's sharedProjects
-    await db.collection('users').doc(collaboratorUid).collection('sharedProjects').doc(projectId).delete();
-
-    res.json({ success: true });
-  } catch (err) {
-    console.error('Remove collaborator failed:', err);
-    res.status(500).json({ error: 'Failed to remove collaborator' });
-  }
-});
-
-// GET /api/projects/:projectId/comments — Fetch workspace comments
-app.get('/api/projects/:projectId/comments', authMiddleware, async (req, res) => {
-  if (!db) return res.status(500).json({ error: 'Database not initialized' });
-  const userId = req.user.uid;
-  const { projectId } = req.params;
-
-  try {
-    const { resolveProjectOwner } = require('./utils/projectResolver');
-    const ownerData = await resolveProjectOwner(projectId, userId, db);
-    if (!ownerData || (ownerData.ownerId !== userId && !ownerData.collaborators.includes(userId))) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-    const ownerId = ownerData.ownerId;
-
-    const snapshot = await db.collection('users').doc(ownerId)
-      .collection('projects').doc(projectId)
-      .collection('comments')
-      .orderBy('timestamp', 'asc')
-      .get();
-
-    const comments = [];
-    snapshot.forEach(doc => {
-      comments.push(doc.data());
-    });
-    res.json(comments);
-  } catch (err) {
-    console.error('Fetch project comments failed:', err);
-    res.status(500).json({ error: 'Failed to fetch comments' });
   }
 });
 

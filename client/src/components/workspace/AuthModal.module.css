@@ -14,9 +14,9 @@
 .modal {
   width: 100%;
   max-width: 420px;
-  background: #050505;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(37, 99, 235, 0.08);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-lg);
   border-radius: 16px;
   overflow: hidden;
   animation: zoomInModal 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -38,8 +38,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  background: #0a0a0a;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
 }
 
 .closeBtn {
@@ -57,7 +57,7 @@
 
 .closeBtn:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-elevated);
 }
 
 .content {
@@ -67,8 +67,8 @@
 .tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
   padding: 4px;
   margin-bottom: 24px;
@@ -129,8 +129,8 @@
 
 .input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
   padding: 10px 12px 10px 38px;
   color: var(--text-primary);
@@ -141,7 +141,7 @@
 
 .input:focus {
   border-color: var(--primary);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-surface);
   box-shadow: 0 0 8px rgba(37, 99, 235, 0.15);
 }
 
@@ -194,8 +194,8 @@
 
 .select {
   width: 100%;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
   padding: 10px 12px;
   color: var(--text-primary);
@@ -214,11 +214,11 @@
 
 .select:focus {
   border-color: var(--primary);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-surface);
   box-shadow: 0 0 8px rgba(37, 99, 235, 0.15);
 }
 
 .select option {
-  background: #0d0d12;
+  background: var(--bg-surface);
   color: var(--text-primary);
 }

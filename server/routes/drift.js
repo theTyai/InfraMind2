@@ -3,7 +3,7 @@ const { analyzeRepositoryDrift } = require('../utils/driftEngine');
 const crypto = require('crypto');
 
 module.exports = function (app, db, admin, authMiddleware) {
-  
+
   // POST /api/projects/:projectId/github — Associate GitHub repo configuration with a project
   app.post('/api/projects/:projectId/github', authMiddleware, async (req, res) => {
     if (!db) return res.status(500).json({ error: 'Database not initialized' });
@@ -16,14 +16,7 @@ module.exports = function (app, db, admin, authMiddleware) {
     }
 
     try {
-      const { resolveProjectOwner } = require('../utils/projectResolver');
-      const ownerData = await resolveProjectOwner(projectId, userId, db);
-      if (!ownerData || ownerData.ownerId !== userId) {
-        return res.status(403).json({ error: 'Only the project owner can configure repository integrations.' });
-      }
-      const ownerId = ownerData.ownerId;
-
-      const projectRef = db.collection('users').doc(ownerId).collection('projects').doc(projectId);
+      const projectRef = db.collection('users').doc(userId).collection('projects').doc(projectId);
       const snap = await projectRef.get();
       if (!snap.exists) return res.status(404).json({ error: 'Project not found' });
 
@@ -48,14 +41,7 @@ module.exports = function (app, db, admin, authMiddleware) {
 
     try {
       // 1. Get project details and user access token
-      const { resolveProjectOwner } = require('../utils/projectResolver');
-      const ownerData = await resolveProjectOwner(projectId, userId, db);
-      if (!ownerData || (ownerData.ownerId !== userId && !ownerData.collaborators.includes(userId))) {
-        return res.status(403).json({ error: 'Access denied' });
-      }
-      const ownerId = ownerData.ownerId;
-
-      const projectRef = db.collection('users').doc(ownerId).collection('projects').doc(projectId);
+      const projectRef = db.collection('users').doc(userId).collection('projects').doc(projectId);
       const projectSnap = await projectRef.get();
       if (!projectSnap.exists) return res.status(404).json({ error: 'Project not found' });
 
@@ -91,7 +77,7 @@ module.exports = function (app, db, admin, authMiddleware) {
       // 3. Perform drift scan using drift engine
       const [owner, repo] = githubRepo.split('/');
       console.log(`[Drift API] Initiating drift scan for ${githubRepo} on branch ${githubBranch || 'main'}...`);
-      
+
       const scanResult = await analyzeRepositoryDrift(
         owner,
         repo,
@@ -129,57 +115,16 @@ module.exports = function (app, db, admin, authMiddleware) {
       if (scanResult.complianceScore < 90) {
         try {
           const { triggerDriftAlert } = require('../utils/notifications');
-          await triggerDriftAlert(ownerId, projectId, projectData.title || 'Project', scanResult.complianceScore, scanResult, db);
+          await triggerDriftAlert(userId, projectId, projectData.title || 'Project', scanResult.complianceScore, scanResult, db);
         } catch (notifErr) {
           console.error('[Drift API] Failed to trigger notification alert:', notifErr);
         }
       }
 
-      // ── Security Regression Check (Shift-Left Automation) ──────────────
-      // If new undocumented routes appeared that weren't in the architecture,
-      // analyze them for security risk patterns and fire a regression alert.
-      const extraRoutes = scanResult.routes?.extra || [];
-      if (extraRoutes.length > 0) {
-        try {
-          const regressionAlerts = detectSecurityRegressions(extraRoutes);
-          if (regressionAlerts.length > 0) {
-            console.warn(`[Security Regression] Detected ${regressionAlerts.length} high-risk undocumented route(s) in project ${projectId}`);
-            
-            // Save regression alert to Firestore
-            const regressionRef = projectRef.collection('securityRegressions').doc();
-            await regressionRef.set({
-              triggeredBy: 'drift_scan',
-              driftReportId: newReportRef.id,
-              alerts: regressionAlerts,
-              extraRoutes,
-              timestamp: serverTimestamp
-            });
-
-            // Fire notification to project owner
-            try {
-              const { triggerSecurityRegressionAlert } = require('../utils/notifications');
-              if (typeof triggerSecurityRegressionAlert === 'function') {
-                await triggerSecurityRegressionAlert(
-                  ownerId, projectId, projectData.title || 'Project',
-                  regressionAlerts, db
-                );
-              }
-            } catch (notifErr) {
-              // Notification utility may not have this method yet — non-fatal
-              console.warn('[Drift API] Security regression notification skipped:', notifErr.message);
-            }
-          }
-        } catch (regrErr) {
-          console.warn('[Drift API] Security regression check failed (non-fatal):', regrErr.message);
-        }
-      }
-      // ────────────────────────────────────────────────────────────────────
-
       res.status(201).json({
         id: newReportRef.id,
         ...reportData,
-        timestamp: new Date().toISOString(),
-        securityRegressions: extraRoutes.length > 0 ? detectSecurityRegressions(extraRoutes) : []
+        timestamp: new Date().toISOString()
       });
 
     } catch (err) {
@@ -195,14 +140,7 @@ module.exports = function (app, db, admin, authMiddleware) {
     const { projectId } = req.params;
 
     try {
-      const { resolveProjectOwner } = require('../utils/projectResolver');
-      const ownerData = await resolveProjectOwner(projectId, userId, db);
-      if (!ownerData || (ownerData.ownerId !== userId && !ownerData.collaborators.includes(userId))) {
-        return res.status(403).json({ error: 'Access denied' });
-      }
-      const ownerId = ownerData.ownerId;
-
-      const projectRef = db.collection('users').doc(ownerId).collection('projects').doc(projectId);
+      const projectRef = db.collection('users').doc(userId).collection('projects').doc(projectId);
       const historyRef = projectRef.collection('driftHistory');
       const snapshot = await historyRef.orderBy('timestamp', 'desc').limit(20).get();
 
@@ -234,7 +172,7 @@ module.exports = function (app, db, admin, authMiddleware) {
 
     const signature = req.headers['x-hub-signature-256'];
     const event = req.headers['x-github-event'];
-    
+
     // Optional Webhook HMAC signature validation
     const secret = process.env.GITHUB_WEBHOOK_SECRET;
     if (secret && signature) {
@@ -272,7 +210,7 @@ module.exports = function (app, db, admin, authMiddleware) {
         const projectData = doc.data();
         const projectId = doc.id;
         const projectRef = doc.ref;
-        
+
         // Find owner ID from document path structure: /users/{uid}/projects/{projectId}
         const pathParts = projectRef.path.split('/');
         const ownerId = pathParts[1];
@@ -290,7 +228,7 @@ module.exports = function (app, db, admin, authMiddleware) {
 
         // Determine target branch
         let targetBranch = projectData.githubBranch || 'main';
-        
+
         // If push event, we can match branch
         if (event === 'push') {
           const refBranch = payload.ref.replace('refs/heads/', '');
@@ -406,76 +344,3 @@ ${scanResult.collections.missing.map(c => `- \`${c}\``).join('\n')}
   });
 };
 
-// ── Security Regression Detector ─────────────────────────────────────────────
-// Analyzes undocumented routes for high-risk security patterns.
-// Called automatically after every drift scan that finds extra routes.
-
-const HIGH_RISK_PATTERNS = [
-  {
-    id: 'UNAUTH_DELETE',
-    test: (r) => r.method === 'DELETE',
-    title: 'Undocumented DELETE endpoint',
-    description: 'DELETE routes that were not planned may allow unauthorized data destruction.',
-    severity: 'HIGH',
-    owasp: 'API5:2023 - Broken Function Level Authorization'
-  },
-  {
-    id: 'ADMIN_PATH',
-    test: (r) => /\/(admin|root|superuser|internal|sys|manage)(\b|\/)/i.test(r.route),
-    title: 'Undocumented admin route',
-    description: 'Admin-like paths that are not in the architecture specification may bypass access controls.',
-    severity: 'CRITICAL',
-    owasp: 'API1:2023 - Broken Object Level Authorization'
-  },
-  {
-    id: 'BULK_OPERATION',
-    test: (r) => /\/(bulk|batch|mass|all|export|dump)\b/i.test(r.route),
-    title: 'Undocumented bulk operation route',
-    description: 'Bulk data endpoints can enable mass data extraction if not properly authorized.',
-    severity: 'HIGH',
-    owasp: 'API4:2023 - Unrestricted Resource Consumption'
-  },
-  {
-    id: 'UNPLANNED_AUTH',
-    test: (r) => /\/(auth|login|token|oauth|verify|reset|password)\b/i.test(r.route),
-    title: 'Undocumented authentication route',
-    description: 'Unplanned auth endpoints may bypass the designed authentication flow.',
-    severity: 'CRITICAL',
-    owasp: 'API2:2023 - Broken Authentication'
-  },
-  {
-    id: 'DEBUG_ENDPOINT',
-    test: (r) => /\/(debug|test|dev|health|ping|status|metrics|info)\b/i.test(r.route),
-    title: 'Undocumented debug/info endpoint',
-    description: 'Debug endpoints may expose internal system state to unauthorized users.',
-    severity: 'MEDIUM',
-    owasp: 'API9:2023 - Improper Inventory Management'
-  }
-];
-
-function detectSecurityRegressions(extraRoutes) {
-  const alerts = [];
-
-  for (const route of extraRoutes) {
-    for (const pattern of HIGH_RISK_PATTERNS) {
-      if (pattern.test(route)) {
-        // Avoid duplicate alerts for same pattern
-        if (!alerts.find(a => a.id === pattern.id && a.route === route.route)) {
-          alerts.push({
-            id: `${pattern.id}_${route.method}_${route.route.replace(/\W/g, '_')}`,
-            patternId: pattern.id,
-            title: pattern.title,
-            description: pattern.description,
-            severity: pattern.severity,
-            owasp: pattern.owasp,
-            route: route.route,
-            method: route.method,
-            detectedAt: new Date().toISOString()
-          });
-        }
-      }
-    }
-  }
-
-  return alerts;
-}

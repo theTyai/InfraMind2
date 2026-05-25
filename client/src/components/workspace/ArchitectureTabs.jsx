@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { getTechIconUrl } from '../../utils/techIcons.js'
 import InspectorPanel from '../layout/InspectorPanel.jsx'
+import FoundersPanel from './FoundersPanel.jsx'
 import styles from './Workspace.module.css'
 import { useArchitectureStore } from '../../store/useArchitectureStore.js'
 import { useAuthContext } from '../../context/AuthContext.jsx'
@@ -32,6 +33,7 @@ export default function ArchitectureTabs({
     archDiagram: false,
     userFlow: false,
   })
+  const [activeSpecTab, setActiveSpecTab] = useState('apis')
 
   const { getFreshToken, idToken } = useAuthContext()
   const currentProjectId = useArchitectureStore(s => s.currentProjectId)
@@ -71,10 +73,8 @@ export default function ArchitectureTabs({
   useEffect(() => {
     if (idToken && currentProjectId) {
       fetchGithubStatus(idToken)
-      fetchSecurityHistory(currentProjectId, idToken)
-      fetchDriftHistory(currentProjectId, idToken)
     }
-  }, [idToken, currentProjectId, fetchGithubStatus, fetchSecurityHistory, fetchDriftHistory])
+  }, [idToken, currentProjectId, fetchGithubStatus])
 
   // Populate repo input with existing repo name if it's connected
   useEffect(() => {
@@ -242,6 +242,19 @@ export default function ArchitectureTabs({
 
   return (
     <div className={styles.controlDeckWrapper}>
+      {/* Decisions Ticker Bar */}
+      {data.architectureExplanation?.keyDecisions?.length > 0 && (
+        <div className={styles.decisionsTicker}>
+          <span className={styles.tickerLabel}>SYSTEM DECISIONS:</span>
+          <div className={styles.tickerContent}>
+            {data.architectureExplanation.keyDecisions.map((dec, idx) => (
+              <span key={idx} className={styles.tickerItem}>
+                ✦ {dec}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
       
       {/* 1. Project Ideation Header */}
       <div className={styles.ideationHeader}>
@@ -331,6 +344,9 @@ export default function ArchitectureTabs({
         </div>
       </div>
 
+      {/* Founders' Control Center */}
+      <FoundersPanel architecture={data} onSubmit={onSubmit} />
+
       {/* 3. Flow Toggle Buttons — open as modals */}
       <div className={styles.flowTogglesRow}>
         <button
@@ -354,74 +370,153 @@ export default function ArchitectureTabs({
         )}
       </div>
 
-      {/* 5. Key Decisions (Other Stuffs Part A) */}
-      {data.architectureExplanation?.keyDecisions?.length > 0 && (
-        <div className={styles.decisionsCard}>
-          <h4 className={styles.sectionHeaderTitle}>Key System Decisions</h4>
-          <ul className={styles.decisionsList}>
-            {data.architectureExplanation.keyDecisions.map((dec, idx) => (
-              <li key={idx} className={styles.decisionListItem}>
-                <span className={styles.decisionBullet}>✦</span>
-                <span className={styles.decisionText}>{dec}</span>
-              </li>
-            ))}
-          </ul>
+      {/* Tabbed Specs Navigation */}
+      <div className={styles.specTabsRow}>
+        <button 
+          type="button" 
+          className={`${styles.specTabBtn} ${activeSpecTab === 'apis' ? styles.specTabBtnActive : ''}`}
+          onClick={() => setActiveSpecTab('apis')}
+        >
+          API Interfaces
+        </button>
+        <button 
+          type="button" 
+          className={`${styles.specTabBtn} ${activeSpecTab === 'database' ? styles.specTabBtnActive : ''}`}
+          onClick={() => {
+            setActiveSpecTab('database');
+            fetchSchemas(currentProjectId, idToken);
+          }}
+        >
+          Database Schemas
+        </button>
+        <button 
+          type="button" 
+          className={`${styles.specTabBtn} ${activeSpecTab === 'deployment' ? styles.specTabBtnActive : ''}`}
+          onClick={() => setActiveSpecTab('deployment')}
+        >
+          Deployment Environment
+        </button>
+        <button 
+          type="button" 
+          className={`${styles.specTabBtn} ${activeSpecTab === 'scalability' ? styles.specTabBtnActive : ''}`}
+          onClick={() => setActiveSpecTab('scalability')}
+        >
+          Scalability & Roadmap
+        </button>
+      </div>
+
+      {activeSpecTab === 'apis' && (
+        <div className={styles.tabContentBlock}>
+          <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className={styles.specsTable}>
+              <thead>
+                <tr>
+                  <th>Method</th>
+                  <th>Path</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {routesToDisplay?.map((api, idx) => (
+                  <tr key={idx}>
+                    <td>
+                      <span className={`${styles.methodPillBadge} ${styles[api.method]}`}>
+                        {api.method}
+                      </span>
+                    </td>
+                    <td><code className={styles.specsRouteCode}>{api.route}</code></td>
+                    <td className={styles.specsRouteDesc}>{api.description}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
-      {/* 6. Specifications Sub-Grid (Other Stuffs Part B) */}
-      <div className={styles.specsContainer}>
-        <h4 className={styles.sectionHeaderTitle}>System Specifications & Modules</h4>
-        <div className={styles.specsSubGrid}>
-          {/* Card 1: APIs */}
-          <button type="button" className={styles.specDeckCard} onClick={() => openModal('apis')}>
-            <div className={styles.specCardHeader}>
-              <Network size={16} className={styles.specIconBlue} />
-              <h4>API Interfaces</h4>
-            </div>
-            <p className={styles.specCardPreview}>
-              {data.apis?.length || 0} HTTP endpoints generated. Rest APIs, route methods, and paths.
-            </p>
-            <span className={styles.specCardAction}>Inspect APIs →</span>
-          </button>
-
-          {/* Card 2: Database Schemas */}
-          <button type="button" className={styles.specDeckCard} onClick={() => openModal('database')}>
-            <div className={styles.specCardHeader}>
-              <Database size={16} className={styles.specIconBlue} />
-              <h4>Database Schemas</h4>
-            </div>
-            <p className={styles.specCardPreview}>
-              {data.dbSchema?.length || 0} relational collections modeled. Column types, keys, and notes.
-            </p>
-            <span className={styles.specCardAction}>Inspect Schemas →</span>
-          </button>
-
-          {/* Card 3: Deployment Strategy */}
-          <button type="button" className={styles.specDeckCard} onClick={() => openModal('deployment')}>
-            <div className={styles.specCardHeader}>
-              <Cloud size={16} className={styles.specIconBlue} />
-              <h4>Deployment Environment</h4>
-            </div>
-            <p className={styles.specCardPreview}>
-              Multi-stage hosting blueprints for Development, Staging, and Production targets.
-            </p>
-            <span className={styles.specCardAction}>Inspect Hosting →</span>
-          </button>
-
-          {/* Card 4: Scalability & Roadmaps */}
-          <button type="button" className={styles.specDeckCard} onClick={() => openModal('scalability')}>
-            <div className={styles.specCardHeader}>
-              <TrendingUp size={16} className={styles.specIconBlue} />
-              <h4>Scalability & MVP Roadmap</h4>
-            </div>
-            <p className={styles.specCardPreview}>
-              Key scaling patterns, microservice metrics, and phase milestones for deployment.
-            </p>
-            <span className={styles.specCardAction}>Inspect Roadmap →</span>
-          </button>
+      {activeSpecTab === 'database' && (
+        <div className={styles.tabContentBlock}>
+          <div className={styles.dbModelList}>
+            {schemasToDisplay?.map((model, idx) => (
+              <div key={idx} className={styles.dbModelCard}>
+                <div className={styles.dbModelHeader} onClick={() => onSelectNode(model.collection)}>
+                  <strong className={styles.dbModelName}>{model.collection}</strong>
+                  <span className={styles.dbClickHint}>Click to Inspect</span>
+                </div>
+                <div style={{ overflowX: 'auto', width: '100%' }}>
+                  <table className={styles.dbModelTable}>
+                    <thead>
+                      <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Note</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {model.fields?.map((field, fIdx) => (
+                        <tr key={fIdx}>
+                          <td><code>{field.name}</code></td>
+                          <td>{field.type}</td>
+                          <td>{field.note}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {activeSpecTab === 'deployment' && (
+        <div className={styles.tabContentBlock}>
+          <div className={styles.deployEnvironmentsList}>
+            {Object.entries(data.deploymentStrategy || {}).map(([env, text]) => (
+              <div key={env} className={styles.deployEnvRow}>
+                <span className={styles.deployEnvBadge}>{env}</span>
+                <p className={styles.deployText}>{text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeSpecTab === 'scalability' && (
+        <div className={styles.tabContentBlock}>
+          <div className={styles.strategySectionCard}>
+            <h4 className={styles.tabSubHeader}>Scaling Guidelines</h4>
+            <div className={styles.scalingItemsList}>
+              {data.scalability?.map((item, idx) => (
+                <div key={idx} className={styles.scalingItem}>
+                  <strong>{item.area}</strong>
+                  <p>{item.detail}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          {data.mvpRoadmap && (
+            <div className={styles.strategySectionCard} style={{ marginTop: '16px' }}>
+              <h4 className={styles.tabSubHeader}>MVP Milestone Phases</h4>
+              <div className={styles.roadmapPhasesList}>
+                {data.mvpRoadmap.map((phase, idx) => (
+                  <div key={idx} className={styles.roadmapPhaseRow}>
+                    <div className={styles.phaseHeaderRow}>
+                      <span className={styles.phaseBadge}>Phase {idx + 1}</span>
+                      <strong>{phase.phase} ({phase.duration})</strong>
+                    </div>
+                    <ul className={styles.phaseTasksList}>
+                      {phase.tasks?.map((task, tIdx) => (
+                        <li key={tIdx}>{task}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 7. Enterprise Operations Panel (Phase 9) */}
       <div className={styles.opsCard}>

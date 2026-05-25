@@ -71,6 +71,7 @@ export default function Sidebar({
           type="button" 
           onClick={onHome}
           title={collapsed ? "Go to Dashboard" : undefined}
+          aria-label="Home Dashboard"
         >
           <Home size={14} style={{ flexShrink: 0 }} />
           {!collapsed && <span>Home Dashboard</span>}
@@ -81,6 +82,7 @@ export default function Sidebar({
           type="button" 
           onClick={onNewProject}
           title={collapsed ? "New Architecture" : undefined}
+          aria-label="New Architecture"
         >
           <Plus size={14} style={{ flexShrink: 0 }} />
           {!collapsed && <span>New Architecture</span>}
@@ -145,6 +147,7 @@ export default function Sidebar({
           className={styles.bottomNavBtn}
           onClick={onOpenDocs}
           title={collapsed ? "Documentation" : undefined}
+          aria-label="Documentation"
         >
           <BookOpen size={14} style={{ flexShrink: 0 }} />
           {!collapsed && <span>Documentation</span>}
@@ -154,6 +157,7 @@ export default function Sidebar({
           className={styles.bottomNavBtn}
           onClick={onOpenSettings}
           title={collapsed ? "Settings" : undefined}
+          aria-label="Settings"
         >
           <Settings2 size={14} style={{ flexShrink: 0 }} />
           {!collapsed && <span>Settings</span>}
@@ -164,6 +168,7 @@ export default function Sidebar({
             className={styles.bottomNavBtn}
             onClick={onLogout}
             title="Sign out"
+            aria-label="Sign out"
           >
             <LogOut size={14} style={{ flexShrink: 0, color: '#ef4444' }} />
           </button>
@@ -183,6 +188,7 @@ export default function Sidebar({
             className={styles.collapseBtn}
             onClick={onToggle}
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
           </button>

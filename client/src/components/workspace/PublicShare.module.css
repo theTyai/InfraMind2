@@ -3,8 +3,8 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #050507;
-  color: #e2e8f0;
+  background: var(--bg-base);
+  color: var(--text-primary);
   position: relative;
   overflow: hidden;
 }
@@ -24,8 +24,8 @@
 /* Nav */
 .nav {
   position: relative; z-index: 100;
-  background: rgba(5,5,7,0.85); backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  background: var(--bg-surface); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
   height: 56px;
   flex-shrink: 0;
 }
@@ -134,8 +134,8 @@
 .inspectorSlot {
   width: 360px;
   flex-shrink: 0;
-  border-left: 1px solid rgba(255, 255, 255, 0.05);
-  background: #060608;
+  border-left: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
   height: 100%;
   overflow-y: auto;
   animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -150,7 +150,7 @@
 .center {
   min-height: 100vh; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 16px;
-  background: #050507; color: rgba(255,255,255,0.5); font-size: 0.88rem;
+  background: var(--bg-base); color: var(--text-secondary); font-size: 0.88rem;
 }
 .spinner {
   width: 32px; height: 32px; border: 2px solid rgba(255,255,255,0.1);
@@ -242,7 +242,7 @@
   width: 100vw;
   height: 100vh;
   position: relative;
-  background: #000000;
+  background: var(--bg-base);
   overflow: hidden;
 }
 

@@ -1,8 +1,6 @@
 // server/routes/ai.js
 
 const { aiRateLimiter, aiRequestTracer, fetchWithRetry } = require('../middleware/aiGateway');
-const { maskSecrets } = require('../utils/secretsMasker');
-const { setProjectSnapshot, invalidateProjectSnapshot } = require('../utils/cacheManager');
 
 const RESPONSE_SCHEMA = {
   type: 'OBJECT',
@@ -235,39 +233,27 @@ function validateArchitectureShape(data) {
   ].every(Boolean);
 }
 
-/**
- * Step-Function Self-Healing AI Repair.
- * Instead of regex-patching broken JSON, we send the specific parse error
- * back to Gemini as a follow-up turn in the conversation.
- * This "Chat-with-the-LLM" pattern is far more reliable than regex repair.
- */
-async function selfHealingRepair(rawText, originalPrompt, key, endpoint) {
-  if (!rawText) return null;
+async function repairArchitectureJson(raw, key, endpoint) {
+  if (!raw) return null;
 
-  // Extract the exact parse error so we can tell Gemini what went wrong
-  let parseError = 'Malformed JSON structure';
-  try {
-    JSON.parse(rawText);
-    return tryParseJson(rawText); // It was actually valid — return it
-  } catch (err) {
-    parseError = err.message;
-  }
+  const repairInstruction = `You repair malformed JSON.
+Return only valid JSON that matches the provided schema.
+Do not add commentary, markdown, or extra keys.
+Preserve the original meaning as closely as possible.`;
 
-  console.warn(`[AI Self-Heal] Step-Function repair initiated. Error: ${parseError}`);
-
-  const healingBody = {
+  const repairBody = {
     system_instruction: {
-      parts: [{ text: 'You are a JSON repair specialist. You receive a broken JSON string and a syntax error description. Return ONLY the corrected, complete, valid JSON. No markdown, no commentary.' }],
+      parts: [{ text: repairInstruction }],
     },
     contents: [
-      { role: 'user', parts: [{ text: originalPrompt }] },
-      { role: 'model', parts: [{ text: rawText.slice(0, 8000) }] }, // Truncate to avoid token overflow
       {
         role: 'user',
-        parts: [{
-          text: `The JSON you returned has a syntax error: "${parseError}". Please fix the JSON and return only the corrected, complete JSON object with no other text.`
-        }]
-      }
+        parts: [
+          {
+            text: `Fix this malformed architecture JSON and return valid JSON only:\n\n${raw}`,
+          },
+        ],
+      },
     ],
     generationConfig: {
       temperature: 0,
@@ -278,30 +264,19 @@ async function selfHealingRepair(rawText, originalPrompt, key, endpoint) {
   };
 
   try {
-    const healRes = await fetchWithRetry(`${endpoint}?key=${key}`, {
+    const repairRes = await fetchWithRetry(`${endpoint}?key=${key}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(healingBody),
+      body: JSON.stringify(repairBody),
     });
 
-    if (!healRes.ok) {
-      console.warn('[AI Self-Heal] Repair request failed with status:', healRes.status);
-      return null;
-    }
-
-    const healData = await healRes.json().catch(() => null);
-    const healedRaw = extractJsonText(healData);
-    const healedParsed = tryParseJson(healedRaw);
-
-    if (validateArchitectureShape(healedParsed)) {
-      console.log('[AI Self-Heal] Step-Function repair succeeded ✓');
-      return healedParsed;
-    }
-
-    console.warn('[AI Self-Heal] Repaired JSON still invalid. Giving up.');
-    return null;
+    if (!repairRes.ok) return null;
+    const repairData = await repairRes.json().catch(() => null);
+    const repairedRaw = extractJsonText(repairData);
+    const repairedParsed = tryParseJson(repairedRaw);
+    return validateArchitectureShape(repairedParsed) ? repairedParsed : null;
   } catch (err) {
-    console.error('[AI Self-Heal] Repair loop threw:', err.message);
+    console.error('[AI Gateway] Repair loop failed:', err);
     return null;
   }
 }
@@ -343,7 +318,7 @@ module.exports = function (app, db, admin, authMiddleware) {
 
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent`;
 
-    const userPrompt = `Project idea: "${maskSecrets(idea)}"
+    const userPrompt = `Project idea: "${idea}"
 User's known tech stack: ${knownStack && knownStack.length > 0 ? knownStack.join(', ') : 'Not specified - recommend the best choices'}
 
 Generate a complete architecture recommendation. Where the user knows a technology that fits, use it. Where they do not know something or their known tech is not ideal, recommend better alternatives and explain why.`;
@@ -376,7 +351,7 @@ Generate a complete architecture recommendation. Where the user knows a technolo
         console.warn(`[AI Gateway] Routing to gemini-2.5-pro failed with status ${geminiRes.status}. Falling back to gemini-2.5-flash...`);
         selectedModel = 'gemini-2.5-flash';
         const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent`;
-        
+
         geminiRes = await fetchWithRetry(`${fallbackEndpoint}?key=${key}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -394,62 +369,58 @@ Generate a complete architecture recommendation. Where the user knows a technolo
       const rawText = extractJsonText(data);
       let parsedResponse = tryParseJson(rawText);
 
-      // Perform Step-Function self-healing if malformed JSON is returned
+      // Perform prompt repair loop if malformed JSON is returned
       if (!parsedResponse || !validateArchitectureShape(parsedResponse)) {
-        console.warn('[AI Gateway] Gemini returned malformed JSON. Initiating Step-Function self-healing...');
+        console.warn('[AI Gateway] Gemini returned malformed JSON. Initiating zero-temperature repair loop...');
         const repairEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent`;
-        parsedResponse = await selfHealingRepair(rawText, userPrompt, key, repairEndpoint);
-        
+        parsedResponse = await repairArchitectureJson(rawText, key, repairEndpoint);
+
         if (!parsedResponse) {
           return res.status(502).json({
-            error: 'AI returned malformed data and the self-healing pipeline failed. Please modify your prompt and try again.'
+            error: 'AI returned malformed data and the repair loop failed. Please modify your prompt and try again.'
           });
         }
       }
 
       // Persist generation to Firestore
-      let targetUserId = userId;
+      const userProjectsRef = db.collection('users').doc(userId).collection('projects');
       let activeProjectId = projectId;
-      
-      if (activeProjectId) {
-        const { resolveProjectOwner } = require('../utils/projectResolver');
-        const ownerData = await resolveProjectOwner(activeProjectId, userId, db);
-        if (!ownerData || (ownerData.ownerId !== userId && !ownerData.collaborators.includes(userId))) {
-          return res.status(403).json({ error: 'Access denied to this project.' });
-        }
-        targetUserId = ownerData.ownerId;
-      } else {
-        const userProjectsRef = db.collection('users').doc(userId).collection('projects');
+      if (!activeProjectId) {
         const newProjDoc = userProjectsRef.doc();
         activeProjectId = newProjDoc.id;
-        
-        // Register new project in projectOwners
-        await db.collection('projectOwners').doc(activeProjectId).set({
-          ownerId: userId,
-          collaborators: [],
-          collaboratorEmails: []
-        });
       }
 
-      const projectDocRef = db.collection('users').doc(targetUserId).collection('projects').doc(activeProjectId);
+      const projectDocRef = userProjectsRef.doc(activeProjectId);
       const serverTimestamp = admin.firestore.FieldValue.serverTimestamp();
 
       const layersCount = Array.isArray(parsedResponse.stack) ? parsedResponse.stack.length : 0;
       const apisCount = Array.isArray(parsedResponse.apis) ? parsedResponse.apis.length : 0;
 
-      // Save metadata
-      await projectDocRef.set({
+      const updateData = {
         title: parsedResponse.projectTitle,
         summary: parsedResponse.projectSummary || '',
         layersCount,
         apisCount,
         updatedAt: serverTimestamp
-      }, { merge: true });
+      };
+
+      if (projectId) {
+        // Clear previous scans status fields
+        updateData.securityScore = admin.firestore.FieldValue.delete();
+        updateData.securityGrade = admin.firestore.FieldValue.delete();
+        updateData.lastSecurityScanAt = admin.firestore.FieldValue.delete();
+        updateData.complianceScore = admin.firestore.FieldValue.delete();
+        updateData.driftScore = admin.firestore.FieldValue.delete();
+        updateData.lastDriftScanAt = admin.firestore.FieldValue.delete();
+      }
+
+      // Save metadata
+      await projectDocRef.set(updateData, { merge: true });
 
       // Normalize and save project details to subcollections
       const { normalizeAndSaveProject } = require('../utils/dbNormalizer');
       try {
-        await normalizeAndSaveProject(targetUserId, activeProjectId, parsedResponse, db, admin);
+        await normalizeAndSaveProject(userId, activeProjectId, parsedResponse, db, admin);
       } catch (normErr) {
         console.error('[AI Gateway] Subcollection normalization failed, continuing to save history snapshot:', normErr);
       }
@@ -466,6 +437,7 @@ Generate a complete architecture recommendation. Where the user knows a technolo
       });
 
       // Write to Redis Read Cache (CQRS) — invalidate old snapshot first
+      const { setProjectSnapshot, invalidateProjectSnapshot } = require('../utils/cacheManager');
       try {
         await invalidateProjectSnapshot(activeProjectId);
         await setProjectSnapshot(activeProjectId, parsedResponse);

@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react'
 import { X, Settings, Shield, Sliders, Trash2, Check } from 'lucide-react'
+import StartupMode from './StartupMode.jsx'
 import styles from './SettingsModal.module.css'
 
 export default function SettingsModal({ isOpen, onClose }) {
   const [key, setKey] = useState('')
   const [model, setModel] = useState('gemini-2.5-flash')
-  const [theme, setTheme] = useState('glassmorphism')
+  const [theme, setTheme] = useState('dark')
   const [statusMessage, setStatusMessage] = useState('')
 
   useEffect(() => {
     if (isOpen) {
       setKey(localStorage.getItem('inframind_api_key') || '')
       setModel(localStorage.getItem('inframind_model') || 'gemini-2.5-flash')
-      setTheme(localStorage.getItem('inframind_theme') || 'glassmorphism')
+      setTheme(localStorage.getItem('inframind_theme') || 'dark')
       setStatusMessage('')
     }
   }, [isOpen])
@@ -52,8 +53,8 @@ export default function SettingsModal({ isOpen, onClose }) {
       localStorage.removeItem('inframind_theme')
       setKey('')
       setModel('gemini-2.5-flash')
-      setTheme('glassmorphism')
-      document.documentElement.removeAttribute('data-theme')
+      setTheme('dark')
+      document.documentElement.setAttribute('data-theme', 'dark')
       
       setStatusMessage('Cache cleared successfully!')
       setTimeout(() => setStatusMessage(''), 2000)
@@ -126,10 +127,14 @@ export default function SettingsModal({ isOpen, onClose }) {
                 value={theme}
                 onChange={(e) => setTheme(e.target.value)}
               >
-                <option value="glassmorphism">Glassmorphic Dark (Recommended)</option>
-                <option value="neon">Cyberpunk Neon</option>
-                <option value="slate">Classic Slate</option>
+                <option value="dark">Professional Dark Mode</option>
+                <option value="light">Elegant Light Mode</option>
               </select>
+            </div>
+
+            {/* Section 4: Startup Mode */}
+            <div className={styles.section}>
+              <StartupMode />
             </div>
           </div>
 
