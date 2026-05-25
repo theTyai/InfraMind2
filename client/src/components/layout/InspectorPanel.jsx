@@ -11,7 +11,9 @@ export default function InspectorPanel({
   selectedNode, 
   onSelectNode,
   lastIdea,
-  onSubmit
+  onSubmit,
+  comments,
+  onAddComment
 }) {
   const [copied, setCopied] = useState('')
   const [refinementText, setRefinementText] = useState('')
@@ -267,6 +269,62 @@ export default function InspectorPanel({
                 </form>
               </div>
             )}
+            {/* Team Review Comments (ADR) */}
+            <div className={styles.commentsSection}>
+              <div className={styles.commentsHeader}>
+                💬 Team Review Comments
+              </div>
+              <div className={styles.commentsList}>
+                {comments && comments.length > 0 ? (
+                  comments.map((c) => (
+                    <div key={c.id || c.timestamp} className={styles.commentItem}>
+                      <div className={styles.commentAvatar}>
+                        {c.photoUrl ? (
+                          <img src={c.photoUrl} alt="" className={styles.commentAvatarImg} />
+                        ) : (
+                          c.author ? c.author[0].toUpperCase() : 'U'
+                        )}
+                      </div>
+                      <div className={styles.commentBody}>
+                        <div className={styles.commentMeta}>
+                          <span className={styles.commentAuthor}>{c.author}</span>
+                          <span className={styles.commentTime}>
+                            {c.timestamp ? new Date(c.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                          </span>
+                        </div>
+                        <p className={styles.commentText}>{c.text}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className={styles.noCommentsText}>No comments on this node yet.</p>
+                )}
+              </div>
+              {onAddComment && (
+                <form 
+                  className={styles.commentForm} 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const inputEl = e.target.elements.commentInput;
+                    const text = inputEl.value.trim();
+                    if (!text) return;
+                    onAddComment(selectedNode, text);
+                    inputEl.value = '';
+                  }}
+                >
+                  <input
+                    name="commentInput"
+                    type="text"
+                    placeholder="Add review comment..."
+                    className={styles.commentInput}
+                    autoComplete="off"
+                  />
+                  <button type="submit" className={styles.commentSendBtn}>
+                    Send
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
         </div>
       )}

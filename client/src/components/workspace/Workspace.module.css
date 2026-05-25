@@ -2951,5 +2951,711 @@
   }
 }
 
+/* ── Phase 9: Operations Panel Styles ── */
+.opsCard {
+  margin-top: 24px;
+  padding: 24px;
+  border-radius: 20px;
+  background: rgba(10, 10, 12, 0.4);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
 
+.opsHeaderTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.opsTabsRow {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+.opsTabBtn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.opsTabBtn:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-primary);
+}
+
+.opsTabBtnActive {
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--primary);
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+.opsContentSlot {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.opsSummaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.opsScoreBlock {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.scoreLabel {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
+.scoreVal {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.scoreGrade {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.gradeA { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+.gradeB { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+.gradeC { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+.gradeD { background: rgba(249, 115, 22, 0.15); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.2); }
+.gradeF { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+.triggerScanBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.triggerScanBtn:hover {
+  opacity: 0.9;
+}
+
+.triggerScanBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.opsReportContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reportHeader {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.vulnList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vulnCard {
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vulnHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.vulnTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.vulnBadgeRow {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.severityTag {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.sevCRITICAL, .sevHIGH { background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+.sevMEDIUM { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+.sevLOW { background: rgba(59, 130, 246, 0.12); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+
+.codeTag {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-dim);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.vulnDesc {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  line-height: 1.35;
+}
+
+.remediationGroup {
+  margin-top: 4px;
+  padding: 10px;
+  border-radius: 6px;
+  background: rgba(16, 185, 129, 0.03);
+  border-left: 2px solid #10b981;
+}
+
+.remediationLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #10b981;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.remediationText {
+  font-size: 0.74rem;
+  color: var(--text-dim);
+  line-height: 1.35;
+}
+
+.githubConnectBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.githubStatusText {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.githubOAuthBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #24292e;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: max-content;
+  transition: background 0.2s;
+}
+
+.githubOAuthBtn:hover {
+  background: #2f363d;
+}
+
+.unlinkBtn {
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: max-content;
+}
+
+.unlinkBtn:hover {
+  background: rgba(239, 68, 68, 0.06);
+}
+
+.repoForm {
+  display: grid;
+  grid-template-columns: 1fr 120px auto;
+  gap: 10px;
+  align-items: flex-end;
+  margin-top: 10px;
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formField label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.formField input {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: #fff;
+  font-size: 0.8rem;
+  outline: none;
+}
+
+.formField input:focus {
+  border-color: rgba(37, 99, 235, 0.5);
+}
+
+.saveRepoBtn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.saveRepoBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.driftTableBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.driftSectionTitle {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 6px;
+}
+
+.driftBadgeList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.driftBadgeItem {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.driftBadgeMissing {
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+.driftBadgeExtra {
+  background: rgba(245, 158, 11, 0.08);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.15);
+}
+
+.badgeCopyBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.badgeFlexRow {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.badgePreviewImage {
+  height: 20px;
+  border-radius: 3px;
+  display: block;
+}
+
+.badgeCopyInputRow {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.badgeCopyInput {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  outline: none;
+}
+
+.copyCodeBtn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--primary);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.copyCodeBtn:hover {
+  background: rgba(37, 99, 235, 0.18);
+}
+
+.alertBox {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.alertBoxSuccess {
+  background: rgba(16, 185, 129, 0.08);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+.alertBoxError {
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+/* ── Security Fix Banner & Button ──────────────────────────── */
+.securityFixBanner {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.06), rgba(245, 158, 11, 0.04));
+  border: 1px solid rgba(239, 68, 68, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.securityFixBannerText {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  flex: 1;
+  min-width: 180px;
+}
+
+.securityFixBannerText strong {
+  color: #fbbf24;
+}
+
+.securityFixZapIcon {
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+.securityFixBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 9px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  white-space: nowrap;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(239, 68, 68, 0.3);
+  transition: all 0.2s ease;
+  animation: securityFixPulse 2.5s ease-in-out infinite;
+}
+
+.securityFixBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(239, 68, 68, 0.45);
+}
+
+.securityFixBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  animation: none;
+  transform: none;
+}
+
+@keyframes securityFixPulse {
+  0%, 100% { box-shadow: 0 4px 18px rgba(239, 68, 68, 0.3); }
+  50%       { box-shadow: 0 4px 28px rgba(245, 158, 11, 0.5); }
+}
+
+/* ── Security Fix Modal ──────────────────────────────────────── */
+.securityFixModal {
+  max-width: 760px !important;
+  width: 92vw !important;
+}
+
+.securityFixModalIcon {
+  color: #f59e0b;
+}
+
+.securityFixModalSubtitle {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 2px;
+}
+
+.securityFixIntro {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.06);
+  border: 1px solid rgba(245, 158, 11, 0.12);
+  font-size: 0.78rem;
+  color: #fbbf24;
+  margin-bottom: 4px;
+}
+
+.securityFixList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 56vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.securityFixList::-webkit-scrollbar {
+  width: 4px;
+}
+
+.securityFixList::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+}
+
+.securityFixEmpty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  color: #10b981;
+  font-size: 0.85rem;
+  justify-content: center;
+}
+
+/* ── Fix Cards ───────────────────────────────────────────────── */
+.securityFixCard {
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  border: 1px solid rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.2s;
+}
+
+.sevCardCRITICAL {
+  border-left: 3px solid #ef4444 !important;
+  background: rgba(239, 68, 68, 0.025) !important;
+}
+.sevCardHIGH {
+  border-left: 3px solid #f97316 !important;
+  background: rgba(249, 115, 22, 0.025) !important;
+}
+.sevCardMEDIUM {
+  border-left: 3px solid #f59e0b !important;
+  background: rgba(245, 158, 11, 0.025) !important;
+}
+.sevCardLOW {
+  border-left: 3px solid #3b82f6 !important;
+  background: rgba(59, 130, 246, 0.025) !important;
+}
+
+.securityFixCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.securityFixCardLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+}
+
+.securityFixNumber {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.04);
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.securityFixCardTitle {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.securityFixAddresses {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.securityFixAddresses em {
+  color: var(--text-dim);
+  font-style: normal;
+}
+
+.securityFixCardBadges {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+/* Category badges */
+.fixCategoryBadge {
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+.catAPI            { background: rgba(37, 99, 235, 0.1);  color: #60a5fa; border-color: rgba(37, 99, 235, 0.2); }
+.catDatabase       { background: rgba(139, 92, 246, 0.1); color: #a78bfa; border-color: rgba(139, 92, 246, 0.2); }
+.catAuthentication { background: rgba(16, 185, 129, 0.1); color: #34d399; border-color: rgba(16, 185, 129, 0.2); }
+.catConfiguration  { background: rgba(245, 158, 11, 0.1); color: #fbbf24; border-color: rgba(245, 158, 11, 0.2); }
+.catInfrastructure { background: rgba(249, 115, 22, 0.1); color: #fb923c; border-color: rgba(249, 115, 22, 0.2); }
+
+/* What / How rows */
+.securityFixWhat,
+.securityFixHow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  line-height: 1.45;
+}
+
+.securityFixChevron {
+  color: var(--primary);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.securityFixInfoIcon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Code hint block */
+.securityFixCodeHint {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 7px;
+  padding: 10px 14px;
+  font-size: 0.74rem;
+  font-family: var(--font-mono);
+  color: #93c5fd;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Impact row */
+.securityFixImpact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: #10b981;
+  margin-top: 2px;
+}
 

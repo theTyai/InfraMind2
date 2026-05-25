@@ -67,6 +67,10 @@ function AuthenticatedApp({ modals, setModals, onAuthRequired }) {
   const [profile, setProfile] = useState(null)
 
   const fetchProfile = useCallback(async (token) => {
+    if (!token || token === 'null' || token === 'undefined') {
+      console.warn('[App] fetchProfile aborted: invalid token');
+      return;
+    }
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/profile`, {
         headers: {
@@ -93,6 +97,21 @@ function AuthenticatedApp({ modals, setModals, onAuthRequired }) {
       setProfile(null)
     }
   }, [appUser, idToken, fetchProjects, clearStore, fetchProfile])
+
+  // Handle GitHub OAuth Redirect Callbacks
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const githubStatus = params.get('github')
+    if (githubStatus) {
+      if (githubStatus === 'success') {
+        alert('🎉 GitHub account linked successfully!')
+      } else {
+        const msg = params.get('message') || 'GitHub OAuth authorization failed.'
+        alert(`❌ Integration Error: ${decodeURIComponent(msg)}`)
+      }
+      navigate(location.pathname, { replace: true })
+    }
+  }, [location.search, location.pathname, navigate])
 
   // Sync lastIdea from project history
   useEffect(() => {
@@ -331,6 +350,7 @@ export default function App() {
 
       {/* ── Public: Shared architecture ── */}
       <Route path="/p/:shareId" element={<PublicShare />} />
+      <Route path="/embed/:shareId" element={<PublicShare embed />} />
 
       {/* ── Protected: Dashboard + Workspace share ONE AuthenticatedApp instance ──
            Both routes render the same component — URL determines which view shows.

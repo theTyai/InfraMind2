@@ -8,32 +8,20 @@ export function useArchitecture() {
   
   const currentArchitecture = useArchitectureStore(state => state.currentArchitecture);
   const currentProjectId = useArchitectureStore(state => state.currentProjectId);
-  const saveGeneration = useArchitectureStore(state => state.saveGeneration);
+  const generateArchitectureStore = useArchitectureStore(state => state.generateArchitecture);
   const fetchChatHistory = useArchitectureStore(state => state.fetchChatHistory);
 
   const generate = useCallback(async ({ idea, knownStack, idToken }) => {
     setState('loading')
     setError('')
     try {
-      // 1. Generate via Gemini API
-      const result = await generateArchitecture({ idea, knownStack })
-      
-      // 2. Save via Backend (persists in Firestore)
-      await saveGeneration(
-        currentProjectId, // passes active project ID if refining, else null for new project
-        result.projectTitle,
-        result.projectSummary,
-        idea,
-        result,
-        idToken
-      )
-      
+      await generateArchitectureStore(currentProjectId, idea, knownStack, idToken)
       setState('result')
     } catch (e) {
       setError(e.message || 'Something went wrong. Please try again.')
       setState('error')
     }
-  }, [currentProjectId, saveGeneration])
+  }, [currentProjectId, generateArchitectureStore])
 
   const load = useCallback(async ({ projectId, idToken }) => {
     setState('loading')
