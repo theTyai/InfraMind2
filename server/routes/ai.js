@@ -372,6 +372,9 @@ Generate a complete architecture recommendation. Where the user knows a technolo
       // Guarantee the project title does not change during refinement
       if (existingProjectTitle) {
         parsedResponse.projectTitle = existingProjectTitle;
+        if (!parsedResponse.projectSummary) {
+          parsedResponse.projectSummary = existingProjectSummary;
+        }
       }
 
       const updateData = {

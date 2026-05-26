@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react'
-import { generateArchitecture } from '../utils/gemini.js'
 import { useArchitectureStore } from '../store/useArchitectureStore.js'
 
 export function useArchitecture() {
@@ -15,8 +14,9 @@ export function useArchitecture() {
     setState('loading')
     setError('')
     try {
-      await generateArchitectureStore(currentProjectId, idea, knownStack, idToken)
+      const pId = await generateArchitectureStore(currentProjectId, idea, knownStack, idToken)
       setState('result')
+      return pId
     } catch (e) {
       setError(e.message || 'Something went wrong. Please try again.')
       setState('error')
