@@ -587,109 +587,82 @@ export default function CostEstimator({
                         )}
                       </div>
                       
-                      {/* Plan Chip Selector */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+                      {/* Clean Dropdown Selector */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
                         {hasOptions ? (
-                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                            {options.map(opt => {
-                              const isSelected = !currentSelection?.isCustom && currentSelection?.service === opt.service;
-                              return (
-                                <button
-                                  key={opt.service}
-                                  onClick={() => {
-                                    setCustomCosts(prev => ({
-                                      ...prev,
-                                      [item.tech]: { service: opt.service, cost: opt.cost, isCustom: false }
-                                    }))
-                                    setServiceOverride(item.tech, opt.service)
-                                  }}
-                                  style={{
-                                    background: isSelected ? 'var(--primary-soft)' : 'var(--bg-base)',
-                                    border: `1px solid ${isSelected ? 'var(--primary)' : 'var(--border-subtle)'}`,
-                                    color: isSelected ? 'var(--primary)' : 'var(--text-secondary)',
-                                    borderRadius: '6px',
-                                    padding: '6px 12px',
-                                    fontSize: '0.72rem',
-                                    fontWeight: isSelected ? 600 : 400,
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                    outline: 'none',
-                                    fontFamily: 'var(--font-sans)',
-                                  }}
-                                >
-                                  {opt.service} <span style={{opacity: 0.7}}>({opt.cost === 0 ? 'Free' : `$${opt.cost}/mo`})</span>
-                                </button>
-                              )
-                            })}
-                            <button
-                              onClick={() => setCustomCosts(prev => ({
-                                ...prev,
-                                [item.tech]: { service: 'Custom Plan', cost: item.cost, isCustom: true }
-                              }))}
-                              style={{
-                                background: currentSelection?.isCustom ? 'var(--primary-soft)' : 'var(--bg-base)',
-                                border: `1px solid ${currentSelection?.isCustom ? 'var(--primary)' : 'var(--border-subtle)'}`,
-                                color: currentSelection?.isCustom ? 'var(--primary)' : 'var(--text-secondary)',
-                                borderRadius: '6px',
-                                padding: '6px 12px',
-                                fontSize: '0.72rem',
-                                fontWeight: currentSelection?.isCustom ? 600 : 400,
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                outline: 'none',
-                                fontFamily: 'var(--font-sans)',
-                              }}
-                            >
-                              ✏️ Custom Price...
-                            </button>
-                          </div>
+                          <select
+                            value={currentSelection?.isCustom ? 'custom' : currentSelection?.service || options[0].service}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === 'custom') {
+                                setCustomCosts(prev => ({
+                                  ...prev,
+                                  [item.tech]: { service: 'Custom Plan', cost: item.cost, isCustom: true, note: 'Enter your custom pricing' }
+                                }))
+                              } else {
+                                const selectedOpt = options.find(o => o.service === val);
+                                if (selectedOpt) {
+                                  setCustomCosts(prev => ({
+                                    ...prev,
+                                    [item.tech]: { service: selectedOpt.service, cost: selectedOpt.cost, isCustom: false, note: selectedOpt.note }
+                                  }))
+                                  setServiceOverride(item.tech, selectedOpt.service)
+                                }
+                              }
+                            }}
+                            style={{
+                              background: 'var(--bg-elevated)',
+                              border: '1px solid var(--border-subtle)',
+                              color: 'var(--text-primary)',
+                              borderRadius: '6px',
+                              padding: '6px 12px',
+                              fontSize: '0.75rem',
+                              outline: 'none',
+                              cursor: 'pointer',
+                              fontFamily: 'var(--font-sans)',
+                              minWidth: '200px'
+                            }}
+                          >
+                            {options.map(opt => (
+                              <option key={opt.service} value={opt.service}>
+                                {opt.service} ({opt.cost === 0 ? 'Free' : `$${opt.cost}/mo`})
+                              </option>
+                            ))}
+                            <option value="custom">✏️ Custom Price...</option>
+                          </select>
                         ) : (
-                          // Fallback selector if tech doesn't have options predefined
-                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                            <button
-                              onClick={() => {
+                          // Fallback if no specific options defined
+                          <select
+                            value={currentSelection?.isCustom ? 'custom' : item.service}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === 'custom') {
+                                setCustomCosts(prev => ({
+                                  ...prev,
+                                  [item.tech]: { service: 'Custom Plan', cost: item.cost, isCustom: true }
+                                }))
+                              } else {
                                 const temp = { ...customCosts }
                                 delete temp[item.tech]
                                 setCustomCosts(temp)
-                              }}
-                              style={{
-                                background: !currentSelection?.isCustom ? 'var(--primary-soft)' : 'var(--bg-base)',
-                                border: `1px solid ${!currentSelection?.isCustom ? 'var(--primary)' : 'var(--border-subtle)'}`,
-                                color: !currentSelection?.isCustom ? 'var(--primary)' : 'var(--text-secondary)',
-                                borderRadius: '6px',
-                                padding: '6px 12px',
-                                fontSize: '0.72rem',
-                                fontWeight: !currentSelection?.isCustom ? 600 : 400,
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                outline: 'none',
-                                fontFamily: 'var(--font-sans)',
-                              }}
-                            >
-                              {item.service} <span style={{opacity: 0.7}}>({item.cost === 0 ? 'Free' : `$${item.cost}/mo`})</span>
-                            </button>
-                            <button
-                              onClick={() => setCustomCosts(prev => ({
-                                ...prev,
-                                [item.tech]: { service: 'Custom Plan', cost: item.cost, isCustom: true }
-                              }))}
-                              style={{
-                                background: currentSelection?.isCustom ? 'var(--primary-soft)' : 'var(--bg-base)',
-                                border: `1px solid ${currentSelection?.isCustom ? 'var(--primary)' : 'var(--border-subtle)'}`,
-                                color: currentSelection?.isCustom ? 'var(--primary)' : 'var(--text-secondary)',
-                                borderRadius: '6px',
-                                padding: '6px 12px',
-                                fontSize: '0.72rem',
-                                fontWeight: currentSelection?.isCustom ? 600 : 400,
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                outline: 'none',
-                                fontFamily: 'var(--font-sans)',
-                              }}
-                            >
-                              ✏️ Custom Price...
-                            </button>
-                          </div>
+                              }
+                            }}
+                            style={{
+                              background: 'var(--bg-elevated)',
+                              border: '1px solid var(--border-subtle)',
+                              color: 'var(--text-primary)',
+                              borderRadius: '6px',
+                              padding: '6px 12px',
+                              fontSize: '0.75rem',
+                              outline: 'none',
+                              cursor: 'pointer',
+                              fontFamily: 'var(--font-sans)',
+                              minWidth: '200px'
+                            }}
+                          >
+                            <option value={item.service}>{item.service} ({item.cost === 0 ? 'Free' : `$${item.cost}/mo`})</option>
+                            <option value="custom">✏️ Custom Price...</option>
+                          </select>
                         )}
 
                         {/* Custom Cost Input (Numeric) */}
@@ -705,12 +678,21 @@ export default function CostEstimator({
                                 const val = Math.max(0, parseFloat(e.target.value) || 0)
                                 setCustomCosts(prev => ({
                                   ...prev,
-                                  [item.tech]: { service: 'Custom Plan', cost: val, isCustom: true }
+                                  [item.tech]: { service: 'Custom Plan', cost: val, isCustom: true, note: 'Manual entry' }
                                 }))
                               }}
-                              style={inputStyle}
+                              style={{
+                                background: 'var(--bg-base)',
+                                border: '1px solid var(--primary)',
+                                borderRadius: '4px',
+                                color: 'var(--text-primary)',
+                                fontSize: '0.75rem',
+                                padding: '4px 8px',
+                                width: '70px',
+                                outline: 'none',
+                              }}
                             />
-                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>/mo</span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>/mo</span>
                           </div>
                         )}
                       </div>

@@ -492,6 +492,46 @@ export default function ArchitectureTabs({
     onSubmit({ idea: combinedIdea, knownStack: [] })
   }
 
+  const headerActions = (
+    <div className={styles.deckHeaderActions}>
+      <button 
+        type="button" 
+        className={styles.deckActionBtn} 
+        onClick={() => setShowExportModal(true)} 
+        disabled={exporting}
+        title="Export Full Blueprint"
+      >
+        <FileDown size={14} />
+        {exporting ? 'Exporting…' : 'Export'}
+      </button>
+      {onScaffold && (
+        <button
+          type="button"
+          className={styles.deckActionBtn}
+          onClick={() => {
+            localStorage.setItem('inframind_checklist_scaffold', 'true')
+            onScaffold()
+          }}
+          title="Download project scaffold .zip"
+        >
+          <FolderDown size={14} />
+          Scaffold
+        </button>
+      )}
+      {onOpenShare && (
+        <button
+          type="button"
+          className={`${styles.deckActionBtn} ${styles.deckActionBtnShare}`}
+          onClick={onOpenShare}
+          title="Share this architecture publicly"
+        >
+          <Share2 size={14} />
+          Share
+        </button>
+      )}
+    </div>
+  )
+
   if (workspaceView === 'architecture') {
     return (
       <div className={styles.controlDeckWrapper}>
@@ -501,6 +541,7 @@ export default function ArchitectureTabs({
               <div className={styles.ideationEyebrow}>INTERACTIVE CLOUD ESTIMATOR</div>
               <h1 className={styles.ideationTitle}>Stack Architecture & Cost Planner</h1>
             </div>
+            {headerActions}
           </div>
           <p className={styles.ideationSummary}>Configure options for each backend, database, and caching layer to calculate monthly charges.</p>
         </div>
@@ -539,6 +580,7 @@ export default function ArchitectureTabs({
               <div className={styles.ideationEyebrow}>DATA JOURNEY FLOW</div>
               <h1 className={styles.ideationTitle}>User Flow Diagram</h1>
             </div>
+            {headerActions}
           </div>
           <p className={styles.ideationSummary}>Trace the user interaction lifecycle as it traverses your cloud architecture topology.</p>
         </div>
@@ -625,20 +667,6 @@ export default function ArchitectureTabs({
 
   return (
     <div className={styles.controlDeckWrapper}>
-      {/* Decisions Ticker Bar */}
-      {data.architectureExplanation?.keyDecisions?.length > 0 && (
-        <div className={styles.decisionsTicker}>
-          <span className={styles.tickerLabel}>SYSTEM DECISIONS:</span>
-          <div className={styles.tickerContent}>
-            {data.architectureExplanation.keyDecisions.map((dec, idx) => (
-              <span key={idx} className={styles.tickerItem}>
-                ✦ {dec}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-      
       {/* 1. Project Ideation Header */}
       <div className={styles.ideationHeader}>
         <div className={styles.ideationTitleRow}>
@@ -646,43 +674,7 @@ export default function ArchitectureTabs({
             <div className={styles.ideationEyebrow}>AI ARCHITECT CONTROL DECK</div>
             <h1 className={styles.ideationTitle}>{data.projectTitle}</h1>
           </div>
-          <div className={styles.deckHeaderActions}>
-            <button 
-              type="button" 
-              className={styles.deckActionBtn} 
-              onClick={() => setShowExportModal(true)} 
-              disabled={exporting}
-              title="Export Full Blueprint"
-            >
-              <FileDown size={14} />
-              {exporting ? 'Exporting…' : 'Export'}
-            </button>
-            {onScaffold && (
-              <button
-                type="button"
-                className={styles.deckActionBtn}
-                onClick={() => {
-                  localStorage.setItem('inframind_checklist_scaffold', 'true')
-                  onScaffold()
-                }}
-                title="Download project scaffold .zip"
-              >
-                <FolderDown size={14} />
-                Scaffold
-              </button>
-            )}
-            {onOpenShare && (
-              <button
-                type="button"
-                className={`${styles.deckActionBtn} ${styles.deckActionBtnShare}`}
-                onClick={onOpenShare}
-                title="Share this architecture publicly"
-              >
-                <Share2 size={14} />
-                Share
-              </button>
-            )}
-          </div>
+          {headerActions}
         </div>
         <p className={styles.ideationSummary}>{data.projectSummary}</p>
         

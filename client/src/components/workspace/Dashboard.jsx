@@ -225,14 +225,6 @@ export default function Dashboard({
             >
               <Settings size={15} />
             </button>
-            <button
-              type="button"
-              className={styles.iconActionBtn}
-              onClick={() => onSubmit({ idea: 'A scalable cloud-native SaaS platform with multi-tenancy, event sourcing, and CQRS pattern.', knownStack: ['Next.js', 'AWS', 'PostgreSQL', 'Kafka'] })}
-              title="Generate SaaS Demo"
-            >
-              <Cloud size={15} />
-            </button>
 
             <div className={styles.navDivider} />
 

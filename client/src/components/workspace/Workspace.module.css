@@ -2480,10 +2480,10 @@
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--text-secondary);
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -2492,9 +2492,9 @@
 }
 
 .deckActionBtn:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.9);
+  background: var(--bg-surface);
+  border-color: var(--text-muted);
+  color: var(--text-primary);
 }
 
 .deckActionBtn:disabled {
@@ -2503,15 +2503,15 @@
 }
 
 .deckActionBtnShare {
-  background: rgba(37, 99, 235, 0.06);
-  border-color: rgba(37, 99, 235, 0.2);
-  color: #60a5fa;
+  background: var(--primary-soft, rgba(37, 99, 235, 0.06));
+  border-color: var(--primary, rgba(37, 99, 235, 0.2));
+  color: var(--primary, #3b82f6);
 }
 
 .deckActionBtnShare:hover {
-  background: rgba(37, 99, 235, 0.12);
-  border-color: rgba(37, 99, 235, 0.3);
-  color: #93c5fd;
+  background: var(--primary, rgba(37, 99, 235, 0.12));
+  border-color: var(--primary, rgba(37, 99, 235, 0.3));
+  color: var(--text-inverse, #fff);
 }
 
 .modalBackdrop {
