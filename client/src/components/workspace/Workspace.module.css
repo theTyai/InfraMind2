@@ -4,13 +4,18 @@
   flex: 1;
   overflow: hidden;
   min-height: 0;
-  padding: 0 0 24px;
+  padding: 0 clamp(12px, 3vw, 24px) 24px;
+  box-sizing: border-box;
 }
 
-.workspaceCanvas {
-  flex: 1;
-  overflow: auto;
-  min-height: 0;
+/* On mobile, workspace scrolls natively inside the scroll container */
+@media (max-width: 768px) {
+  .workspace {
+    overflow: visible;
+    min-height: auto;
+    height: auto;
+    flex: none;
+  }
 }
 
 .bottomComposer {
@@ -885,6 +890,13 @@
   box-sizing: border-box;
 }
 
+@media (max-width: 768px) {
+  .workspaceTabsContainer {
+    height: auto;
+    min-height: 100vh;
+  }
+}
+
 .topTabBar {
   display: flex;
   justify-content: space-between;
@@ -1683,6 +1695,8 @@
   overflow-x: auto;
   white-space: nowrap;
   margin-bottom: 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
 .tickerLabel {
   color: var(--secondary);
@@ -1756,10 +1770,19 @@
   gap: 12px;
   height: 100%;
   min-height: 0;
+  min-width: 0;
+  max-width: 100%;
   position: relative;
   box-sizing: border-box;
   overflow-y: auto;
-  padding-bottom: 84px;
+  overflow-x: hidden;
+  padding: clamp(16px, 3vw, 28px) clamp(14px, 3vw, 28px) 84px;
+}
+
+.deckHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .deckHeader {
@@ -3804,4 +3827,207 @@
   }
 }
 
+/* ── Global Mobile Responsive Overrides ── */
+@media (max-width: 768px) {
+  .panelHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .panelTitle {
+    font-size: 1.8rem;
+  }
+  .compactRow {
+    grid-template-columns: 1fr;
+  }
+  .compactInput {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .compactButton {
+    width: 100%;
+  }
+  .ideationTitleRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .overviewHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .promptPanel, .streamPanel {
+    padding: 16px;
+    border-radius: 16px;
+  }
+  .workspaceCanvas {
+    padding: 0 10px;
+  }
+  .advancedOptionsPanel {
+    padding: 16px;
+  }
+  .deckHeaderActions {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .deckHeaderActions > * {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+  .ideationTitle {
+    font-size: 1.8rem !important;
+  }
+  .decisionsTicker {
+    flex-direction: column;
+    align-items: flex-start;
+    white-space: normal;
+  }
+  .tickerContent {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .tabsList {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .tabBtn {
+    flex: 1 1 auto;
+    font-size: 0.78rem;
+    padding: 6px 8px;
+    justify-content: center;
+  }
+  .controlDeckWrapper {
+    padding: 0 0 80px;
+  }
+  .stackTagCloud {
+    gap: 8px;
+  }
+  .sectionHeaderTitle {
+    font-size: 0.8rem;
+  }
+  .ideationRationale {
+    padding: 12px;
+  }
+  .bentoMetricsGrid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
 
+/* ── Extra small mobile ─────────────────────────────── */
+@media (max-width: 480px) {
+  .controlDeckWrapper {
+    gap: 8px;
+  }
+  .ideationTitle {
+    font-size: 1.5rem !important;
+  }
+  .ideationSummary {
+    font-size: 0.82rem;
+  }
+  .deckActionBtn, .deckActionBtnShare {
+    padding: 7px 10px;
+    font-size: 0.75rem;
+  }
+  .bentoMetricsGrid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .techStackSection {
+    padding: 12px;
+  }
+  .stackTagItem {
+    font-size: 0.72rem;
+    padding: 4px 8px;
+  }
+}
+
+/* ── Tablet ──────────────────────────────────────────── */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .controlDeckWrapper {
+    padding: 0 0 80px;
+  }
+  .bentoMetricsGrid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .ideationTitleRow {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .deckHeaderActions {
+    flex-wrap: wrap;
+  }
+}
+
+/* ── Dataflow and Cost Estimator responsive ─────────── */
+@media (max-width: 768px) {
+  .dataflowWrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .costSection {
+    padding: 12px;
+  }
+}
+
+/* ── Workspace canvas scrolling ─────────────────────── */
+@media (max-width: 768px) {
+  .workspaceCanvas {
+    padding: 0 8px 80px;
+    overflow-x: hidden;
+  }
+}
+
+/* ── Critical: make controlDeckWrapper flow naturally on mobile ── */
+/* On desktop it fills 100% of a fixed-height flex parent.         */
+/* On mobile the parent height is auto, so height:100% = 0.        */
+/* Switching to height:auto lets it grow to its content height.    */
+@media (max-width: 768px) {
+  .controlDeckWrapper {
+    height: auto !important;
+    min-height: auto !important;
+    overflow-y: visible !important;
+    overflow-x: hidden;
+    padding: 12px 12px 100px;
+  }
+
+  /* Tab row: horizontally scrollable on small screens */
+  .topTabBar {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+    padding-bottom: 12px;
+    margin-bottom: 0;
+  }
+  .topTabBar::-webkit-scrollbar {
+    display: none;
+  }
+  .tabItemsGroup {
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Stack the title-row vertically so buttons don't overflow */
+  .ideationTitleRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .deckHeaderActions {
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 8px;
+  }
+  .deckHeaderActions > button,
+  .deckHeaderActions > a {
+    flex: 1 1 calc(50% - 4px);
+    justify-content: center;
+  }
+
+  /* Two-column bento → single column on phones */
+  .deckGridContainer {
+    grid-template-columns: 1fr !important;
+  }
+}

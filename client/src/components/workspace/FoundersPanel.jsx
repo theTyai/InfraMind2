@@ -79,7 +79,7 @@ export default function FoundersPanel({ architecture, onSubmit }) {
     localStorage.setItem(STARTUP_MODE_KEY, 'true')
     window.dispatchEvent(new CustomEvent('startupModeChange', { detail: { enabled: true } }))
 
-    const reductionPrompt = `Simplify this architecture to the absolute minimum viable product (MVP) scope. Strip away all non-essential enterprise features such as complex microservices, Kafka event pipelines, Kubernetes, multiple regions, replication, and replace them with a simpler monolithic or serverless layout. Focus on the core user flow, minimal DB schema, and cheapest hosting setup (Vercel, Railway, Supabase free tiers).`
+    const reductionPrompt = 'Strip away all enterprise complexity, keep only free-tier services.'
 
     onSubmit({ idea: reductionPrompt, knownStack: [] })
 

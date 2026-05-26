@@ -40,18 +40,12 @@ export default function Workspace(props) {
   return (
     <main className={styles.workspace}>
       <ArchitectureTabs
+        {...props}
         data={props.data}
         idea={props.lastIdea}
-        onExport={props.onExport}
-        onScaffold={props.onScaffold}
-        onOpenShare={props.onOpenShare}
-        exporting={props.exporting}
-        onSubmit={props.onSubmit}
-        envKeyStatus={props.envKeyStatus}
-        selectedNode={props.selectedNode}
-        onSelectNode={props.onSelectNode}
+        activeMode={props.activeMode}
+        setActiveMode={props.setActiveMode}
       />
     </main>
-
   )
 }

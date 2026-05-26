@@ -6,7 +6,7 @@
   background: var(--bg-base);
   overflow: hidden;
   box-sizing: border-box;
-  transition: grid-template-columns 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .shell.sidebarCollapsed {
@@ -62,14 +62,14 @@
   display: none;
 }
 
-/* Mobile & Tablet Drawer layout */
+/* ── Mobile & Tablet Drawer layout ── */
 @media (max-width: 768px) {
   .shell {
-    display: grid;
-    grid-template-columns: 1fr !important;
-    height: 100vh;
-    max-height: 100vh;
+    display: block;
+    height: 100svh;
+    max-height: 100svh;
     overflow: hidden;
+    position: relative;
   }
 
   .sidebarSlot {
@@ -85,7 +85,9 @@
     box-shadow: 10px 0 35px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
   }
+
   .sidebarToggle {
     display: none;
   }
@@ -94,45 +96,60 @@
     transform: translateX(0);
   }
 
+  /* Dark overlay behind the open drawer */
   .sidebarBackdrop {
     display: block;
     position: fixed;
     inset: 0;
     z-index: 999;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
     animation: fadeInBackdrop 0.22s ease-out;
   }
 
   @keyframes fadeInBackdrop {
     from { opacity: 0; }
-    to { opacity: 1; }
+    to   { opacity: 1; }
   }
 
+  /* Main column fills the whole screen */
   .centerColumn {
-    height: 100vh;
-    overflow: auto;
+    position: relative;
+    width: 100%;
+    height: 100svh;
+    max-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 
+  /* The workspace area scrolls independently below the topbar */
   .workspaceContainer {
-    overflow: auto;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
   }
 
   .workspaceLayout {
     position: relative;
+    min-height: 100%;
   }
 
   .inspectorSlot {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 320px;
-    z-index: 100;
+    position: static;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 350px;
     border-left: none;
-    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: none;
+    animation: slideInUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
+
 
 .workspaceLayout {
   display: flex;
@@ -154,35 +171,219 @@
   to { transform: translateX(0); }
 }
 
-@media (max-width: 768px) {
-  .workspaceLayout {
-    display: flex;
-    flex-direction: column !important;
-    overflow-y: auto !important;
-    position: static;
-  }
-  
-  .workspaceContent {
-    flex: none;
-    height: auto;
-    overflow-y: visible;
-  }
-  
-  .inspectorSlot {
-    position: static;
-    width: 100% !important;
-    height: auto !important;
-    min-height: 350px;
-    border-left: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: none;
-    animation: slideInUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-}
-
 @keyframes slideInUp {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
 
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border-subtle);
+  overflow: hidden;
+  box-sizing: border-box;
+  z-index: 100;
+}
 
+.cofounderPanel {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.cofounderHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cofounderHeader h3 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.cofounderSparkle {
+  color: var(--primary);
+}
+
+/* Inline Node Inspector styling inside AI panel */
+.inlineNodeInspector {
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+
+.inlineNodeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.74rem;
+  color: var(--text-primary);
+}
+
+.clearNodeBtn {
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 2px;
+}
+
+.clearNodeBtn:hover {
+  color: var(--text-primary);
+}
+
+.inlineNodeBody {
+  padding: 12px;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inlineNodeInspectorEmpty {
+  border: 1px dashed var(--border-subtle);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.cofounderSectionTitle {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 6px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 4px;
+}
+
+.cofounderChips {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cofounderChip {
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cofounderChip:hover {
+  border-color: var(--primary);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.diagnosticsList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.diagnosticItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.diagnosticBullet {
+  color: var(--warning);
+  font-weight: 800;
+}
+
+.cofounderChatForm {
+  display: flex;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.cofounderChatInput {
+  flex: 1;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  padding: 6px 10px;
+  outline: none;
+}
+
+.cofounderChatInput:focus {
+  border-color: var(--primary);
+}
+
+.cofounderChatSubmitBtn {
+  background: var(--primary);
+  color: var(--bg-base);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.cofounderChatSubmitBtn:hover {
+  background: var(--primary-hover);
+}
+
+/* Tablet collapsing — only applies to tablet sizes, NOT mobile */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .shell {
+    /* Keep sidebar visible on tablets */
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .rightColumn {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 320px;
+    transform: translateX(100%);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .shell.rightPanelActive .rightColumn {
+    transform: translateX(0);
+  }
+}
+
+@media (min-width: 769px) and (max-width: 900px) {
+  .shell {
+    grid-template-columns: 60px minmax(0, 1fr);
+  }
+}

@@ -51,6 +51,7 @@ export default function SettingsModal({ isOpen, onClose }) {
       localStorage.removeItem('inframind_api_key')
       localStorage.removeItem('inframind_model')
       localStorage.removeItem('inframind_theme')
+      localStorage.removeItem('inframind_startup_mode')
       setKey('')
       setModel('gemini-2.5-flash')
       setTheme('dark')

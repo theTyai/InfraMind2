@@ -17,6 +17,19 @@ export const useArchitectureStore = create((set, get) => ({
   githubLinked: false,
   securityHistory: [],
   driftHistory: [],
+  
+  infrastructureMode: 'AUTO_FREE',
+  serviceOverrides: {}, // Map of serviceId: selectedPlanId
+  projectScalingStage: 2, // 1: Lean MVP, 2: Early Startup, 3: High Growth, 4: Planet Scale
+
+  setServiceOverride: (serviceId, planId) => set((state) => ({
+    infrastructureMode: 'MANUAL_OVERRIDE',
+    serviceOverrides: { ...state.serviceOverrides, [serviceId]: planId }
+  })),
+
+  setProjectScalingStage: (stage) => set({ projectScalingStage: stage }),
+  
+  resetToAuto: () => set({ infrastructureMode: 'AUTO_FREE', serviceOverrides: {} }),
 
   setCurrentProjectId: (projectId) => {
     const history = get().chatHistories[projectId] || [];
@@ -146,7 +159,10 @@ export const useArchitectureStore = create((set, get) => ({
           projectId,
           idea,
           knownStack,
-          startupMode: isStartupMode
+          startupMode: isStartupMode,
+          infrastructureMode: get().infrastructureMode,
+          serviceOverrides: get().serviceOverrides,
+          projectScalingStage: get().projectScalingStage
         })
       });
 

@@ -8,60 +8,74 @@
 /* ── CSS Custom Properties ─────────────────────────────────── */
 :root {
   /* Brand */
-  --primary:        #3b82f6; /* Subtle Blue */
-  --primary-hover:  #2563eb;
-  --primary-soft:   rgba(59, 130, 246, 0.08);
-  --secondary:      #60a5fa;
-  --accent:         #3b82f6; /* Subtle Blue */
-  --accent-soft:    rgba(59, 130, 246, 0.12);
-  --brand-soft:     rgba(59, 130, 246, 0.04);
+  --primary:        #6366f1; /* Vibrant Indigo */
+  --primary-hover:  #4f46e5;
+  --primary-soft:   rgba(99, 102, 241, 0.15);
+  --secondary:      #94a3b8;
+  --accent:         #a855f7; /* Purple accent */
+  --accent-soft:    rgba(168, 85, 247, 0.15);
+  --brand-soft:     rgba(99, 102, 241, 0.05);
   --danger:         #ef4444;
   --success:        #10b981;
   --warning:        #f59e0b;
-  --info:           #06b6d4;
+  --info:           #0ea5e9;
 
-  /* Surface - Vercel / Linear Aesthetic */
-  --bg-base:        #0a0a0a; /* Off-black */
-  --bg-surface:     #111111;
-  --bg-elevated:    #161616;
-  --bg-card:        transparent;
-  --bg-overlay:     rgba(0, 0, 0, 0.6);
+  /* Surface - Vercel/Linear Solid Aesthetic */
+  --bg-base:        #000000; /* Deepest background */
+  --bg-app:         #000000;
+  --bg-surface:     #0a0a0a; /* Solid panel */
+  --bg-elevated:    #111111; /* Elevated solid */
+  --bg-card:        #0a0a0a;
+  --bg-overlay:     rgba(0, 0, 0, 0.8);
   --bg-glass:       rgba(10, 10, 10, 0.7);
+  --glass-border:   rgba(255, 255, 255, 0.1);
+  --glass-blur:     blur(16px);
 
-  /* Text - Slate modern palette */
-  --text-primary:   #ededed;
-  --text-secondary: #cbd5e1;
-  --text-dim:       #a3a3a3;
-  --text-muted:     #888888;
+  /* Text - Improved contrast */
+  --text-primary:   #ededed; /* Crisp off-white */
+  --text-main:      #ededed;
+  --text-secondary: #a1a1aa; /* Lifted for readability */
+  --text-dim:       #888888;
+  --text-muted:     #666666;
   --text-faint:     #444444;
 
-  /* Borders - extremely thin, modern SaaS style */
-  --border-subtle:  #1f1f1f; /* slate-800 border look */
-  --border-dim:     #2d2d2d;
-  --border-glow:    rgba(59, 130, 246, 0.25);
-  --border-glass:   rgba(255, 255, 255, 0.04);
+  /* Borders - Crisp, visible lines */
+  --border-subtle:  #222222;
+  --border:         #333333;
+  --border-dim:     #1a1a1a;
+  --border-active:  rgba(99, 102, 241, 0.5);
+  --border-glow:    rgba(99, 102, 241, 0.4);
+  --border-glass:   rgba(255, 255, 255, 0.1);
+
+  /* Status colors with better legibility */
+  --status-active:  #34d399;
+  --status-idle:    #fbbf24;
+  --status-error:   #f87171;
+  --status-active-bg: rgba(52, 211, 153, 0.08);
+  --status-idle-bg:   rgba(251, 191, 36, 0.08);
+  --status-error-bg:  rgba(248, 113, 113, 0.08);
 
   /* Radius */
   --radius-xs:      4px;
   --radius-sm:      6px;
-  --radius-md:      8px; /* Bento Grid standard card rounding */
-  --radius-lg:      8px;
-  --radius-xl:      8px;
+  --radius-md:      8px;
+  --radius-lg:      10px;
+  --radius-xl:      12px;
   --radius-full:    9999px;
 
   /* Typography */
   --font-sans:      'Inter', -apple-system, system-ui, sans-serif;
   --font-mono:      'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 
-  /* Shadows - modern soft SaaS depth */
-  --shadow-sm:      0 2px 8px rgba(0, 0, 0, 0.5);
-  --shadow-md:      0 8px 30px rgba(0, 0, 0, 0.4);
-  --shadow-lg:      0 20px 50px rgba(0, 0, 0, 0.5);
-  --shadow-glow:    0 0 25px rgba(59, 130, 246, 0.15);
+  /* Shadows - crisper depth */
+  --shadow-sm:      0 1px 4px rgba(0, 0, 0, 0.6);
+  --shadow-md:      0 4px 20px rgba(0, 0, 0, 0.5);
+  --shadow-lg:      0 16px 48px rgba(0, 0, 0, 0.55);
+  --shadow-glow:    0 0 20px rgba(79, 142, 247, 0.18);
   
   /* Modern Tactile Depth */
-  --shadow-3d:      0 8px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  --shadow-3d-hover: 0 12px 40px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --shadow-3d:      0 4px 16px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --shadow-3d-hover: 0 8px 28px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 
   /* Transitions */
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -85,23 +99,26 @@
   --info:           #0891b2;
 
   /* Surface */
-  --bg-base:        #f8fafc;
+  --bg-base:        #f9fafb;
+  --bg-app:         #f9fafb;
   --bg-surface:     #ffffff;
-  --bg-elevated:    #f1f5f9;
+  --bg-elevated:    #f3f4f6;
   --bg-card:        rgba(15, 23, 42, 0.015);
   --bg-overlay:     rgba(15, 23, 42, 0.15);
   --bg-glass:       rgba(255, 255, 255, 0.75);
 
   /* Text */
-  --text-primary:   #0f172a;
-  --text-secondary: #475569;
-  --text-dim:       #64748b;
-  --text-muted:     #94a3b8;
-  --text-faint:     #cbd5e1;
+  --text-primary:   #111827;
+  --text-main:      #111827;
+  --text-secondary: #4b5563;
+  --text-dim:       #6b7280;
+  --text-muted:     #9ca3af;
+  --text-faint:     #d1d5db;
 
   /* Borders */
-  --border-subtle:  #e2e8f0;
-  --border-dim:     #cbd5e1;
+  --border-subtle:  #e5e7eb;
+  --border:         #e5e7eb;
+  --border-dim:     #d1d5db;
   --border-glow:    rgba(37, 99, 235, 0.1);
   --border-glass:   rgba(15, 23, 42, 0.03);
 
@@ -127,6 +144,7 @@ html {
   font-size: 16px;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  overflow-x: hidden; /* prevent horizontal overflow globally */
 }
 
 body {
@@ -179,6 +197,50 @@ ul, ol {
 img, svg {
   display: block;
   max-width: 100%;
+}
+
+/* Glassmorphism & Bento Layout Utilities */
+.glass-card {
+  background: var(--bg-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.glass-card:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border);
+  box-shadow: var(--shadow-3d-hover);
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+/* Scrollbar tweaks for dark theme / glassmorphism */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Utilities */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* ── Scrollbar Styling ────────────────────────────────────── */

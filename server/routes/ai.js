@@ -289,10 +289,43 @@ module.exports = function (app, db, admin, authMiddleware) {
     }
 
     const userId = req.user.uid;
-    const { idea, knownStack, projectId } = req.body;
+    const { idea, knownStack, projectId, startupMode, infrastructureMode, serviceOverrides, projectScalingStage } = req.body;
 
     if (!idea || !idea.trim()) {
       return res.status(400).json({ error: 'Idea prompt description is required' });
+    }
+
+    // Auto-selection evaluation: check if prompt mentions MVP, Simple, Lean, or Free
+    const isZeroCostStartup = startupMode || 
+      /mvp/i.test(idea) || 
+      /simple/i.test(idea) || 
+      /lean/i.test(idea) || 
+      /free/i.test(idea);
+
+    let promptModifier = '';
+    
+    // Determine scaling stage label
+    const scalingLabels = {
+      1: 'Lean MVP',
+      2: 'Early Startup',
+      3: 'High Growth',
+      4: 'Planet Scale'
+    };
+    const scaleContext = scalingLabels[projectScalingStage] || 'Early Startup';
+
+    promptModifier += `\\n\\nSCALING CONTEXT: Design this architecture for a ${scaleContext} phase.`;
+
+    if (infrastructureMode === 'MANUAL_OVERRIDE' && serviceOverrides && Object.keys(serviceOverrides).length > 0) {
+      promptModifier += `\\n\\nINFRASTRUCTURE STRATEGY: MANUAL_OVERRIDE. 
+Strictly respect the user's service tier selections provided in the current state. The user has overridden the following services:
+${JSON.stringify(serviceOverrides, null, 2)}
+Do NOT change these services in your recommendation. Bind the architecture strictly to these service tiers.`;
+    } else if (infrastructureMode === 'AUTO_FREE' || isZeroCostStartup) {
+      promptModifier += `\\n\\nINFRASTRUCTURE STRATEGY: AUTO_FREE.
+Bias all technology recommendations toward managed, free-tier services (e.g., Supabase Free, Vercel Hobby, MongoDB Atlas Free, Railway Starter). Do NOT recommend enterprise or highly complex self-hosted solutions unless absolutely necessary.`;
+    } else {
+      promptModifier += `\\n\\nIMPORTANT: Enterprise mode architecture.
+- Feel free to recommend Kafka, Kubernetes, Multi-region Redis, AWS/GCP services, and multi-region replication if the requirements warrant scale or high throughput.`;
     }
 
     // Secure BYOK header extraction
@@ -318,10 +351,25 @@ module.exports = function (app, db, admin, authMiddleware) {
 
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent`;
 
+    let existingProjectTitle = '';
+    let existingProjectSummary = '';
+    if (projectId) {
+      const projRef = db.collection('users').doc(userId).collection('projects').doc(projectId);
+      const projSnap = await projRef.get();
+      if (projSnap.exists) {
+        existingProjectTitle = projSnap.data().title || '';
+        existingProjectSummary = projSnap.data().summary || '';
+      }
+    }
+
+    if (existingProjectTitle) {
+      promptModifier += `\n\nCRITICAL CONTEXT: This is a refinement request for an existing project called "${existingProjectTitle}". Original concept: "${existingProjectSummary}". You MUST ensure the core concept of the project remains unchanged. You MUST keep the exact title "${existingProjectTitle}" in the "projectTitle" field. Do NOT change it.`;
+    }
+
     const userPrompt = `Project idea: "${idea}"
 User's known tech stack: ${knownStack && knownStack.length > 0 ? knownStack.join(', ') : 'Not specified - recommend the best choices'}
 
-Generate a complete architecture recommendation. Where the user knows a technology that fits, use it. Where they do not know something or their known tech is not ideal, recommend better alternatives and explain why.`;
+Generate a complete architecture recommendation. Where the user knows a technology that fits, use it. Where they do not know something or their known tech is not ideal, recommend better alternatives and explain why.${promptModifier}`;
 
     const requestBody = {
       system_instruction: {
@@ -396,6 +444,11 @@ Generate a complete architecture recommendation. Where the user knows a technolo
       const layersCount = Array.isArray(parsedResponse.stack) ? parsedResponse.stack.length : 0;
       const apisCount = Array.isArray(parsedResponse.apis) ? parsedResponse.apis.length : 0;
 
+      // Guarantee the project title does not change during refinement
+      if (existingProjectTitle) {
+        parsedResponse.projectTitle = existingProjectTitle;
+      }
+
       const updateData = {
         title: parsedResponse.projectTitle,
         summary: parsedResponse.projectSummary || '',
@@ -412,6 +465,29 @@ Generate a complete architecture recommendation. Where the user knows a technolo
         updateData.complianceScore = admin.firestore.FieldValue.delete();
         updateData.driftScore = admin.firestore.FieldValue.delete();
         updateData.lastDriftScanAt = admin.firestore.FieldValue.delete();
+
+        // Delete documents in securityReports and driftHistory subcollections
+        try {
+          const secSnap = await projectDocRef.collection('securityReports').get();
+          if (!secSnap.empty) {
+            const batch = db.batch();
+            secSnap.forEach(d => batch.delete(d.ref));
+            await batch.commit();
+          }
+        } catch (secDelErr) {
+          console.error('[AI Gateway] Failed to clear securityReports:', secDelErr);
+        }
+
+        try {
+          const driftSnap = await projectDocRef.collection('driftHistory').get();
+          if (!driftSnap.empty) {
+            const batch = db.batch();
+            driftSnap.forEach(d => batch.delete(d.ref));
+            await batch.commit();
+          }
+        } catch (driftDelErr) {
+          console.error('[AI Gateway] Failed to clear driftHistory:', driftDelErr);
+        }
       }
 
       // Save metadata

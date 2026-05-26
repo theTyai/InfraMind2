@@ -5,14 +5,14 @@ module.exports = function (app, db, admin, authMiddleware) {
   const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID || '';
   const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET || '';
   const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
-  const API_BASE_URL = process.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+  const API_BASE_URL = process.env.API_BASE_URL || process.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
   // Endpoint to generate GitHub OAuth URL
   app.get('/api/auth/github/url', authMiddleware, async (req, res) => {
     const userId = req.user.uid;
 
     if (!GITHUB_CLIENT_ID) {
-      return res.status(500).json({ error: 'GitHub Client ID not configured on server' });
+      return res.status(503).json({ error: 'GitHub Integration is not configured on this server.' });
     }
 
     // Use user's UID as state to map it back on callback

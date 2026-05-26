@@ -2,13 +2,17 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react'
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'
+import DOMPurify from 'dompurify'
 import styles from './MermaidDiagram.module.css'
 
 let mermaidReady = false
 let mermaidInit = null
+// Bump this version whenever themeVariables or config change,
+// so the hot-reload clears the cached instance automatically.
+const MERMAID_CONFIG_VERSION = 2
 
 async function getMermaid() {
-  if (mermaidReady) return window.__mermaid
+  if (mermaidReady && window.__mermaidVersion === MERMAID_CONFIG_VERSION) return window.__mermaid
   if (mermaidInit) return mermaidInit
 
   mermaidInit = import('mermaid').then(m => {
@@ -17,41 +21,40 @@ async function getMermaid() {
       startOnLoad: false,
       securityLevel: 'loose', // Allow click event callbacks
       theme: 'base',
-      darkMode: true,
       themeVariables: {
-        darkMode: true,
-        background: '#000000',
-        mainBkg: '#050505',
-        lineColor: '#2563eb', // Electric blue connection lines
-        primaryColor: '#2563eb',
+        // Text colors — critical for visibility on dark backgrounds
         primaryTextColor: '#f8fafc',
-        primaryBorderColor: '#1e293b',
-        secondaryColor: '#0a0a0a',
-        tertiaryColor: '#111111',
-        nodeBorder: '#1e293b',
-        clusterBkg: '#0a0a0a',
-        clusterBorder: '#1e293b',
-        edgeLabelBackground: '#000000',
-        titleColor: '#f8fafc',
-        fontSize: '12px',
-        fontFamily: '"JetBrains Mono", monospace',
-        actorBkg: '#050505',
+        // Node colors
+        primaryColor: '#0f172a',
+        primaryBorderColor: '#2563eb',
+        secondaryColor: '#1e293b',
+        tertiaryColor: '#1e293b',
+        // Edge / line colors
+        lineColor: '#2563eb',
+        edgeLabelBackground: 'transparent',
+        // Typography
+        fontSize: '13px',
+        fontFamily: '"Inter", sans-serif',
+        // Sequence diagram actors
+        actorBkg: '#0f172a',
         actorBorder: '#2563eb',
         actorTextColor: '#f8fafc',
         actorLineColor: '#2563eb',
         signalColor: '#2563eb',
         signalTextColor: '#f8fafc',
-        activationBkgColor: '#0c0c0c',
+        activationBkgColor: '#1e293b',
         activationBorderColor: '#2563eb',
-        sequenceNumberColor: '#60a5fa',
-        noteBkgColor: '#0a0a0a',
+        noteBkgColor: '#0f172a',
         noteTextColor: '#f8fafc',
-        noteBorderColor: '#1e293b',
+        noteBorderColor: '#2563eb',
       },
       flowchart: {
         curve: 'basis',
         useMaxWidth: false, // Turn off so we can control pan/zoom dimensions
-        htmlLabels: true,
+        // htmlLabels: false uses native SVG <text> elements instead of <foreignObject>.
+        // This is critical: DOMPurify strips foreignObject HTML content when sanitizing
+        // SVGs, leaving nodes with no visible text. SVG text elements are preserved correctly.
+        htmlLabels: false,
         nodeSpacing: 50,
         rankSpacing: 60,
       },
@@ -67,6 +70,7 @@ async function getMermaid() {
       }
     })
     window.__mermaid = mermaid
+    window.__mermaidVersion = MERMAID_CONFIG_VERSION
     mermaidReady = true
     return mermaid
   })
@@ -184,13 +188,66 @@ export default function MermaidDiagram({ code, title, onSelectNode }) {
               h = parseFloat(parts[3])
             }
           }
+
+          // ── Inject a <style> block directly into the SVG ────────────────
+          // This is the most reliable way to force text visibility across ALL
+          // Mermaid versions (v10 uses .node rect; v11 uses rect.basic,
+          // .label-container). We detect the current theme at render time so
+          // both dark and light modes get correct colours.
+          const isDark = document.documentElement.getAttribute('data-theme') !== 'light'
+          const textColor  = isDark ? '#f8fafc' : '#1e293b'
+          const nodeBg     = isDark ? '#0f172a' : '#ffffff'
+          const clusterBg  = isDark ? '#060d1e' : '#eef2ff'
+          const edgeColor  = '#2563eb'
+
+          const styleEl = doc.createElementNS('http://www.w3.org/2000/svg', 'style')
+          styleEl.textContent = `
+            /* ── Text: Mermaid v10 & v11 ── */
+            text, tspan { fill: ${textColor} !important; }
+
+            /* ── Node shapes: v10 (.node rect) and v11 (rect.basic, .label-container) ── */
+            .node rect, .node circle, .node polygon, .node path,
+            rect.basic, rect.label-container, .label-container,
+            path.label-container { fill: ${nodeBg} !important; stroke: ${edgeColor} !important; stroke-width: 1.5px !important; }
+
+            /* ── Actor boxes in sequence diagrams ── */
+            .actor { fill: ${nodeBg} !important; stroke: ${edgeColor} !important; }
+            .actor text, .actor tspan { fill: ${textColor} !important; }
+
+            /* ── Clusters / subgraphs ── */
+            .cluster rect, .subgraph-bgcolor { fill: ${clusterBg} !important; stroke: ${edgeColor} !important; }
+            .cluster text, .subgraph-title { fill: ${textColor} !important; }
+
+            /* ── Edges / arrows ── */
+            path.flowchart-link, .edgePath path, line { stroke: ${edgeColor} !important; fill: none !important; }
+            .marker path, marker path, .arrowheadPath { fill: ${edgeColor} !important; stroke: none !important; }
+
+            /* ── Edge labels ── */
+            .edgeLabel rect { fill: ${nodeBg} !important; }
+            .edgeLabel text, .edgeLabel tspan { fill: ${textColor} !important; }
+            .edgeLabel span { color: ${textColor} !important; }
+
+            /* ── HTML labels inside foreignObject (v11 htmlLabels:true) ── */
+            foreignObject div, foreignObject span, .nodeLabel, .label { color: ${textColor} !important; }
+          `
+          svgEl.insertBefore(styleEl, svgEl.firstChild)
         }
 
-        // Re-serialize SVG if we updated attributes
+        // Re-serialize SVG (now includes our injected <style>)
         const updatedSvg = svgEl ? new XMLSerializer().serializeToString(svgEl) : svg
 
+        // Sanitize. We keep <style> and <foreignObject> so neither the injected
+        // CSS nor any HTML labels Mermaid may emit get stripped.
+        const sanitizedSvg = DOMPurify.sanitize(updatedSvg, {
+          USE_PROFILES: { svg: true },
+          ADD_TAGS: ['style', 'foreignObject'],
+          ADD_ATTR: ['class', 'style', 'xmlns', 'xmlns:xhtml'],
+          FORCE_BODY: false,
+        })
+
+
         setDimensions({ width: w, height: h })
-        setSvgContent(updatedSvg)
+        setSvgContent(sanitizedSvg)
       } catch (e) {
         if (!cancelled) {
           setError(`Diagram render error: ${e.message}`)

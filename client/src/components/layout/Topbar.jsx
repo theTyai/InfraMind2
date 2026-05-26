@@ -21,7 +21,10 @@ export default function Topbar({
   onToggleSidebar,
   user,
   onOpenSettings,
-  presenceUsers = []
+  presenceUsers = [],
+  activeMode,
+  setActiveMode,
+  projectName,
 }) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [searchExpanded, setSearchExpanded] = useState(false)
@@ -83,7 +86,7 @@ export default function Topbar({
   return (
     <header className={styles.topbar} role="banner">
       <div className={styles.left}>
-        {/* Sidebar toggle — aria-label so screen readers understand purpose */}
+        {/* Sidebar toggle */}
         <button
           type="button"
           className={styles.menuToggle}
@@ -95,51 +98,16 @@ export default function Topbar({
           <Menu size={16} aria-hidden="true" />
         </button>
 
-        <div>
-          <p className={styles.title}>InfraMind</p>
+        <div className={styles.logoAndProject}>
+          <span className={styles.orgLabel}>Acme Corp</span>
+          <span className={styles.projectDivider}>/</span>
+          <p className={styles.title} title={projectName}>{projectName || 'E-Commerce Platform'}</p>
+          <span className={styles.viewBadge}>Architecture</span>
         </div>
       </div>
 
-      {/* Search — hidden on mobile, expands on demand */}
-      <div className={`${styles.center} ${searchExpanded ? styles.searchExpanded : ''}`}>
-        {searchExpanded ? (
-          <div className={styles.searchMobileWrap}>
-            <label className={styles.searchLabel} htmlFor="workspace-search">
-              <input
-                id="workspace-search"
-                ref={searchRef}
-                className={styles.searchInput}
-                type="search"
-                placeholder="Search workspace…"
-                value={searchValue}
-                onChange={e => onSearchChange(e.target.value)}
-                autoFocus
-                aria-label="Search workspace"
-              />
-            </label>
-            <button
-              type="button"
-              className={styles.searchCloseBtn}
-              onClick={() => { setSearchExpanded(false); onSearchChange('') }}
-              aria-label="Close search"
-            >
-              <X size={14} aria-hidden="true" />
-            </button>
-          </div>
-        ) : (
-          <label className={styles.searchLabel} htmlFor="workspace-search-desktop">
-            <input
-              id="workspace-search-desktop"
-              className={styles.searchInput}
-              type="search"
-              placeholder="Search workspace…"
-              value={searchValue}
-              onChange={e => onSearchChange(e.target.value)}
-              aria-label="Search workspace"
-            />
-          </label>
-        )}
-      </div>
+      {/* Center section kept empty to preserve spacing or removed */}
+      <div className={styles.center}></div>
 
       <div className={styles.controls}>
         {/* Presence Avatars — max 4 shown */}
@@ -170,16 +138,6 @@ export default function Topbar({
             )}
           </div>
         )}
-
-        {/* Mobile Search Trigger */}
-        <button
-          type="button"
-          className={styles.searchMobileTrigger}
-          onClick={() => setSearchExpanded(true)}
-          aria-label="Search workspace"
-        >
-          <Search size={16} aria-hidden="true" />
-        </button>
 
         {/* Notifications Bell */}
         {user && (

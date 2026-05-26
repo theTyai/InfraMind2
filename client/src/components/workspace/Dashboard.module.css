@@ -49,11 +49,16 @@
 /* ── Navbar ──────────────────────────────────────────────── */
 .navbar {
   position: sticky;
-  top: 0;
+  top: 16px;
+  margin: 16px auto 0;
+  max-width: 1200px;
+  width: calc(100% - 32px);
   z-index: 100;
-  background: rgba(5, 5, 7, 0.8);
-  backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .navInner {
@@ -152,6 +157,94 @@
   color: #ef4444;
   background: rgba(239, 68, 68, 0.08);
   border-color: rgba(239, 68, 68, 0.2);
+}
+
+.iconActionBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: transparent;
+  color: var(--text-muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.iconActionBtn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-subtle);
+}
+
+.hamburgerBtn {
+  display: none;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: transparent;
+  color: var(--text-muted);
+  place-items: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.hamburgerBtn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-subtle);
+}
+
+.mobileNavDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.mobileNavPill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+}
+
+.mobileNavPill:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.mobileNavDivider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 4px 0;
+}
+
+.mobileLogoutBtn {
+  color: #ef4444;
+}
+
+.mobileLogoutBtn:hover {
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
 }
 
 /* ── Main ────────────────────────────────────────────────── */
@@ -525,35 +618,73 @@
 }
 
 /* ── Recent Grid ─────────────────────────────────────────── */
-.recentGrid {
+/* ── Bento Grid Layout ────────────────────────────────────── */
+.bentoGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+}
+
+.bentoItem {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.checklistCard {
+  grid-column: span 3;
+}
+
+.recentCol {
+  grid-column: span 2;
+}
+
+.templatesCol {
+  grid-column: span 1;
+}
+
+.quickActionsCol {
+  grid-column: span 3;
+}
+
+/* Onboarding Checklist Grid Override */
+.checklistGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* Recent Architectures */
+.recentList {
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
 .recentCard {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 20px;
+  gap: 8px;
+  padding: 16px;
   background: transparent;
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   text-align: left;
   cursor: pointer;
   color: inherit;
   transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
-}
-
-.recentCard:first-child {
-  grid-column: span 2;
 }
 
 .recentCard:hover {
-  background: transparent;
-  border-color: #555555;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.02);
+  background: var(--bg-elevated);
+  border-color: var(--border);
 }
 
 .recentCardTop {
@@ -563,11 +694,11 @@
 }
 
 .recentCardIcon {
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   border-radius: var(--radius-sm);
-  background: rgba(37, 99, 235, 0.1);
-  border: 1px solid rgba(37, 99, 235, 0.2);
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.15);
   display: grid;
   place-items: center;
   color: var(--secondary);
@@ -575,8 +706,8 @@
 }
 
 .recentCardTitle {
-  font-weight: 500;
-  font-size: 0.9rem;
+  font-weight: 600;
+  font-size: 0.92rem;
   color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -586,12 +717,13 @@
 
 .recentCardSummary {
   font-size: 0.8rem;
-  color: var(--text-dim);
-  line-height: 1.5;
+  color: var(--text-secondary);
+  line-height: 1.45;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  margin: 0;
 }
 
 .recentCardMeta {
@@ -602,10 +734,6 @@
   color: var(--text-muted);
 }
 
-.dot {
-  color: var(--text-faint);
-}
-
 .recentCardCta {
   display: flex;
   align-items: center;
@@ -613,45 +741,166 @@
   font-size: 0.78rem;
   font-weight: 500;
   color: var(--secondary);
-  margin-top: 2px;
-  opacity: 0;
-  transition: opacity var(--transition-fast);
+  opacity: 0.8;
 }
 
-.recentCard:hover .recentCardCta {
-  opacity: 1;
+.emptyRecentBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* ── Templates Grid ──────────────────────────────────────── */
-.templatesGrid {
+/* Template Compact List */
+.templateListCompact {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.templateCompactTile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  transition: all var(--transition-fast);
+  width: 100%;
+}
+
+.templateCompactTile:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border);
+}
+
+.templateCompactIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.templateCompactText {
+  flex: 1;
+  min-width: 0;
+}
+
+.templateCompactText h4 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 2px 0;
+}
+
+.templateCompactText p {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tileArrow {
+  color: var(--text-muted);
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.templateCompactTile:hover .tileArrow {
+  color: var(--text-primary);
+  transform: translateX(3px);
+}
+
+/* Quick Actions Grid Compact */
+.quickActionsGridCompact {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
 }
 
-.templateCard {
-  position: relative;
+.bentoActionBtn {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 10px;
   padding: 20px;
   background: transparent;
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  text-align: left;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
   cursor: pointer;
-  color: inherit;
-  overflow: hidden;
   transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
+  box-sizing: border-box;
+  width: 100%;
 }
 
-.templateCard:nth-child(1) {
-  grid-column: span 2;
+.bentoActionBtn:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-color: var(--border);
 }
 
-.templateCard:nth-child(4) {
-  grid-column: span 2;
+/* Media Queries for Bento Grid */
+@media (max-width: 1024px) {
+  .bentoGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .checklistCard {
+    grid-column: span 2;
+  }
+  .recentCol {
+    grid-column: span 2;
+  }
+  .templatesCol {
+    grid-column: span 2;
+  }
+  .quickActionsCol {
+    grid-column: span 2;
+  }
+  .quickActionsGridCompact {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .bentoGrid {
+    grid-template-columns: 1fr;
+  }
+  .checklistCard {
+    grid-column: span 1;
+  }
+  .recentCol {
+    grid-column: span 1;
+  }
+  .templatesCol {
+    grid-column: span 1;
+  }
+  .quickActionsCol {
+    grid-column: span 1;
+  }
+  .quickActionsGridCompact {
+    grid-template-columns: 1fr;
+  }
+  .checklistGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .templateCardAccent {
@@ -1129,4 +1378,230 @@
 .quickBtn:focus-visible {
   outline: 2px solid #2563eb;
   outline-offset: 2px;
+}
+
+/* ── Refinements: Icon Actions, Ghost Search, Tabbed Bento ── */
+.iconActionBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-dim);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.iconActionBtn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-dim);
+}
+
+.navDivider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-subtle);
+  margin: 0 4px;
+}
+
+.textareaBoxIdle {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.textareaIdle {
+  text-align: center;
+  background: transparent !important;
+  border: none !important;
+  color: var(--primary) !important;
+  font-size: 1.15rem !important;
+  font-weight: 500 !important;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: rgba(59, 130, 246, 0.3);
+  transition: color 0.15s, text-decoration-color 0.15s;
+  height: 40px !important;
+  padding: 8px 16px !important;
+  resize: none !important;
+  overflow: hidden !important;
+}
+.textareaIdle:hover {
+  color: var(--primary-hover) !important;
+  text-decoration-color: var(--primary-hover);
+}
+
+.unifiedTabbedGrid {
+  grid-column: span 3;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.tabHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
+  margin-bottom: 8px;
+}
+
+.tabsList {
+  display: flex;
+  gap: 8px;
+}
+
+.tabBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tabBtn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tabBtnActive {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-subtle);
+}
+
+.tabContent {
+  width: 100%;
+}
+
+.recentGridContainer {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+.templatesGridContainer {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .recentGridContainer {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .templatesGridContainer {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .recentGridContainer {
+    grid-template-columns: 1fr;
+  }
+  .templatesGridContainer {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Responsive: unified tabbed grid span ── */
+@media (max-width: 1024px) {
+  .unifiedTabbedGrid {
+    grid-column: span 2;
+  }
+}
+@media (max-width: 768px) {
+  .unifiedTabbedGrid {
+    grid-column: span 1;
+    padding: 16px;
+  }
+  .tabsList {
+    gap: 4px;
+  }
+  .tabBtn {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+  }
+  .tabBtn span {
+    display: none;
+  }
+  .sectionAction {
+    font-size: 0.75rem;
+  }
+  .composerSubtitle {
+    font-size: 0.9rem;
+  }
+}
+@media (max-width: 480px) {
+  .main {
+    padding: 24px 12px 48px;
+    gap: 32px;
+  }
+  .navInner {
+    padding: 0 12px;
+    height: 52px;
+  }
+  .iconActionBtn {
+    display: none;
+  }
+  .hamburgerBtn {
+    display: grid;
+  }
+  .navDivider {
+    display: none;
+  }
+  .userName {
+    display: none;
+  }
+}
+
+/* Flush Navbar on Mobile */
+@media (max-width: 768px) {
+  .navbar {
+    top: 0;
+    margin: 0;
+    width: 100%;
+    border-radius: 0;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border-subtle);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--bg-surface);
+  }
+  .iconActionBtn {
+    display: none;
+  }
+  .hamburgerBtn {
+    display: grid;
+  }
+  .mobileNavDropdown {
+    position: fixed;
+    top: 53px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    border-top: none;
+  }
 }

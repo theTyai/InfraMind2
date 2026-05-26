@@ -24,13 +24,22 @@
   flex: 1;
   width: 100%;
   min-height: 420px;
-  background: #000000;
+  background: var(--bg-base);
   position: relative;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+}
+
+.diagramBox::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  box-shadow: inset 0 0 40px 15px var(--bg-base);
 }
 
 .grab {
@@ -129,8 +138,107 @@
   color: var(--text-muted);
   white-space: pre-wrap;
   word-break: break-all;
-  background: #0a0a0a;
+  background: var(--bg-base);
   padding: 12px;
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 6px;
+}
+
+/* ── MERMAID CSS OVERRIDES ─────────────────────────────────── */
+/* Force Mermaid Diagram Styles via standard CSS since themeCSS often fails */
+
+.mermaid :global(.node rect),
+.mermaid :global(.node circle),
+.mermaid :global(.node polygon),
+.mermaid :global(.node path) {
+  fill: var(--bg-surface) !important;
+  stroke: var(--primary) !important;
+  stroke-width: 1.5px !important;
+}
+
+/* SVG text elements — used when htmlLabels: false */
+.mermaid :global(text),
+.mermaid :global(tspan) {
+  fill: #f8fafc !important;
+}
+
+/* HTML label elements (fallback, for legacy) */
+.mermaid :global(.label),
+.mermaid :global(.nodeLabel),
+.mermaid :global(.edgeLabel) {
+  color: #f8fafc !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 600 !important;
+}
+
+.mermaid :global(.label text),
+.mermaid :global(.nodeLabel text) {
+  fill: #f8fafc !important;
+}
+
+.mermaid :global(.label div),
+.mermaid :global(.label span),
+.mermaid :global(.nodeLabel div),
+.mermaid :global(.nodeLabel span) {
+  color: #f8fafc !important;
+}
+
+.mermaid :global(.edgePath path),
+.mermaid :global(.path) {
+  stroke: var(--primary) !important;
+  stroke-width: 1.5px !important;
+}
+
+.mermaid :global(.marker path),
+.mermaid :global(marker path) {
+  fill: var(--primary) !important;
+  stroke: none !important;
+}
+
+.mermaid :global(.edgeLabel) {
+  background-color: var(--bg-base) !important;
+  padding: 4px !important;
+  border-radius: 4px !important;
+}
+.mermaid :global(.edgeLabel rect) {
+  fill: var(--bg-base) !important;
+}
+
+.mermaid :global(.cluster rect) {
+  fill: var(--bg-base) !important;
+  stroke: var(--border-subtle) !important;
+  stroke-width: 1px !important;
+}
+
+.mermaid :global(.cluster text) {
+  fill: #f8fafc !important;
+}
+
+/* Light Mode Overrides */
+:global([data-theme="light"]) .mermaid :global(text),
+:global([data-theme="light"]) .mermaid :global(tspan) {
+  fill: #1e293b !important;
+}
+
+:global([data-theme="light"]) .mermaid :global(.label),
+:global([data-theme="light"]) .mermaid :global(.nodeLabel),
+:global([data-theme="light"]) .mermaid :global(.edgeLabel),
+:global([data-theme="light"]) .mermaid :global(.label div),
+:global([data-theme="light"]) .mermaid :global(.label span),
+:global([data-theme="light"]) .mermaid :global(.nodeLabel div),
+:global([data-theme="light"]) .mermaid :global(.nodeLabel span) {
+  color: #1e293b !important;
+}
+
+:global([data-theme="light"]) .mermaid :global(.label text),
+:global([data-theme="light"]) .mermaid :global(.nodeLabel text),
+:global([data-theme="light"]) .mermaid :global(.cluster text) {
+  fill: #1e293b !important;
+}
+
+:global([data-theme="light"]) .mermaid :global(.node rect),
+:global([data-theme="light"]) .mermaid :global(.node circle),
+:global([data-theme="light"]) .mermaid :global(.node polygon),
+:global([data-theme="light"]) .mermaid :global(.node path) {
+  fill: #ffffff !important;
 }

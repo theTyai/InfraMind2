@@ -75,6 +75,7 @@ function AuthenticatedApp({ modals, setModals, onAuthRequired }) {
   const [selectedNode, setSelectedNode] = useState(null)
   const [search, setSearch]             = useState('')
   const [commandOpen, setCommandOpen]   = useState(false)
+  const [activeMode, setActiveMode]     = useState('cto')
 
   const projects         = useArchitectureStore(s => s.projects)
   const chatHistories    = useArchitectureStore(s => s.chatHistories)
@@ -303,6 +304,8 @@ function AuthenticatedApp({ modals, setModals, onAuthRequired }) {
           onOpenCommand={() => setCommandOpen(true)}
           selectedNode={selectedNode}
           onSelectNode={setSelectedNode}
+          activeMode={activeMode}
+          setActiveMode={setActiveMode}
           onSelectProject={handleSelectRecent}
           user={appUser}
           onLogout={handleLogout}

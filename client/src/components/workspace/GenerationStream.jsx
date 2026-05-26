@@ -32,6 +32,7 @@ export default function GenerationStream() {
 
   return (
     <div className={styles.engineRoomOverlay}>
+      <div className={styles.engineRoomBackground}></div>
       <div className={styles.engineRoomGlow}></div>
       <section className={styles.terminalContainer}>
         <div className={styles.terminalHeaderBar}>

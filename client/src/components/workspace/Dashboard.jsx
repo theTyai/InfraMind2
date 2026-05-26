@@ -87,7 +87,10 @@ export default function Dashboard({
   const [suggestions, setSuggestions] = useState([])
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
+  const [activeTab, setActiveTab] = useState('recent')
+  const [isFocused, setIsFocused] = useState(false)
   const tagInputRef = useRef(null)
+  const isComposerActive = isFocused || !!idea.trim()
 
   // Onboarding Checklist stats from localStorage
   const [checklist, setChecklist] = useState({
@@ -196,22 +199,43 @@ export default function Dashboard({
             </button>
           </div>
 
-          <div className={styles.navCenter}>
-            <button type="button" className={styles.navPill} onClick={onOpenTemplates}>
-              <Layers size={13} />
-              Templates
-            </button>
-            <button type="button" className={styles.navPill} onClick={onOpenDocs}>
-              <BookOpen size={13} />
-              Docs
-            </button>
-            <button type="button" className={styles.navPill} onClick={onOpenSettings}>
-              <Settings size={13} />
-              Settings
-            </button>
-          </div>
-
           <div className={styles.navRight}>
+            {/* Icon-First Workspace Hub Actions */}
+            <button
+              type="button"
+              className={styles.iconActionBtn}
+              onClick={onOpenTemplates}
+              title="Browse Templates"
+            >
+              <Layers size={15} />
+            </button>
+            <button
+              type="button"
+              className={styles.iconActionBtn}
+              onClick={onOpenDocs}
+              title="Documentation"
+            >
+              <BookOpen size={15} />
+            </button>
+            <button
+              type="button"
+              className={styles.iconActionBtn}
+              onClick={onOpenSettings}
+              title="API Settings"
+            >
+              <Settings size={15} />
+            </button>
+            <button
+              type="button"
+              className={styles.iconActionBtn}
+              onClick={() => onSubmit({ idea: 'A scalable cloud-native SaaS platform with multi-tenancy, event sourcing, and CQRS pattern.', knownStack: ['Next.js', 'AWS', 'PostgreSQL', 'Kafka'] })}
+              title="Generate SaaS Demo"
+            >
+              <Cloud size={15} />
+            </button>
+
+            <div className={styles.navDivider} />
+
             <div 
               className={styles.userChip} 
               onClick={onOpenProfile}
@@ -292,33 +316,37 @@ export default function Dashboard({
 
             <form className={styles.composerForm} onSubmit={handleFormSubmit}>
               {/* Textarea */}
-              <div className={styles.textareaBox}>
+              <div className={`${styles.textareaBox} ${!isComposerActive ? styles.textareaBoxIdle : ''}`}>
                 <textarea
                   id="dashboard-textarea"
-                  className={styles.textarea}
-                  placeholder="e.g. 'A real-time ride sharing app with driver dispatching, geo-tracking, stripe payments, and Redis caching'"
+                  className={`${styles.textarea} ${!isComposerActive ? styles.textareaIdle : ''}`}
+                  placeholder="Describe your system architecture..."
                   value={idea}
-                  rows={4}
+                  rows={isComposerActive ? 4 : 1}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
                   onChange={(e) => setIdea(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleFormSubmit(e)
                   }}
                 />
                 
-                <div className={styles.textareaFooter}>
-                  <button 
-                    type="button" 
-                    className={styles.advancedToggleBtn} 
-                    onClick={() => setShowAdvanced(p => !p)}
-                  >
-                    {showAdvanced ? '⚙ Hide Advanced Stacks' : '⚙ Customize Stack & Presets'}
-                  </button>
-                  <span className={styles.kbHint}>⌘↵ to generate</span>
-                </div>
+                {isComposerActive && (
+                  <div className={styles.textareaFooter}>
+                    <button 
+                      type="button" 
+                      className={styles.advancedToggleBtn} 
+                      onClick={() => setShowAdvanced(p => !p)}
+                    >
+                      {showAdvanced ? '⚙ Hide Advanced Stacks' : '⚙ Customize Stack & Presets'}
+                    </button>
+                    <span className={styles.kbHint}>⌘↵ to generate</span>
+                  </div>
+                )}
               </div>
 
               {/* Progressive Disclosure Section */}
-              {showAdvanced && (
+              {showAdvanced && isComposerActive && (
                 <div className={styles.advancedOptionsPanel}>
                   {/* presets row */}
                   <div className={styles.presetContainer}>
@@ -386,11 +414,13 @@ export default function Dashboard({
                 </div>
               )}
 
-              <button type="submit" className={styles.generateBtn} disabled={!idea.trim()}>
-                <Zap size={16} />
-                Generate Architecture Blueprint
-                <ArrowRight size={16} className={styles.btnArrow} />
-              </button>
+              {isComposerActive && (
+                <button type="submit" className={styles.generateBtn} disabled={!idea.trim()}>
+                  <Zap size={16} />
+                  Generate Architecture Blueprint
+                  <ArrowRight size={16} className={styles.btnArrow} />
+                </button>
+              )}
             </form>
 
             {/* Trust Badges */}
@@ -404,19 +434,20 @@ export default function Dashboard({
           </div>
         </section>
 
-        {/* ── Onboarding Checklist Card ── */}
-        {!allChecklistDone && (
-          <section className={styles.checklistSection}>
-            <div className={styles.checklistCard}>
+        {/* ── Bento Grid Dashboard Container ── */}
+        <div className={styles.bentoGrid}>
+          {/* Onboarding Checklist */}
+          {!allChecklistDone && (
+            <div className={`${styles.bentoItem} ${styles.checklistCard}`}>
               <div className={styles.checklistCardHeader}>
                 <Sparkles size={16} className={styles.checklistHeaderIcon} />
-                <h3>Your Active Onboarding Checklist</h3>
+                <h3>Active Onboarding Checklist</h3>
               </div>
               <p className={styles.checklistDesc}>
-                Complete these quick actions to experience the full power of the AI Architecture Planner.
+                Complete these actions to experience the full power of InfraMind.
               </p>
               <div className={styles.checklistGrid}>
-                {checklistItems.map((item, idx) => (
+                {checklistItems.map((item) => (
                   <div key={item.id} className={`${styles.checklistItem} ${item.done ? styles.checklistDone : ''}`}>
                     <div className={styles.checklistCheck}>
                       {item.done ? '✓' : '○'}
@@ -426,137 +457,106 @@ export default function Dashboard({
                 ))}
               </div>
             </div>
-          </section>
-        )}
+          )}
 
-        {/* ── Recent Projects ── */}
-        {history.length > 0 && (
-          <section className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <div className={styles.sectionTitle}>
-                <Clock size={15} />
-                Recent Architectures
-              </div>
-              <button type="button" className={styles.sectionAction} onClick={onOpenSaved}>
-                View all <ChevronRight size={13} />
-              </button>
-            </div>
-            <div className={styles.recentGrid}>
-              {history.slice(0, 3).map((project) => (
+          {/* Unified Tabbed Grid View */}
+          <div className={`${styles.bentoItem} ${styles.unifiedTabbedGrid}`}>
+            <div className={styles.tabHeader}>
+              <div className={styles.tabsList}>
                 <button
-                  key={project.id}
                   type="button"
-                  className={styles.recentCard}
-                  onClick={() => onSelectRecent && onSelectRecent(project)}
+                  className={`${styles.tabBtn} ${activeTab === 'recent' ? styles.tabBtnActive : ''}`}
+                  onClick={() => setActiveTab('recent')}
                 >
-                  <div className={styles.recentCardTop}>
-                    <div className={styles.recentCardIcon}>
-                      <Layers size={14} />
-                    </div>
-                    <span className={styles.recentCardTitle}>{project.title || 'Untitled project'}</span>
-                  </div>
-                  {project.summary && (
-                    <p className={styles.recentCardSummary}>{project.summary}</p>
-                  )}
-                  <div className={styles.recentCardMeta}>
-                    <span>{project.metrics?.layers || 0} layers</span>
-                    <span className={styles.dot}>·</span>
-                    <span>{project.metrics?.apis || 0} APIs</span>
-                    <span className={styles.dot}>·</span>
-                    <span>{project.metrics?.dbSchema || project.metrics?.models || 0} models</span>
-                  </div>
-                  <div className={styles.recentCardCta}>
-                    Open Workspace <ArrowRight size={12} />
-                  </div>
+                  <Clock size={14} />
+                  <span>Recent Architectures</span>
                 </button>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Progressive Disclosure Sections: Templates & Quick Actions */}
-        {showAdvanced && (
-          <>
-            {/* ── Template Gallery ── */}
-            <section className={styles.section}>
-              <div className={styles.sectionHeader}>
-                <div className={styles.sectionTitle}>
-                  <Sparkles size={15} />
-                  Architecture Templates
-                </div>
+                <button
+                  type="button"
+                  className={`${styles.tabBtn} ${activeTab === 'templates' ? styles.tabBtnActive : ''}`}
+                  onClick={() => setActiveTab('templates')}
+                >
+                  <Sparkles size={14} />
+                  <span>Quick Templates</span>
+                </button>
+              </div>
+              
+              {activeTab === 'recent' ? (
+                <button type="button" className={styles.sectionAction} onClick={onOpenSaved}>
+                  View all <ChevronRight size={12} />
+                </button>
+              ) : (
                 <button type="button" className={styles.sectionAction} onClick={onOpenTemplates}>
-                  Browse all <ChevronRight size={13} />
+                  All <ChevronRight size={12} />
                 </button>
-              </div>
-              <p className={styles.sectionDesc}>
-                Start from a pre-configured blueprint to jump-start your architecture design.
-              </p>
-              <div className={styles.templatesGrid}>
-                {TEMPLATE_PRESETS.map((tmpl) => {
-                  const Icon = tmpl.icon
-                  return (
-                    <button
-                      key={tmpl.id}
-                      type="button"
-                      className={styles.templateCard}
-                      style={{ '--tmpl-color': tmpl.color }}
-                      onClick={() => onSubmit({ idea: tmpl.prompt, knownStack: tmpl.stack })}
-                    >
-                      <div className={styles.templateCardAccent} />
-                      <div className={styles.templateIconWrap}>
-                        <Icon size={16} />
-                      </div>
-                      <h3 className={styles.templateTitle}>{tmpl.title}</h3>
-                      <p className={styles.templateDesc}>{tmpl.desc}</p>
-                      <div className={styles.templateTags}>
-                        {tmpl.stack.slice(0, 4).map((tech) => {
-                          const icon = getTechIconUrl(tech)
-                          return (
-                            <span key={tech} className={styles.templateTag}>
-                              {icon && (
-                                <img src={icon} alt="" className={styles.templateTagIcon} onError={(e) => { e.target.style.display = 'none' }} />
-                              )}
-                              {tech}
-                            </span>
-                          )
-                        })}
-                      </div>
-                      <div className={styles.templateUseBtn}>
-                        Use Template <ArrowRight size={12} />
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-            </section>
+              )}
+            </div>
 
-            {/* ── Quick Actions ── */}
-            <section className={styles.section}>
-              <div className={styles.sectionTitle}>
-                <Plus size={15} />
-                Quick Actions
-              </div>
-              <div className={styles.quickActions}>
-                <button type="button" className={styles.quickBtn} onClick={onOpenTemplates}>
-                  <Layers size={18} />
-                  <span>Browse Templates</span>
-                </button>
-                <button type="button" className={styles.quickBtn} onClick={onOpenDocs}>
-                  <BookOpen size={18} />
-                  <span>Documentation</span>
-                </button>
-                <button type="button" className={styles.quickBtn} onClick={onOpenSettings}>
-                  <Settings size={18} />
-                  <span>API Key Settings</span>
-                </button>
-                <button type="button" className={styles.quickBtn} onClick={() => onSubmit({ idea: 'A scalable cloud-native SaaS platform with multi-tenancy, event sourcing, and CQRS pattern.', knownStack: ['Next.js', 'AWS', 'PostgreSQL', 'Kafka'] })}>
-                  <Cloud size={18} />
-                  <span>Generate SaaS Demo</span>
-                </button>
-              </div>
-            </section>
-          </>
-        )}
+            <div className={styles.tabContent}>
+              {activeTab === 'recent' ? (
+                history.length > 0 ? (
+                  <div className={styles.recentGridContainer}>
+                    {history.slice(0, 3).map((project) => (
+                      <button
+                        key={project.id}
+                        type="button"
+                        className={styles.recentCard}
+                        onClick={() => onSelectRecent && onSelectRecent(project)}
+                      >
+                        <div className={styles.recentCardTop}>
+                          <div className={styles.recentCardIcon}>
+                            <Layers size={14} />
+                          </div>
+                          <span className={styles.recentCardTitle}>{project.title || 'Untitled project'}</span>
+                        </div>
+                        {project.summary && (
+                          <p className={styles.recentCardSummary}>{project.summary}</p>
+                        )}
+                        <div className={styles.recentCardMeta}>
+                          <span>{project.metrics?.layers || 0} layers</span>
+                          <span className={styles.dot}>·</span>
+                          <span>{project.metrics?.apis || 0} APIs</span>
+                          <span className={styles.dot}>·</span>
+                          <span>{project.metrics?.dbSchema || project.metrics?.models || 0} models</span>
+                        </div>
+                        <div className={styles.recentCardCta}>
+                          Open Workspace <ArrowRight size={12} />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.emptyRecentBox}>
+                    <p>No architectures generated yet. Describe your system idea above to begin!</p>
+                  </div>
+                )
+              ) : (
+                <div className={styles.templatesGridContainer}>
+                  {TEMPLATE_PRESETS.map((tmpl) => {
+                    const Icon = tmpl.icon
+                    return (
+                      <button
+                        key={tmpl.id}
+                        type="button"
+                        className={styles.templateCompactTile}
+                        onClick={() => onSubmit({ idea: tmpl.prompt, knownStack: tmpl.stack })}
+                      >
+                        <div className={styles.templateCompactIcon} style={{ backgroundColor: `${tmpl.color}15`, color: tmpl.color, border: `1px solid ${tmpl.color}25` }}>
+                          <Icon size={14} />
+                        </div>
+                        <div className={styles.templateCompactText}>
+                          <h4>{tmpl.title}</h4>
+                          <p>{tmpl.desc}</p>
+                        </div>
+                        <ArrowRight size={12} className={styles.tileArrow} />
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </main>
 
       <Footer />

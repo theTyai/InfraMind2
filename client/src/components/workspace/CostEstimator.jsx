@@ -1,10 +1,9 @@
-// client/src/components/workspace/CostEstimator.jsx
-// 💰 Startup Cloud Cost Estimator (Interactive & Theme-aware)
-
-import { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
+import { useArchitectureStore } from '../../store/useArchitectureStore'
+import { useAuthContext } from '../../context/AuthContext'
 
 // ── Alternative Pricing Plans per Technology ──────────────────────────────────
-const TECH_OPTIONS = {
+export const TECH_OPTIONS = {
   // Frontends
   'React': [
     { service: 'Vercel Hobby', cost: 0, category: 'Frontend' },
@@ -14,11 +13,11 @@ const TECH_OPTIONS = {
     { service: 'AWS S3/CloudFront', cost: 5, category: 'Frontend' },
   ],
   'Next.js': [
-    { service: 'Vercel Pro', cost: 20, category: 'Frontend' },
     { service: 'Vercel Hobby (Limits)', cost: 0, category: 'Frontend' },
-    { service: 'Netlify Pro', cost: 19, category: 'Frontend' },
-    { service: 'Render Starter Container', cost: 7, category: 'Frontend' },
     { service: 'Self-Hosted VPS', cost: 5, category: 'Frontend' },
+    { service: 'Render Starter Container', cost: 7, category: 'Frontend' },
+    { service: 'Netlify Pro', cost: 19, category: 'Frontend' },
+    { service: 'Vercel Pro', cost: 20, category: 'Frontend' },
   ],
   'Vue': [
     { service: 'Netlify Starter', cost: 0, category: 'Frontend' },
@@ -61,22 +60,22 @@ const TECH_OPTIONS = {
     { service: 'DigitalOcean Droplet', cost: 4, category: 'Backend' },
   ],
   'Spring Boot': [
+    { service: 'DigitalOcean Droplet', cost: 6, category: 'Backend' },
     { service: 'Render Starter', cost: 7, category: 'Backend' },
     { service: 'Railway Pro', cost: 20, category: 'Backend' },
-    { service: 'DigitalOcean Droplet', cost: 6, category: 'Backend' },
   ],
   'Go': [
-    { service: 'Railway Pro', cost: 20, category: 'Backend' },
-    { service: 'Render Free (Eco)', cost: 0, category: 'Backend', note: 'Spins down' },
-    { service: 'Render Starter', cost: 7, category: 'Backend' },
-    { service: 'Railway Starter', cost: 5, category: 'Backend' },
     { service: 'AWS Lambda (Free tier)', cost: 0, category: 'Backend' },
+    { service: 'Render Free (Eco)', cost: 0, category: 'Backend', note: 'Spins down' },
+    { service: 'Railway Starter', cost: 5, category: 'Backend' },
+    { service: 'Render Starter', cost: 7, category: 'Backend' },
+    { service: 'Railway Pro', cost: 20, category: 'Backend' },
   ],
   'Rust': [
-    { service: 'Railway Pro', cost: 20, category: 'Backend' },
+    { service: 'AWS Lambda (Free tier)', cost: 0, category: 'Backend' },
     { service: 'Render Free (Eco)', cost: 0, category: 'Backend', note: 'Spins down' },
     { service: 'Render Starter', cost: 7, category: 'Backend' },
-    { service: 'AWS Lambda (Free tier)', cost: 0, category: 'Backend' },
+    { service: 'Railway Pro', cost: 20, category: 'Backend' },
   ],
 
   // Databases
@@ -171,22 +170,22 @@ const TECH_OPTIONS = {
     { service: 'Railway/Render (Included)', cost: 0, category: 'Infra' },
   ],
   'Kubernetes': [
-    { service: 'GKE Autopilot', cost: 75, category: 'Infra' },
-    { service: 'EKS Cluster', cost: 73, category: 'Infra' },
     { service: 'K3s on cheap VPS', cost: 10, category: 'Infra' },
+    { service: 'EKS Cluster', cost: 73, category: 'Infra' },
+    { service: 'GKE Autopilot', cost: 75, category: 'Infra' },
   ],
   'AWS': [
+    { service: 'AWS Free Tier', cost: 0, category: 'Cloud' },
     { service: 'AWS Lightsail VPS', cost: 3.5, category: 'Cloud' },
     { service: 'AWS EC2 t3.micro', cost: 10, category: 'Cloud' },
-    { service: 'AWS Free Tier', cost: 0, category: 'Cloud' },
   ],
   'GCP': [
-    { service: 'GCP e2-micro VPS', cost: 8, category: 'Cloud' },
     { service: 'GCP Free Tier', cost: 0, category: 'Cloud' },
+    { service: 'GCP e2-micro VPS', cost: 8, category: 'Cloud' },
   ],
   'Azure': [
-    { service: 'Azure B1s VM', cost: 15, category: 'Cloud' },
     { service: 'Azure Free Tier', cost: 0, category: 'Cloud' },
+    { service: 'Azure B1s VM', cost: 15, category: 'Cloud' },
   ],
 
   // Analytics / Monitoring
@@ -198,8 +197,8 @@ const TECH_OPTIONS = {
     { service: 'Mixpanel Free', cost: 0, category: 'Analytics' },
   ],
   'Datadog': [
-    { service: 'Datadog Pro', cost: 15, category: 'Monitoring', note: 'per host/mo' },
     { service: 'Sentry Developer', cost: 0, category: 'Monitoring' },
+    { service: 'Datadog Pro', cost: 15, category: 'Monitoring', note: 'per host/mo' },
   ],
   'Sentry': [
     { service: 'Sentry Free', cost: 0, category: 'Monitoring' },
@@ -208,12 +207,12 @@ const TECH_OPTIONS = {
 
   // Serverless
   'Vercel': [
-    { service: 'Vercel Pro', cost: 20, category: 'Serverless' },
     { service: 'Vercel Hobby', cost: 0, category: 'Serverless' },
+    { service: 'Vercel Pro', cost: 20, category: 'Serverless' },
   ],
   'Netlify': [
-    { service: 'Netlify Pro', cost: 19, category: 'Serverless' },
     { service: 'Netlify Starter', cost: 0, category: 'Serverless' },
+    { service: 'Netlify Pro', cost: 19, category: 'Serverless' },
   ],
   'AWS Lambda': [
     { service: 'Lambda Free Tier', cost: 0, category: 'Serverless' },
@@ -239,8 +238,8 @@ const TECH_OPTIONS = {
 
   // AI
   'OpenAI': [
-    { service: 'OpenAI API (Usage)', cost: 20, category: 'AI' },
     { service: 'OpenAI API (Free Credits)', cost: 0, category: 'AI' },
+    { service: 'OpenAI API (Usage)', cost: 20, category: 'AI' },
   ],
   'Gemini': [
     { service: 'Gemini API Free', cost: 0, category: 'AI', note: '1M free tokens/mo' },
@@ -252,7 +251,7 @@ const TECH_OPTIONS = {
 }
 
 // Fallback pricing database (default values)
-const DEFAULT_PRICING = {
+export const DEFAULT_PRICING = {
   'React':    { service: 'Vercel Hobby',      cost: 0,   category: 'Frontend' },
   'Next.js':  { service: 'Vercel Pro',         cost: 20,  category: 'Frontend' },
   'Vue':      { service: 'Netlify Starter',    cost: 0,   category: 'Frontend' },
@@ -303,7 +302,7 @@ const DEFAULT_PRICING = {
 }
 
 // Detect stack items from architecture response
-function detectStack(architecture) {
+export function detectStack(architecture) {
   if (!architecture) return []
   const allText = JSON.stringify(architecture).toLowerCase()
   const found = []
@@ -330,12 +329,69 @@ function getBudgetTier(total) {
   return { label: 'Scale-up Territory', color: '#ef4444', emoji: '🔴', desc: 'Enterprise-level spend. Optimize resources or consider VPS.' }
 }
 
-export default function CostEstimator({ architecture }) {
-  const [expanded, setExpanded] = useState(false)
-  const [customCosts, setCustomCosts] = useState({}) // format: { [tech]: { service: string, cost: number, isCustom: boolean } }
+export default function CostEstimator({ 
+  architecture,
+  detectedStack,
+  customCosts,
+  setCustomCosts,
+  enabledServices,
+  setEnabledServices,
+  sliderVal,
+  setSliderVal,
+  onTotalCostChange
+}) {
+  const [expanded, setExpanded] = useState(true) // Expanded by default based on user feedback
+  const infrastructureMode = useArchitectureStore(state => state.infrastructureMode)
+  const setServiceOverride = useArchitectureStore(state => state.setServiceOverride)
+  const generateArchitecture = useArchitectureStore(state => state.generateArchitecture)
+  const currentProjectId = useArchitectureStore(state => state.currentProjectId)
+  const currentArchitecture = useArchitectureStore(state => state.currentArchitecture)
+  
+  const { user } = useAuthContext() || {}
+  const [isRevalidating, setIsRevalidating] = useState(false)
 
-  // 1. Detect technologies
-  const detectedStack = useMemo(() => detectStack(architecture), [architecture])
+  const handleRevalidate = async () => {
+    if (!currentProjectId || !user) return;
+    setIsRevalidating(true);
+    try {
+      const token = await user.getIdToken();
+      // Send a hidden prompt indicating we are re-validating overrides
+      await generateArchitecture(currentProjectId, "Re-validate the architecture based on my new service tiers.", [], token);
+    } catch (err) {
+      console.error("Failed to revalidate architecture:", err);
+    } finally {
+      setIsRevalidating(false);
+    }
+  }
+
+  // Handle complexity slider changes to adjust presets
+  const handleSliderChange = (e) => {
+    const val = parseInt(e.target.value, 10)
+    setSliderVal(val)
+    const newCustoms = {}
+    detectedStack.forEach(item => {
+      const options = TECH_OPTIONS[item.tech] || []
+      if (options.length > 0) {
+        // Plan matching by cost index range
+        let selectedOpt = options[0]
+        if (val === 1) {
+          // Free tier or cheapest
+          selectedOpt = options.find(o => o.cost === 0) || options[0]
+        } else if (val === 2) {
+          // Starter Paid
+          selectedOpt = options.find(o => o.cost > 0 && o.cost <= 25) || options[0]
+        } else if (val === 3) {
+          // Mid Scale
+          selectedOpt = options.find(o => o.cost > 25 && o.cost <= 74) || options[options.length - 1]
+        } else {
+          // Enterprise Scale
+          selectedOpt = options.find(o => o.cost >= 75) || options[options.length - 1]
+        }
+        newCustoms[item.tech] = { service: selectedOpt.service, cost: selectedOpt.cost, isCustom: false }
+      }
+    })
+    setCustomCosts(newCustoms)
+  }
 
   // 2. Map options and load current choices
   const stackItems = useMemo(() => {
@@ -367,8 +423,20 @@ export default function CostEstimator({ architecture }) {
 
   // 3. Sum up values
   const totalCost = useMemo(() => {
-    return stackItems.reduce((sum, item) => sum + (item.cost || 0), 0)
-  }, [stackItems])
+    return stackItems.reduce((acc, item) => {
+      if (enabledServices[item.tech] !== false) {
+        return acc + item.cost
+      }
+      return acc
+    }, 0)
+  }, [stackItems, enabledServices])
+
+  // Propagate totalCost upwards
+  React.useEffect(() => {
+    if (onTotalCostChange) {
+      onTotalCostChange(totalCost)
+    }
+  }, [totalCost, onTotalCostChange])
 
   const tier = getBudgetTier(totalCost)
 
@@ -397,8 +465,32 @@ export default function CostEstimator({ architecture }) {
     )
   }
 
+  const sliderLabels = ['Lean MVP', 'Early Startup', 'High Growth', 'Planet Scale']
+
   return (
     <div style={containerStyle}>
+      {/* Predictive Scale Slider */}
+      <div style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: '14px', marginBottom: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '6px' }}>
+          <span>PROJECT SCALING STAGE:</span>
+          <span style={{ color: 'var(--primary)' }}>{sliderLabels[sliderVal - 1]}</span>
+        </div>
+        <input 
+          type="range"
+          min="1"
+          max="4"
+          value={sliderVal}
+          onChange={handleSliderChange}
+          style={{ width: '100%', height: '4px', cursor: 'pointer', accentColor: 'var(--primary)' }}
+        />
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: 'var(--text-faint)', marginTop: '4px' }}>
+          <span>Lean MVP</span>
+          <span>Early Startup</span>
+          <span>High Growth</span>
+          <span>Planet Scale</span>
+        </div>
+      </div>
+
       {/* Header */}
       <div style={headerStyle}>
         <div>
@@ -408,7 +500,7 @@ export default function CostEstimator({ architecture }) {
               <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                 Estimated Monthly Cost
               </div>
-              <div style={{ fontSize: '2rem', fontWeight: 900, color: tier.color, lineHeight: 1.1 }}>
+              <div style={{ fontSize: 'clamp(1.5rem, 6vw, 2rem)', fontWeight: 900, color: tier.color, lineHeight: 1.1 }}>
                 ${totalCost}
                 <span style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--text-muted)', marginLeft: 4 }}>/mo</span>
               </div>
@@ -429,9 +521,9 @@ export default function CostEstimator({ architecture }) {
         </div>
 
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Detected</div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Enabled</div>
           <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-            {stackItems.length}
+            {Object.values(enabledServices).filter(Boolean).length} / {stackItems.length}
           </div>
           <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>services</div>
         </div>
@@ -470,68 +562,134 @@ export default function CostEstimator({ architecture }) {
                 const hasOptions = options.length > 0
                 const currentSelection = customCosts[item.tech]
 
+                const isEnabled = enabledServices[item.tech] !== false
+
                 return (
-                  <div key={item.tech} style={itemContainerStyle}>
+                  <div key={item.tech} style={{ ...itemContainerStyle, opacity: isEnabled ? 1 : 0.5, transition: 'opacity 0.2s' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={isEnabled} 
+                      onChange={(e) => {
+                        setEnabledServices(prev => ({
+                          ...prev,
+                          [item.tech]: e.target.checked
+                        }))
+                      }}
+                      style={{ marginRight: '8px', cursor: 'pointer', accentColor: 'var(--primary)' }}
+                    />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                        <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.8rem' }}>{item.tech}</span>
+                        <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.8rem', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{item.tech}</span>
                         {item.note && (
-                          <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', flex: 1, minWidth: '100px' }}>
                             ({item.note})
                           </span>
                         )}
                       </div>
                       
-                      {/* Plan Dropdown Selector */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 2 }}>
+                      {/* Plan Chip Selector */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
                         {hasOptions ? (
-                          <select
-                            value={currentSelection ? (currentSelection.isCustom ? 'custom' : `${currentSelection.service}||${currentSelection.cost}`) : `${item.service}||${item.cost}`}
-                            onChange={(e) => {
-                              const val = e.target.value
-                              if (val === 'custom') {
-                                setCustomCosts(prev => ({
-                                  ...prev,
-                                  [item.tech]: { service: 'Custom Plan', cost: item.cost, isCustom: true }
-                                }))
-                              } else {
-                                const [service, costStr] = val.split('||')
-                                setCustomCosts(prev => ({
-                                  ...prev,
-                                  [item.tech]: { service, cost: parseFloat(costStr), isCustom: false }
-                                }))
-                              }
-                            }}
-                            style={selectStyle}
-                          >
-                            {options.map(opt => (
-                              <option key={opt.service} value={`${opt.service}||${opt.cost}`}>
-                                {opt.service} (${opt.cost === 0 ? 'Free' : `$${opt.cost}/mo`})
-                              </option>
-                            ))}
-                            <option value="custom">✏️ Custom Price...</option>
-                          </select>
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            {options.map(opt => {
+                              const isSelected = !currentSelection?.isCustom && currentSelection?.service === opt.service;
+                              return (
+                                <button
+                                  key={opt.service}
+                                  onClick={() => {
+                                    setCustomCosts(prev => ({
+                                      ...prev,
+                                      [item.tech]: { service: opt.service, cost: opt.cost, isCustom: false }
+                                    }))
+                                    setServiceOverride(item.tech, opt.service)
+                                  }}
+                                  style={{
+                                    background: isSelected ? 'var(--primary-soft)' : 'var(--bg-base)',
+                                    border: `1px solid ${isSelected ? 'var(--primary)' : 'var(--border-subtle)'}`,
+                                    color: isSelected ? 'var(--primary)' : 'var(--text-secondary)',
+                                    borderRadius: '6px',
+                                    padding: '6px 12px',
+                                    fontSize: '0.72rem',
+                                    fontWeight: isSelected ? 600 : 400,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    outline: 'none',
+                                    fontFamily: 'var(--font-sans)',
+                                  }}
+                                >
+                                  {opt.service} <span style={{opacity: 0.7}}>({opt.cost === 0 ? 'Free' : `$${opt.cost}/mo`})</span>
+                                </button>
+                              )
+                            })}
+                            <button
+                              onClick={() => setCustomCosts(prev => ({
+                                ...prev,
+                                [item.tech]: { service: 'Custom Plan', cost: item.cost, isCustom: true }
+                              }))}
+                              style={{
+                                background: currentSelection?.isCustom ? 'var(--primary-soft)' : 'var(--bg-base)',
+                                border: `1px solid ${currentSelection?.isCustom ? 'var(--primary)' : 'var(--border-subtle)'}`,
+                                color: currentSelection?.isCustom ? 'var(--primary)' : 'var(--text-secondary)',
+                                borderRadius: '6px',
+                                padding: '6px 12px',
+                                fontSize: '0.72rem',
+                                fontWeight: currentSelection?.isCustom ? 600 : 400,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                outline: 'none',
+                                fontFamily: 'var(--font-sans)',
+                              }}
+                            >
+                              ✏️ Custom Price...
+                            </button>
+                          </div>
                         ) : (
                           // Fallback selector if tech doesn't have options predefined
-                          <select
-                            value={currentSelection ? 'custom' : 'default'}
-                            onChange={(e) => {
-                              if (e.target.value === 'custom') {
-                                setCustomCosts(prev => ({
-                                  ...prev,
-                                  [item.tech]: { service: 'Custom Plan', cost: item.cost, isCustom: true }
-                                }))
-                              } else {
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            <button
+                              onClick={() => {
                                 const temp = { ...customCosts }
                                 delete temp[item.tech]
                                 setCustomCosts(temp)
-                              }
-                            }}
-                            style={selectStyle}
-                          >
-                            <option value="default">{item.service} (${item.cost === 0 ? 'Free' : `$${item.cost}/mo`})</option>
-                            <option value="custom">✏️ Custom Price...</option>
-                          </select>
+                              }}
+                              style={{
+                                background: !currentSelection?.isCustom ? 'var(--primary-soft)' : 'var(--bg-base)',
+                                border: `1px solid ${!currentSelection?.isCustom ? 'var(--primary)' : 'var(--border-subtle)'}`,
+                                color: !currentSelection?.isCustom ? 'var(--primary)' : 'var(--text-secondary)',
+                                borderRadius: '6px',
+                                padding: '6px 12px',
+                                fontSize: '0.72rem',
+                                fontWeight: !currentSelection?.isCustom ? 600 : 400,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                outline: 'none',
+                                fontFamily: 'var(--font-sans)',
+                              }}
+                            >
+                              {item.service} <span style={{opacity: 0.7}}>({item.cost === 0 ? 'Free' : `$${item.cost}/mo`})</span>
+                            </button>
+                            <button
+                              onClick={() => setCustomCosts(prev => ({
+                                ...prev,
+                                [item.tech]: { service: 'Custom Plan', cost: item.cost, isCustom: true }
+                              }))}
+                              style={{
+                                background: currentSelection?.isCustom ? 'var(--primary-soft)' : 'var(--bg-base)',
+                                border: `1px solid ${currentSelection?.isCustom ? 'var(--primary)' : 'var(--border-subtle)'}`,
+                                color: currentSelection?.isCustom ? 'var(--primary)' : 'var(--text-secondary)',
+                                borderRadius: '6px',
+                                padding: '6px 12px',
+                                fontSize: '0.72rem',
+                                fontWeight: currentSelection?.isCustom ? 600 : 400,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                outline: 'none',
+                                fontFamily: 'var(--font-sans)',
+                              }}
+                            >
+                              ✏️ Custom Price...
+                            </button>
+                          </div>
                         )}
 
                         {/* Custom Cost Input (Numeric) */}
@@ -579,6 +737,35 @@ export default function CostEstimator({ architecture }) {
           <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', lineHeight: 1.45, textAlign: 'center', marginTop: 4 }}>
             * Interact with the dropdown options to customize plans. Prices reflect standard rates. Actual cloud costs depend on production usage.
           </p>
+
+          {infrastructureMode === 'MANUAL_OVERRIDE' && (
+            <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--warning)', textAlign: 'center' }}>
+                ⚠️ You have manually overridden service plans. Re-validate to align the rest of the architecture.
+              </div>
+              <button
+                onClick={handleRevalidate}
+                disabled={isRevalidating}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: 'var(--primary)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  cursor: isRevalidating ? 'not-allowed' : 'pointer',
+                  opacity: isRevalidating ? 0.7 : 1,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                {isRevalidating ? 'Re-validating...' : 'Re-validate Architecture'}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -587,8 +774,8 @@ export default function CostEstimator({ architecture }) {
 
 // ── Shared Styles (CSS Variables for perfect Dark/Light support) ─────────────
 const containerStyle = {
-  background: 'var(--bg-card)',
-  border: '1px solid var(--border-dim)',
+  background: 'transparent',
+  border: '1px solid var(--border-subtle)',
   borderRadius: 'var(--radius-lg)',
   padding: 20,
   display: 'flex',
@@ -612,8 +799,8 @@ const emptyStyle = {
 }
 
 const toggleButtonStyle = {
-  background: 'var(--border-subtle)',
-  border: '1px solid var(--border-dim)',
+  background: 'transparent',
+  border: '1px solid var(--border-subtle)',
   borderRadius: 'var(--radius-sm)',
   color: 'var(--text-secondary)',
   fontSize: '0.78rem',
@@ -633,7 +820,7 @@ const itemContainerStyle = {
   justifyContent: 'space-between',
   alignItems: 'center',
   padding: '8px 12px',
-  background: 'var(--bg-elevated)',
+  background: 'transparent',
   border: '1px solid var(--border-subtle)',
   borderRadius: 'var(--radius-sm)',
   marginBottom: 2,
@@ -641,7 +828,7 @@ const itemContainerStyle = {
 
 const selectStyle = {
   background: 'var(--bg-base)',
-  border: '1px solid var(--border-dim)',
+  border: '1px solid var(--border-subtle)',
   borderRadius: 'var(--radius-xs)',
   color: 'var(--text-secondary)',
   fontSize: '0.72rem',
@@ -653,7 +840,7 @@ const selectStyle = {
 
 const inputStyle = {
   background: 'var(--bg-base)',
-  border: '1px solid var(--border-dim)',
+  border: '1px solid var(--border-subtle)',
   borderRadius: 'var(--radius-xs)',
   color: 'var(--text-primary)',
   fontSize: '0.72rem',
@@ -667,7 +854,7 @@ const summaryTotalStyle = {
   display: 'flex',
   justifyContent: 'space-between',
   padding: '10px 12px',
-  borderTop: '1px solid var(--border-dim)',
+  borderTop: '1px solid var(--border-subtle)',
   marginTop: 4,
   fontWeight: 700,
   fontSize: '0.85rem',

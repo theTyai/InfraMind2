@@ -1,4 +1,4 @@
-import { Plus, Home, Layers, BookOpen, Settings2, ChevronLeft, ChevronRight, LogOut, Clock, Cpu } from 'lucide-react'
+import { Plus, Home, Layers, BookOpen, Settings2, ChevronLeft, ChevronRight, LogOut, Clock, Cpu, Network, Users } from 'lucide-react'
 import Logo from '../ui/Logo.jsx'
 import styles from './Sidebar.module.css'
 
@@ -18,8 +18,18 @@ export default function Sidebar({
   onOpenSettings,
   onHome,
   onOpenProfile,
-  profile
+  profile,
+  workspaceView,
+  setWorkspaceView
 }) {
+  // Auto-close sidebar on mobile when a link is clicked
+  const handleNavClick = (callback) => {
+    if (callback) callback();
+    if (typeof window !== 'undefined' && window.innerWidth <= 768 && onClose) {
+      onClose();
+    }
+  };
+
   return (
     <aside className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''}`}>
 
@@ -64,122 +74,132 @@ export default function Sidebar({
         </div>
       )}
 
-      {/* ── Dashboard Home & New Architecture Buttons ── */}
-      <div className={styles.navButtonsGroup}>
+      {/* Home Group */}
+      <div className={styles.navGroup}>
         <button 
-          className={styles.homeBtn} 
+          className={styles.navItem} 
           type="button" 
-          onClick={onHome}
-          title={collapsed ? "Go to Dashboard" : undefined}
-          aria-label="Home Dashboard"
+          onClick={() => handleNavClick(onHome)}
         >
-          <Home size={14} style={{ flexShrink: 0 }} />
-          {!collapsed && <span>Home Dashboard</span>}
-        </button>
-
-        <button 
-          className={styles.newBtn} 
-          type="button" 
-          onClick={onNewProject}
-          title={collapsed ? "New Architecture" : undefined}
-          aria-label="New Architecture"
-        >
-          <Plus size={14} style={{ flexShrink: 0 }} />
-          {!collapsed && <span>New Architecture</span>}
+          <Home size={14} style={{ marginRight: '8px' }} />
+          {!collapsed && <span>Home</span>}
         </button>
       </div>
 
-      {/* ── Active Project Brief (if any) ── */}
-      {activeIdea && !collapsed && (
-        <div className={styles.activeCard}>
-          <div className={styles.activeCardLabel}>
-            <Cpu size={11} />
-            Active
-          </div>
-          <p className={styles.activeCardText} title={activeIdea}>
-            {activeIdea.length > 100 ? `${activeIdea.slice(0, 97)}…` : activeIdea}
-          </p>
-        </div>
-      )}
-
-      {/* ── Past Projects (scrollable) ── */}
-      {!collapsed && (
-        <div className={styles.projectsSection}>
-          <div className={styles.sectionLabel}>
-            <Clock size={11} />
-            Past Projects
-          </div>
-          <div className={styles.projectList}>
-            {history.length === 0 ? (
-              <div className={styles.emptyState}>
-                No projects yet.<br />Generate your first architecture above.
-              </div>
-            ) : (
-              history.slice(0, 8).map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={styles.projectItem}
-                  onClick={() => onSelectProject && onSelectProject(item)}
-                  title={item.title || 'Untitled project'}
-                >
-                  <div className={styles.projectDot} />
-                  <div className={styles.projectMeta}>
-                    <span className={styles.projectName}>{item.title || 'Untitled project'}</span>
-                    <span className={styles.projectStats}>
-                      {item.metrics?.layers || 0}L · {item.metrics?.apis || 0} APIs
-                    </span>
-                  </div>
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ── Spacer ── */}
-      <div className={styles.spacer} />
-
-      {/* ── Settings / Docs ── */}
-      <div className={styles.bottomNav}>
-        <button
-          type="button"
-          className={styles.bottomNavBtn}
-          onClick={onOpenDocs}
-          title={collapsed ? "Documentation" : undefined}
-          aria-label="Documentation"
+      {/* PROJECT Section */}
+      <div className={styles.navGroup}>
+        {!collapsed && <div className={styles.groupLabel}>PROJECT</div>}
+        <button 
+          className={`${styles.navItem} ${workspaceView === 'overview' ? styles.navItemActive : ''}`}
+          type="button" 
+          onClick={() => handleNavClick(() => setWorkspaceView('overview'))}
         >
-          <BookOpen size={14} style={{ flexShrink: 0 }} />
-          {!collapsed && <span>Documentation</span>}
+          <Layers size={14} style={{ marginRight: '8px' }} />
+          {!collapsed && <span>Overview</span>}
         </button>
-        <button
-          type="button"
-          className={styles.bottomNavBtn}
-          onClick={onOpenSettings}
-          title={collapsed ? "Settings" : undefined}
-          aria-label="Settings"
+        <button 
+          className={`${styles.navItem} ${workspaceView === 'architecture' ? styles.navItemActive : ''}`}
+          type="button" 
+          onClick={() => handleNavClick(() => setWorkspaceView('architecture'))}
         >
-          <Settings2 size={14} style={{ flexShrink: 0 }} />
-          {!collapsed && <span>Settings</span>}
+          <Cpu size={14} style={{ marginRight: '8px' }} />
+          {!collapsed && <span>Architecture</span>}
         </button>
-        {collapsed && (
-          <button
-            type="button"
-            className={styles.bottomNavBtn}
-            onClick={onLogout}
-            title="Sign out"
-            aria-label="Sign out"
-          >
-            <LogOut size={14} style={{ flexShrink: 0, color: '#ef4444' }} />
-          </button>
+        <button 
+          className={`${styles.navItem} ${workspaceView === 'components' ? styles.navItemActive : ''}`}
+          type="button" 
+          onClick={() => handleNavClick(() => setWorkspaceView('components'))}
+        >
+          <Layers size={14} style={{ marginRight: '8px' }} />
+          {!collapsed && <span>Components</span>}
+        </button>
+        <button 
+          className={`${styles.navItem} ${workspaceView === 'dataflows' ? styles.navItemActive : ''}`}
+          type="button" 
+          onClick={() => handleNavClick(() => setWorkspaceView('dataflows'))}
+        >
+          <Network size={14} style={{ marginRight: '8px' }} />
+          {!collapsed && <span>Data Flows</span>}
+        </button>
+        <button 
+          className={`${styles.navItem} ${workspaceView === 'collaborators' ? styles.navItemActive : ''}`}
+          type="button" 
+          onClick={() => handleNavClick(() => setWorkspaceView('collaborators'))}
+        >
+          <Users size={14} style={{ marginRight: '8px' }} />
+          {!collapsed && <span>Collaborators</span>}
+        </button>
+      </div>
+
+      {/* LIBRARY Section */}
+      <div className={styles.navGroup}>
+        {!collapsed && <div className={styles.groupLabel}>LIBRARY</div>}
+        <button 
+          className={styles.navItem} 
+          type="button" 
+          onClick={() => handleNavClick(onOpenTemplates)}
+        >
+          <BookOpen size={14} style={{ marginRight: '8px' }} />
+          {!collapsed && <span>Templates</span>}
+        </button>
+        <button 
+          className={styles.navItem} 
+          type="button" 
+          onClick={() => handleNavClick(onOpenSaved)}
+        >
+          <Layers size={14} style={{ marginRight: '8px' }} />
+          {!collapsed && <span>Recent Projects</span>}
+        </button>
+        {!collapsed && history && history.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '4px', paddingLeft: '22px' }}>
+            {history.slice(0, 5).map((project) => (
+              <button
+                key={project.id}
+                type="button"
+                onClick={() => handleNavClick(() => onSelectProject && onSelectProject(project))}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-dim)',
+                  fontSize: '0.72rem',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  padding: '4px 6px',
+                  borderRadius: '4px',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  width: '100%',
+                  display: 'block',
+                  transition: 'all 0.15s'
+                }}
+                onMouseEnter={(e) => { e.target.style.color = 'var(--text-primary)'; e.target.style.background = 'var(--bg-elevated)'; }}
+                onMouseLeave={(e) => { e.target.style.color = 'var(--text-dim)'; e.target.style.background = 'transparent'; }}
+              >
+                📁 {project.projectTitle || project.lastIdea || 'Untitled Project'}
+              </button>
+            ))}
+          </div>
         )}
       </div>
 
-      {/* ── Company Branding (very bottom) ── */}
+      {/* Settings at the bottom */}
+      <div className={styles.navGroup} style={{ marginTop: 'auto', marginBottom: '8px' }}>
+        <button 
+          className={styles.navItem} 
+          type="button" 
+          onClick={() => handleNavClick(onOpenSettings)}
+        >
+          <Settings2 size={14} style={{ marginRight: '8px' }} />
+          {!collapsed && <span>Settings</span>}
+        </button>
+      </div>
+
+      {/* Brand Footer */}
       <div className={styles.brandFooter}>
         {!collapsed && (
-          <div onClick={onHome} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Go to Dashboard">
-            <Logo size={22} showText={true} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Logo size={20} showText={true} />
           </div>
         )}
         {onToggle && (
@@ -187,8 +207,7 @@ export default function Sidebar({
             type="button"
             className={styles.collapseBtn}
             onClick={onToggle}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label="Toggle Sidebar"
           >
             {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
           </button>

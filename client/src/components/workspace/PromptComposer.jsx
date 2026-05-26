@@ -18,6 +18,16 @@ export default function PromptComposer({ compact = false, onSubmit, error, envKe
   const [tags, setTags] = useState([])
   const [suggestions, setSuggestions] = useState([])
   const tagRef = useRef(null)
+  
+  const [isStartup, setIsStartup] = useState(
+    () => localStorage.getItem('inframind_startup_mode') === 'true'
+  )
+
+  function handleToggleMode(val) {
+    setIsStartup(val)
+    localStorage.setItem('inframind_startup_mode', val ? 'true' : 'false')
+    window.dispatchEvent(new CustomEvent('startupModeChange', { detail: { enabled: val } }))
+  }
 
   function handleTagInput(e) {
     const value = e.target.value
@@ -96,6 +106,45 @@ export default function PromptComposer({ compact = false, onSubmit, error, envKe
       </div>
 
       <form className={styles.promptForm} onSubmit={submitForm} noValidate>
+        {/* Mode Toggle Switcher */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', margin: '0 0 16px' }}>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>DESIGN TARGET:</span>
+          <button 
+            type="button" 
+            onClick={() => handleToggleMode(true)}
+            className={`${styles.modeBtn} ${isStartup ? styles.modeBtnActive : ''}`}
+            style={{ 
+              background: isStartup ? 'var(--primary-soft)' : 'transparent',
+              color: isStartup ? 'var(--primary)' : 'var(--text-muted)',
+              border: '1px solid ' + (isStartup ? 'var(--primary)' : 'var(--border-subtle)'),
+              padding: '5px 12px',
+              borderRadius: '6px',
+              fontSize: '0.78rem',
+              cursor: 'pointer',
+              fontWeight: 500
+            }}
+          >
+            Lean MVP
+          </button>
+          <button 
+            type="button" 
+            onClick={() => handleToggleMode(false)}
+            className={`${styles.modeBtn} ${!isStartup ? styles.modeBtnActive : ''}`}
+            style={{ 
+              background: !isStartup ? 'var(--primary-soft)' : 'transparent',
+              color: !isStartup ? 'var(--primary)' : 'var(--text-muted)',
+              border: '1px solid ' + (!isStartup ? 'var(--primary)' : 'var(--border-subtle)'),
+              padding: '5px 12px',
+              borderRadius: '6px',
+              fontSize: '0.78rem',
+              cursor: 'pointer',
+              fontWeight: 500
+            }}
+          >
+            Enterprise
+          </button>
+        </div>
+
         <label className={styles.fieldLabel} htmlFor="prompt-input">Project brief</label>
         <textarea
           id="prompt-input"

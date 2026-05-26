@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Sidebar from './Sidebar.jsx'
 import Topbar from './Topbar.jsx'
 import Workspace from '../workspace/Workspace.jsx'
 import InspectorPanel from './InspectorPanel.jsx'
+import Footer from '../Footer.jsx'
 import styles from './AppShell.module.css'
 import { useArchitectureStore } from '../../store/useArchitectureStore.js'
 import { useAuthContext } from '../../context/AuthContext.jsx'
+import { Sparkles } from 'lucide-react'
 
-export default function AppShell(props) {
+export default function AppShell({ activeMode, setActiveMode, ...props }) {
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth <= 768 : false)
   const [sidebarOpen, setSidebarOpen] = useState(() => typeof window !== 'undefined' ? window.innerWidth > 768 : true)
+  const [workspaceView, setWorkspaceView] = useState('overview')
 
   const { appUser, getFreshToken } = useAuthContext()
   const currentProjectId = useArchitectureStore(s => s.currentProjectId)
@@ -18,40 +21,79 @@ export default function AppShell(props) {
   const [remoteCursors, setRemoteCursors] = useState({})
   const [allComments, setAllComments]     = useState([])
   const [socket, setSocket]               = useState(null)
+  const diagnostics = useMemo(() => {
+    if (!props.data) return []
+    const alerts = []
+    const allText = JSON.stringify(props.data).toLowerCase()
+    
+    if (allText.includes('postgresql') || allText.includes('mongodb') || allText.includes('mysql')) {
+      if (!allText.includes('redis') && !allText.includes('memcached')) {
+        alerts.push('Redis caching missing (potential DB bottleneck)')
+      }
+    }
+    if (allText.includes('express') || allText.includes('node.js') || allText.includes('fastapi')) {
+      if (!allText.includes('rate limit') && !allText.includes('helmet') && !allText.includes('jwt')) {
+        alerts.push('API endpoints lack rate limiting or secure token rules')
+      }
+    }
+    if (allText.includes('kubernetes') || allText.includes('docker')) {
+      if (!allText.includes('prometheus') && !allText.includes('grafana') && !allText.includes('datadog')) {
+        alerts.push('No telemetry/monitoring agent detected')
+      }
+    }
+    if (alerts.length === 0) {
+      alerts.push('Architecture complies with basic standard practices')
+    }
+    return alerts
+  }, [props.data])
 
-  // 1. Fetch project comments history when workspace is loaded
+  // 1. Fetch comments (Bypassed if backend is inactive to prevent 404 console errors)
   useEffect(() => {
     if (!currentProjectId) return
-
-    async function loadComments() {
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
+    
+    const loadComments = async () => {
+      // Silently return if this is a static demo without a running backend
+      if (!import.meta.env.VITE_API_BASE_URL && window.location.hostname === 'localhost') {
+        return;
+      }
       try {
-        const token = await getFreshToken()
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
         const res = await fetch(`${API_BASE}/projects/${currentProjectId}/comments`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { 'Authorization': `Bearer ${await appUser?.getIdToken()}` }
         })
         if (res.ok) {
           const data = await res.json()
           setAllComments(data)
         }
       } catch (err) {
-        console.error('Failed to load project comments:', err)
+        // Silently swallow connection errors
       }
     }
 
     loadComments()
   }, [currentProjectId])
 
-  // 2. Establish WebSockets Collaboration Connection
+  // 2. Establish WebSockets Collaboration Connection (Bypassed if no backend to prevent WS error logs)
   useEffect(() => {
     if (!currentProjectId || !appUser) return
+
+    // Silently return if this is a static demo without a running backend
+    if (!import.meta.env.VITE_API_BASE_URL && window.location.hostname === 'localhost') {
+      return;
+    }
 
     const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
     const apiHost = API_BASE.replace(/^https?:\/\//, '').replace(/\/api$/, '')
     const wsUrl = `${wsProtocol}//${apiHost}/api/collaboration`
 
-    const ws = new WebSocket(wsUrl)
+    let ws
+    try {
+      ws = new WebSocket(wsUrl)
+    } catch (e) {
+      return // silently fail if WebSocket not supported
+    }
+
     setSocket(ws)
 
     const localUserId = appUser.uid
@@ -86,8 +128,12 @@ export default function AppShell(props) {
       }
     }
 
+    ws.onerror = () => {
+      // Collaboration unavailable — silently fail
+    }
+
     ws.onclose = () => {
-      console.log('Project Collaboration WebSocket closed.')
+      // Connection closed — this is normal
     }
 
     return () => {
@@ -177,6 +223,8 @@ export default function AppShell(props) {
           onHome={props.onHome}
           onOpenProfile={props.onOpenProfile}
           profile={props.profile}
+          workspaceView={workspaceView}
+          setWorkspaceView={setWorkspaceView}
         />
       </aside>
 
@@ -193,15 +241,28 @@ export default function AppShell(props) {
           onToggleSidebar={() => setSidebarOpen(p => !p)}
           onOpenSettings={props.onOpenSettings}
           presenceUsers={presenceUsers}
+          activeMode={activeMode}
+          setActiveMode={setActiveMode}
+          projectName={props.data?.projectTitle || props.lastIdea || 'Untitled System'}
         />
         <div className={styles.workspaceContainer}>
           <div className={styles.workspaceLayout}>
             <div className={styles.workspaceContent}>
-              <Workspace {...props} />
+              <Workspace 
+                {...props} 
+                comments={allComments}
+                onAddComment={handleAddComment}
+                activeMode={activeMode}
+                setActiveMode={setActiveMode}
+                workspaceView={workspaceView}
+                setWorkspaceView={setWorkspaceView}
+              />
+              <Footer />
             </div>
           </div>
         </div>
       </div>
+
 
       {/* Shared Cursors Overlay */}
       {Object.entries(remoteCursors).map(([userId, cursor]) => (
