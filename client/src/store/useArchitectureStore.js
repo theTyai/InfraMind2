@@ -18,6 +18,9 @@ export const useArchitectureStore = create((set, get) => ({
   securityHistory: [],
   driftHistory: [],
   
+  activeModel: 'gemini-3.5-flash',
+  isRouting: false,
+  
   infrastructureMode: 'AUTO_FREE',
   serviceOverrides: {}, // Map of serviceId: selectedPlanId
   projectScalingStage: 2, // 1: Lean MVP, 2: Early Startup, 3: High Growth, 4: Planet Scale
@@ -135,7 +138,7 @@ export const useArchitectureStore = create((set, get) => ({
     if (!idToken || idToken === 'null' || idToken === 'undefined') {
       throw new Error('Authentication token is missing. Please sign in again.');
     }
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, isRouting: true });
     try {
       const customKey = localStorage.getItem('inframind_api_key') || '';
       const customModel = localStorage.getItem('inframind_model') || '';
@@ -218,13 +221,15 @@ export const useArchitectureStore = create((set, get) => ({
           currentArchitecture: data.geminiResponse,
           securityHistory: [],
           driftHistory: [],
-          loading: false
+          activeModel: data.modelUsed || state.activeModel,
+          loading: false,
+          isRouting: false
         };
       });
 
       return data.projectId;
     } catch (err) {
-      set({ error: err.message, loading: false });
+      set({ error: err.message, loading: false, isRouting: false });
       throw err;
     }
   },

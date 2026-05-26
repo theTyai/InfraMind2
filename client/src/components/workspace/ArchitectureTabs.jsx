@@ -129,6 +129,61 @@ export default function ArchitectureTabs({
 
   const detectedStack = useMemo(() => detectStack(data), [data])
 
+  // Real-time patching of the architecture data based on CostEstimator overrides
+  const patchedData = useMemo(() => {
+    if (!data) return data;
+    
+    // Deep clone data to avoid mutating original
+    const newData = JSON.parse(JSON.stringify(data));
+    
+    Object.keys(customCosts).forEach(techName => {
+      const override = customCosts[techName];
+      if (!override || override.isCustom || override.service === techName) return;
+      
+      const newService = override.service;
+      
+      // Escape techName for regex just in case it has dots (e.g., Node.js)
+      const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(?<=\\\\b|\\\\W|^)(${escapeRegExp(techName)})(?=\\\\b|\\\\W|$)`, 'g');
+
+      // 1. Patch Diagrams
+      if (newData.mermaidDiagram) {
+        newData.mermaidDiagram = newData.mermaidDiagram.replace(regex, newService);
+      }
+      if (newData.userFlowDiagram) {
+        newData.userFlowDiagram = newData.userFlowDiagram.replace(regex, newService);
+      }
+
+      // 2. Patch dataFlow
+      if (Array.isArray(newData.dataFlow)) {
+        newData.dataFlow = newData.dataFlow.map(flow => {
+          if (flow.description) {
+            flow.description = flow.description.replace(regex, newService);
+          }
+          return flow;
+        });
+      }
+
+      // 3. Patch components
+      if (Array.isArray(newData.components)) {
+        newData.components = newData.components.map(comp => {
+          if (comp.name) {
+            comp.name = comp.name.replace(regex, newService);
+          }
+          if (comp.description) {
+            comp.description = comp.description.replace(regex, newService);
+          }
+          if (comp.techStack && Array.isArray(comp.techStack)) {
+            comp.techStack = comp.techStack.map(t => t === techName ? newService : t);
+          }
+          return comp;
+        });
+      }
+    });
+
+    return newData;
+  }, [data, customCosts]);
+
   useEffect(() => {
     const initial = {}
     const seenCategories = new Set()
@@ -565,7 +620,7 @@ export default function ArchitectureTabs({
   if (workspaceView === 'components') {
     return (
       <div className={styles.controlDeckWrapper}>
-        <ComponentsView data={data} onSelectNode={onSelectNode} />
+        <ComponentsView data={patchedData} onSelectNode={onSelectNode} />
       </div>
     )
   }
@@ -587,7 +642,7 @@ export default function ArchitectureTabs({
 
         {/* Main Flow Canvas */}
         <AnimatedDataflow 
-          data={data}
+          data={patchedData}
           detectedStack={detectedStack}
           customCosts={customCosts}
           enabledServices={enabledServices}
@@ -912,7 +967,7 @@ export default function ArchitectureTabs({
         </div>
         <div className={styles.canvasEmbed} style={{ height: '350px', background: 'var(--bg-base)', border: 'none' }}>
           <MermaidDiagram
-            code={data.mermaidDiagram}
+            code={patchedData.mermaidDiagram}
             onSelectNode={handleSelectNodePerspective}
           />
         </div>
@@ -1403,8 +1458,8 @@ export default function ArchitectureTabs({
               </div>
 
               <div className={styles.diagramModalEmbed}>
-                <MermaidDiagram
-                  code={data.mermaidDiagram}
+                <MermaidDiagram 
+                  code={patchedData.mermaidDiagram} 
                   onSelectNode={handleSelectNodePerspective}
                 />
               </div>
@@ -1437,7 +1492,7 @@ export default function ArchitectureTabs({
               </div>
 
               <div className={styles.diagramModalEmbed}>
-                <MermaidDiagram code={data.userFlowDiagram} />
+                <MermaidDiagram code={patchedData.userFlowDiagram} />
               </div>
             </div>
           </div>

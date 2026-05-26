@@ -7,6 +7,7 @@ import {
 import Logo from '../ui/Logo.jsx'
 import Footer from '../Footer.jsx'
 import { getTechIconUrl } from '../../utils/techIcons.js'
+import { useArchitectureStore } from '../../store/useArchitectureStore.js'
 import styles from './Dashboard.module.css'
 
 const PRESET_CHIPS = [
@@ -91,6 +92,9 @@ export default function Dashboard({
   const [isFocused, setIsFocused] = useState(false)
   const tagInputRef = useRef(null)
   const isComposerActive = isFocused || !!idea.trim()
+
+  const activeModel = useArchitectureStore((state) => state.activeModel)
+  const isRouting = useArchitectureStore((state) => state.isRouting)
 
   // Onboarding Checklist stats from localStorage
   const [checklist, setChecklist] = useState({
@@ -197,6 +201,10 @@ export default function Dashboard({
             >
               <Logo size={30} showText={true} />
             </button>
+            <div className={styles.gatewayBadge}>
+              <Cpu size={14} className={isRouting ? styles.pulseIcon : ''} />
+              <span>{isRouting ? 'Routing...' : activeModel.replace('gemini-', '')}</span>
+            </div>
           </div>
 
           <div className={styles.navRight}>

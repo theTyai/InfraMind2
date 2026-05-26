@@ -1,6 +1,7 @@
 // server/routes/ai.js
 
 const { aiRateLimiter, aiRequestTracer, fetchWithRetry } = require('../middleware/aiGateway');
+const AIGatewayService = require('../services/AIGatewayService');
 
 const RESPONSE_SCHEMA = {
   type: 'OBJECT',
@@ -233,53 +234,7 @@ function validateArchitectureShape(data) {
   ].every(Boolean);
 }
 
-async function repairArchitectureJson(raw, key, endpoint) {
-  if (!raw) return null;
-
-  const repairInstruction = `You repair malformed JSON.
-Return only valid JSON that matches the provided schema.
-Do not add commentary, markdown, or extra keys.
-Preserve the original meaning as closely as possible.`;
-
-  const repairBody = {
-    system_instruction: {
-      parts: [{ text: repairInstruction }],
-    },
-    contents: [
-      {
-        role: 'user',
-        parts: [
-          {
-            text: `Fix this malformed architecture JSON and return valid JSON only:\n\n${raw}`,
-          },
-        ],
-      },
-    ],
-    generationConfig: {
-      temperature: 0,
-      maxOutputTokens: 4096,
-      responseMimeType: 'application/json',
-      responseSchema: RESPONSE_SCHEMA,
-    },
-  };
-
-  try {
-    const repairRes = await fetchWithRetry(`${endpoint}?key=${key}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(repairBody),
-    });
-
-    if (!repairRes.ok) return null;
-    const repairData = await repairRes.json().catch(() => null);
-    const repairedRaw = extractJsonText(repairData);
-    const repairedParsed = tryParseJson(repairedRaw);
-    return validateArchitectureShape(repairedParsed) ? repairedParsed : null;
-  } catch (err) {
-    console.error('[AI Gateway] Repair loop failed:', err);
-    return null;
-  }
-}
+// Inline repair loop removed. Logic moved to AIGatewayService.
 
 module.exports = function (app, db, admin, authMiddleware) {
   // Centralized route to handle AI requests securely via the AI Gateway
@@ -340,17 +295,6 @@ Bias all technology recommendations toward managed, free-tier services (e.g., Su
       });
     }
 
-    // Determine model routing (Pro for compile/initial create, Flash for refinements/drafts)
-    let selectedModel = 'gemini-2.5-pro';
-    if (customModelSetting) {
-      selectedModel = customModelSetting;
-    } else if (projectId) {
-      // It is a refinement, use faster/cheaper Flash
-      selectedModel = 'gemini-2.5-flash';
-    }
-
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent`;
-
     let existingProjectTitle = '';
     let existingProjectSummary = '';
     if (projectId) {
@@ -386,50 +330,31 @@ Generate a complete architecture recommendation. Where the user knows a technolo
       },
     };
 
+    let parsedResponse;
+    let modelUsed;
+
     try {
-      console.log(`[AI Gateway] Routing generation to model ${selectedModel} (BYOK: ${!!customApiKey})`);
-      let geminiRes = await fetchWithRetry(`${endpoint}?key=${key}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
+      const gatewayResult = await AIGatewayService.generateArchitecture({
+        requestBody,
+        apiKey: key,
+        intent: projectId ? 'REFINEMENT' : 'INITIAL_COMPILE',
+        customModelSetting,
+        RESPONSE_SCHEMA,
+        extractJsonText,
+        tryParseJson,
+        validateArchitectureShape
       });
+      parsedResponse = gatewayResult.parsedResponse;
+      modelUsed = gatewayResult.modelUsed;
+      
+      // Pass the model used in the response headers for tracing
+      res.set('X-AI-Gateway-Model', modelUsed);
+    } catch (err) {
+      console.error('[AI Gateway] Routing failed:', err);
+      return res.status(err.message.includes('malformed data') ? 502 : 500).json({ error: err.message });
+    }
 
-      // FALLBACK ROUTING: If Pro fails or is rate-limited, fall back to Flash
-      if (!geminiRes.ok && selectedModel === 'gemini-2.5-pro' && !customModelSetting) {
-        console.warn(`[AI Gateway] Routing to gemini-2.5-pro failed with status ${geminiRes.status}. Falling back to gemini-2.5-flash...`);
-        selectedModel = 'gemini-2.5-flash';
-        const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent`;
-
-        geminiRes = await fetchWithRetry(`${fallbackEndpoint}?key=${key}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody),
-        });
-      }
-
-      if (!geminiRes.ok) {
-        const errDetails = await geminiRes.json().catch(() => ({}));
-        const errMsg = errDetails?.error?.message || `Gemini API returned error status ${geminiRes.status}`;
-        return res.status(geminiRes.status).json({ error: errMsg });
-      }
-
-      const data = await geminiRes.json();
-      const rawText = extractJsonText(data);
-      let parsedResponse = tryParseJson(rawText);
-
-      // Perform prompt repair loop if malformed JSON is returned
-      if (!parsedResponse || !validateArchitectureShape(parsedResponse)) {
-        console.warn('[AI Gateway] Gemini returned malformed JSON. Initiating zero-temperature repair loop...');
-        const repairEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent`;
-        parsedResponse = await repairArchitectureJson(rawText, key, repairEndpoint);
-
-        if (!parsedResponse) {
-          return res.status(502).json({
-            error: 'AI returned malformed data and the repair loop failed. Please modify your prompt and try again.'
-          });
-        }
-      }
-
+    try {
       // Persist generation to Firestore
       const userProjectsRef = db.collection('users').doc(userId).collection('projects');
       let activeProjectId = projectId;
@@ -529,7 +454,8 @@ Generate a complete architecture recommendation. Where the user knows a technolo
         projectId: activeProjectId,
         prompt: idea,
         geminiResponse: parsedResponse,
-        timestamp: timestampISO
+        timestamp: timestampISO,
+        modelUsed
       });
 
     } catch (err) {
