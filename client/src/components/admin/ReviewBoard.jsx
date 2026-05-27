@@ -5,6 +5,8 @@ import { useAuthContext } from '../../context/AuthContext'
 import styles from './ReviewBoard.module.css'
 import Logo from '../ui/Logo'
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
+
 export default function ReviewBoard() {
   const { appUser, logout, getFreshToken } = useAuthContext()
   const navigate = useNavigate()
@@ -23,7 +25,7 @@ export default function ReviewBoard() {
     setError(null)
     try {
       const token = await getFreshToken()
-      const res = await fetch('/api/reviews', {
+      const res = await fetch(`${API_BASE}/reviews`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       if (!res.ok) throw new Error('Failed to fetch reviews')

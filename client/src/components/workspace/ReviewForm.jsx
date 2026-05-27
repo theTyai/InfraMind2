@@ -3,6 +3,8 @@ import { MessageSquare, Star, Send, CheckCircle2, ChevronDown, ChevronUp } from 
 import { useAuthContext } from '../../context/AuthContext'
 import styles from './ReviewForm.module.css'
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
+
 export default function ReviewForm() {
   const { appUser, getFreshToken } = useAuthContext()
   const [expanded, setExpanded] = useState(false)
@@ -49,7 +51,7 @@ export default function ReviewForm() {
 
     try {
       const token = await getFreshToken()
-      const res = await fetch('/api/reviews', {
+      const res = await fetch(`${API_BASE}/reviews`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
