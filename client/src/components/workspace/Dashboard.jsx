@@ -114,7 +114,7 @@ export default function Dashboard({
   }, [])
 
   const userRole = (typeof window !== 'undefined' && localStorage.getItem('inframind_role')) || 'Engineer'
-  
+
   const checklistItems = [
     { id: 'history', text: 'Generate your first system architecture blueprint', done: history.length > 0 },
     { id: 'diagram', text: 'Inspect dynamic node details inside the diagram layout', done: checklist.diagram },
@@ -129,8 +129,8 @@ export default function Dashboard({
     if (!value.trim()) { setSuggestions([]); return }
     setSuggestions(
       TECH_SUGGESTIONS
-          .filter((t) => t.toLowerCase().includes(value.toLowerCase()) && !tags.includes(t))
-          .slice(0, 5)
+        .filter((t) => t.toLowerCase().includes(value.toLowerCase()) && !tags.includes(t))
+        .slice(0, 5)
     )
   }
 
@@ -236,8 +236,8 @@ export default function Dashboard({
 
             <div className={styles.navDivider} />
 
-            <div 
-              className={styles.userChip} 
+            <div
+              className={styles.userChip}
               onClick={onOpenProfile}
               style={{ cursor: 'pointer' }}
               title="Click to view/edit profile"
@@ -259,7 +259,7 @@ export default function Dashboard({
             >
               <LogOut size={14} />
             </button>
-            
+
             {/* Mobile menu toggle */}
             <button
               type="button"
@@ -330,12 +330,12 @@ export default function Dashboard({
                     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleFormSubmit(e)
                   }}
                 />
-                
+
                 {isComposerActive && (
                   <div className={styles.textareaFooter}>
-                    <button 
-                      type="button" 
-                      className={styles.advancedToggleBtn} 
+                    <button
+                      type="button"
+                      className={styles.advancedToggleBtn}
                       onClick={() => setShowAdvanced(p => !p)}
                     >
                       {showAdvanced ? '⚙ Hide Advanced Stacks' : '⚙ Customize Stack & Presets'}
@@ -436,29 +436,6 @@ export default function Dashboard({
 
         {/* ── Bento Grid Dashboard Container ── */}
         <div className={styles.bentoGrid}>
-          {/* Onboarding Checklist */}
-          {!allChecklistDone && (
-            <div className={`${styles.bentoItem} ${styles.checklistCard}`}>
-              <div className={styles.checklistCardHeader}>
-                <Sparkles size={16} className={styles.checklistHeaderIcon} />
-                <h3>Active Onboarding Checklist</h3>
-              </div>
-              <p className={styles.checklistDesc}>
-                Complete these actions to experience the full power of InfraMind.
-              </p>
-              <div className={styles.checklistGrid}>
-                {checklistItems.map((item) => (
-                  <div key={item.id} className={`${styles.checklistItem} ${item.done ? styles.checklistDone : ''}`}>
-                    <div className={styles.checklistCheck}>
-                      {item.done ? '✓' : '○'}
-                    </div>
-                    <span className={styles.checklistText}>{item.text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Unified Tabbed Grid View */}
           <div className={`${styles.bentoItem} ${styles.unifiedTabbedGrid}`}>
             <div className={styles.tabHeader}>
@@ -480,7 +457,7 @@ export default function Dashboard({
                   <span>Quick Templates</span>
                 </button>
               </div>
-              
+
               {activeTab === 'recent' ? (
                 <button type="button" className={styles.sectionAction} onClick={onOpenSaved}>
                   View all <ChevronRight size={12} />

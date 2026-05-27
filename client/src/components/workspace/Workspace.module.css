@@ -4029,7 +4029,7 @@
 /* ── Workspace canvas scrolling ─────────────────────── */
 @media (max-width: 768px) {
   .workspaceCanvas {
-    padding: 0 8px 80px;
+    padding: 0 4px 80px;
     overflow-x: hidden;
   }
 }
@@ -4044,7 +4044,7 @@
     min-height: auto !important;
     overflow-y: visible !important;
     overflow-x: hidden;
-    padding: 12px 12px 100px;
+    padding: 12px 6px 100px;
   }
 
   /* Tab row: horizontally scrollable on small screens */

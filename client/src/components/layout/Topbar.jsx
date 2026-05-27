@@ -95,7 +95,7 @@ export default function Topbar({
           aria-expanded={sidebarOpen}
           title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
         >
-          <Menu size={16} aria-hidden="true" />
+          <Menu size={24} aria-hidden="true" />
         </button>
 
         <div className={styles.logoAndProject}>
