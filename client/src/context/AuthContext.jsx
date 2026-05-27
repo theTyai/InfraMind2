@@ -5,7 +5,9 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth'
 import { auth } from '../utils/firebase'
 
@@ -45,6 +47,11 @@ export function AuthProvider({ children }) {
     return cred
   }
 
+  const loginWithGoogle = () => {
+    const provider = new GoogleAuthProvider()
+    return signInWithPopup(auth, provider)
+  }
+
   const logout = () => signOut(auth)
 
   const getFreshToken = async () => {
@@ -65,7 +72,7 @@ export function AuthProvider({ children }) {
     : null
 
   return (
-    <AuthContext.Provider value={{ user, appUser, idToken, loading, login, signup, logout, getFreshToken }}>
+    <AuthContext.Provider value={{ user, appUser, idToken, loading, login, signup, loginWithGoogle, logout, getFreshToken }}>
       {children}
     </AuthContext.Provider>
   )

@@ -2,10 +2,11 @@ import { useState, useRef, useEffect } from 'react'
 import {
   ArrowRight, Layers, Zap, LogOut, User,
   Sparkles, Database, Cloud, Network, Settings,
-  BookOpen, Clock, Plus, ChevronRight, Cpu, Menu, X
+  BookOpen, Clock, Plus, ChevronRight, Cpu, Menu, X, MessageSquare
 } from 'lucide-react'
 import Logo from '../ui/Logo.jsx'
 import Footer from '../Footer.jsx'
+import ReviewForm from './ReviewForm.jsx'
 import { getTechIconUrl } from '../../utils/techIcons.js'
 import { useArchitectureStore } from '../../store/useArchitectureStore.js'
 import styles from './Dashboard.module.css'
@@ -201,10 +202,7 @@ export default function Dashboard({
             >
               <Logo size={30} showText={true} />
             </button>
-            <div className={styles.gatewayBadge}>
-              <Cpu size={14} className={isRouting ? styles.pulseIcon : ''} />
-              <span>{isRouting ? 'Routing...' : activeModel.replace('gemini-', '')}</span>
-            </div>
+
           </div>
 
           <div className={styles.navRight}>
@@ -432,6 +430,11 @@ export default function Dashboard({
               <span className={styles.trustBadge}>✓ Isolated Cloud Datastore</span>
             </div>
           </div>
+        </section>
+
+        {/* Detailed Inline Review Form */}
+        <section className={styles.reviewSection}>
+          <ReviewForm />
         </section>
 
         {/* ── Bento Grid Dashboard Container ── */}

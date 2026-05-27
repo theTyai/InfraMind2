@@ -612,6 +612,55 @@ app.post('/api/notifications/:notificationId/read', authMiddleware, async (req, 
   }
 });
 
+// POST /api/reviews — submit a user review/feedback
+app.post('/api/reviews', authMiddleware, async (req, res) => {
+  if (!db) return res.status(500).json({ error: 'Database not initialized' });
+  const userId = req.user.uid;
+  
+  const payload = req.body;
+  if (typeof payload.overallExperience !== 'number' || payload.overallExperience < 1) {
+    return res.status(400).json({ error: 'Overall experience rating is required' });
+  }
+
+  try {
+    const reviewsRef = db.collection('reviews');
+    await reviewsRef.add({
+      userId,
+      ...payload,
+      timestamp: admin.firestore.FieldValue.serverTimestamp()
+    });
+    
+    res.status(201).json({ success: true });
+  } catch (err) {
+    console.error('Submit review failed:', err);
+    res.status(500).json({ error: 'Failed to submit review' });
+  }
+});
+
+// GET /api/reviews — fetch all reviews (Admin only)
+app.get('/api/reviews', authMiddleware, async (req, res) => {
+  if (!db) return res.status(500).json({ error: 'Database not initialized' });
+  
+  if (req.user.email !== 'ashishinframind@gmail.com') {
+    return res.status(403).json({ error: 'Forbidden: Admin access only' });
+  }
+
+  try {
+    const reviewsRef = db.collection('reviews');
+    const snapshot = await reviewsRef.orderBy('timestamp', 'desc').get();
+    
+    const reviews = [];
+    snapshot.forEach(doc => {
+      reviews.push({ id: doc.id, ...doc.data() });
+    });
+    
+    res.json(reviews);
+  } catch (err) {
+    console.error('Fetch reviews failed:', err);
+    res.status(500).json({ error: 'Failed to fetch reviews' });
+  }
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 const http = require('http');

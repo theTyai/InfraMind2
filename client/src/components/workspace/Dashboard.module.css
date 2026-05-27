@@ -1634,3 +1634,6 @@
     border-top: none;
   }
 }
+.reviewSection {
+  padding: 0 24px;
+}

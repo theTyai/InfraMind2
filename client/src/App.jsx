@@ -22,6 +22,8 @@ import DocsModal from './components/workspace/DocsModal.jsx'
 import SavedArchitecturesModal from './components/workspace/SavedArchitecturesModal.jsx'
 import ShareModal from './components/workspace/ShareModal.jsx'
 import ProfileModal from './components/workspace/ProfileModal.jsx'
+import AdminLogin from './components/admin/AdminLogin.jsx'
+import ReviewBoard from './components/admin/ReviewBoard.jsx'
 import OfflineIndicator from './components/ui/OfflineIndicator.jsx'
 import SkipLink from './components/ui/SkipLink.jsx'
 import Toast from './components/ui/Toast.jsx'
@@ -393,6 +395,15 @@ export default function App() {
         {/* ── Public: Shared architecture ── */}
         <Route path="/p/:shareId" element={<PublicShare />} />
         <Route path="/embed/:shareId" element={<PublicShare embed />} />
+
+        {/* ── Admin Portal ── */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route
+          path="/admin/reviews"
+          element={
+            !appUser ? <Navigate to="/admin/login" replace /> : <ReviewBoard />
+          }
+        />
 
         {/* ── Protected: Single AuthenticatedApp instance for ALL protected routes ──
              A single wildcard catch handles both /dashboard and /workspace/:id
