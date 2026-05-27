@@ -620,7 +620,9 @@ export default function CostEstimator({
                               outline: 'none',
                               cursor: 'pointer',
                               fontFamily: 'var(--font-sans)',
-                              minWidth: '200px'
+                              maxWidth: '100%',
+                              flex: 1,
+                              textOverflow: 'ellipsis'
                             }}
                           >
                             {options.map(opt => (
@@ -657,7 +659,9 @@ export default function CostEstimator({
                               outline: 'none',
                               cursor: 'pointer',
                               fontFamily: 'var(--font-sans)',
-                              minWidth: '200px'
+                              maxWidth: '100%',
+                              flex: 1,
+                              textOverflow: 'ellipsis'
                             }}
                           >
                             <option value={item.service}>{item.service} ({item.cost === 0 ? 'Free' : `$${item.cost}/mo`})</option>

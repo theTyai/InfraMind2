@@ -745,10 +745,11 @@
   color: var(--text-secondary);
   line-height: 1.45;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   margin: 0;
+  word-break: break-word;
 }
 
 .recentCardMeta {
@@ -1309,6 +1310,8 @@
   transition: all var(--transition-fast);
   font-size: 0.82rem;
   color: var(--text-muted);
+  white-space: normal;
+  word-break: break-word;
 }
 
 .checklistDone {

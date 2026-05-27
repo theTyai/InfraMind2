@@ -53,7 +53,9 @@ export default function AnimatedDataflow({ data, detectedStack = [], customCosts
       padding: 'clamp(16px, 3vw, 32px) clamp(12px, 2vw, 24px)',
       marginBottom: '24px',
       overflowX: 'auto',
-      WebkitOverflowScrolling: 'touch'
+      WebkitOverflowScrolling: 'touch',
+      width: '100%',
+      maxWidth: '100%'
     }}>
       <svg width="100%" height="280" viewBox="0 0 780 280" style={{ overflow: 'visible', minWidth: '600px', display: 'block' }}>
         <defs>
