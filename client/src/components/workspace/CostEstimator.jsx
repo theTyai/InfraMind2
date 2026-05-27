@@ -814,10 +814,14 @@ const selectStyle = {
   borderRadius: 'var(--radius-xs)',
   color: 'var(--text-secondary)',
   fontSize: '0.72rem',
-  padding: '2px 6px',
+  padding: '2px 20px 2px 6px',
   outline: 'none',
   cursor: 'pointer',
   fontFamily: 'var(--font-sans)',
+  maxWidth: '140px',
+  textOverflow: 'ellipsis',
+  overflow: 'hidden',
+  whiteSpace: 'nowrap'
 }
 
 const inputStyle = {

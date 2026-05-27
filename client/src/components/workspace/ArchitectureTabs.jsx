@@ -44,7 +44,7 @@ function CollaboratorsInvite() {
           ✓ Invitation sent successfully!
         </div>
       ) : (
-        <form onSubmit={handleInvite} style={{ display: 'flex', gap: '8px' }}>
+        <form onSubmit={handleInvite} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <input
             type="email"
             placeholder="teammate@company.com"
@@ -57,7 +57,7 @@ function CollaboratorsInvite() {
               color: 'var(--text-primary)',
               padding: '8px 12px',
               borderRadius: '6px',
-              flex: 1,
+              flex: '1 1 200px',
               fontSize: '0.78rem',
               outline: 'none',
               transition: 'border-color 0.15s'
@@ -74,6 +74,7 @@ function CollaboratorsInvite() {
               border: 'none',
               padding: '8px 16px',
               borderRadius: '6px',
+              flex: '1 1 auto',
               fontSize: '0.78rem',
               fontWeight: 600,
               cursor: sending ? 'wait' : 'pointer',
@@ -1138,11 +1139,11 @@ export default function ArchitectureTabs({
             {/* Spec Panel Body Content */}
             {activeSpecTab === 'apis' && (
               <div style={{ overflowX: 'auto', width: '100%' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <table style={{ width: '100%', minWidth: '550px', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                      <th style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'left', paddingBottom: '8px', width: '100px' }}>Method</th>
-                      <th style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'left', paddingBottom: '8px', width: '250px' }}>Path</th>
+                      <th style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'left', paddingBottom: '8px', width: '80px' }}>Method</th>
+                      <th style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'left', paddingBottom: '8px', width: '180px' }}>Path</th>
                       <th style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'left', paddingBottom: '8px' }}>Description</th>
                     </tr>
                   </thead>
