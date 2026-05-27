@@ -1112,13 +1112,7 @@ export default function ArchitectureTabs({
 
         {/* Active Specification Detail View Panel */}
         {activeSpecTab && (
-          <div style={{
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: '8px',
-            padding: '20px',
-            marginTop: '16px'
-          }}>
+          <div className={styles.activeSpecPanel}>
             {/* Spec Panel Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px', marginBottom: '16px' }}>
               <h5 style={{ margin: 0, fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -1411,27 +1405,7 @@ export default function ArchitectureTabs({
       </div>
 
 
-      {/* Floating Prompt Refiner Bar (Bottom-Center) */}
-      {onSubmit && (
-        <div className={styles.floatingPromptBarWrapper}>
-          <form className={styles.floatingPromptBarForm} onSubmit={handleRefinementSubmit}>
-            <Terminal size={16} className={styles.promptBarIcon} />
-            <input
-              name="refinementInput"
-              type="text"
-              className={styles.promptBarInput}
-              placeholder="Refine this architecture (e.g. 'Add Redis cache layer')..."
-            />
-            <button 
-              type="submit" 
-              className={styles.promptBarSubmitBtn}
-              title="Refine Blueprint"
-            >
-              <Send size={14} />
-            </button>
-          </form>
-        </div>
-      )}
+
 
       {/* ================= MODAL WINDOWS ================= */}
 

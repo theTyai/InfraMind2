@@ -244,6 +244,7 @@ export default function AppShell({ activeMode, setActiveMode, ...props }) {
           activeMode={activeMode}
           setActiveMode={setActiveMode}
           projectName={props.data?.projectTitle || props.lastIdea || 'Untitled System'}
+          onSubmit={props.onSubmit}
         />
         <div className={styles.workspaceContainer}>
           <div className={styles.workspaceLayout}>

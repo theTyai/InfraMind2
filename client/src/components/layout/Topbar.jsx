@@ -1,4 +1,4 @@
-import { Menu, Bell, X, Search } from 'lucide-react'
+import { Menu, Bell, X, Search, Terminal, Send } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { useArchitectureStore } from '../../store/useArchitectureStore.js'
 import { useAuthContext } from '../../context/AuthContext.jsx'
@@ -25,14 +25,15 @@ export default function Topbar({
   activeMode,
   setActiveMode,
   projectName,
+  onSubmit,
 }) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [searchExpanded, setSearchExpanded] = useState(false)
   const dropdownRef = useRef(null)
-  const searchRef   = useRef(null)
+  const searchRef = useRef(null)
 
   const { idToken } = useAuthContext()
-  const notifications      = useArchitectureStore(s => s.notifications) || []
+  const notifications = useArchitectureStore(s => s.notifications) || []
   const fetchNotifications = useArchitectureStore(s => s.fetchNotifications)
   const markNotificationRead = useArchitectureStore(s => s.markNotificationRead)
 
@@ -79,6 +80,15 @@ export default function Topbar({
     }
     setDropdownOpen(false)
   }
+  
+  const handleRefinementSubmit = (e) => {
+    e.preventDefault()
+    const val = e.target.elements.refinementInput.value.trim()
+    if (!val || !onSubmit) return
+    
+    onSubmit({ idea: val })
+    e.target.reset()
+  }
 
   // Status dot color
   const statusState = state === 'result' ? 'valid' : state === 'error' ? 'invalid' : 'valid'
@@ -99,15 +109,32 @@ export default function Topbar({
         </button>
 
         <div className={styles.logoAndProject}>
-          <span className={styles.orgLabel}>Acme Corp</span>
-          <span className={styles.projectDivider}>/</span>
           <p className={styles.title} title={projectName}>{projectName || 'E-Commerce Platform'}</p>
           <span className={styles.viewBadge}>Architecture</span>
         </div>
       </div>
 
-      {/* Center section kept empty to preserve spacing or removed */}
-      <div className={styles.center}></div>
+      <div className={styles.center}>
+        {onSubmit && (
+          <form className={styles.topbarPromptForm} onSubmit={handleRefinementSubmit}>
+            <Terminal size={14} className={styles.promptBarIcon} />
+            <input
+              name="refinementInput"
+              type="text"
+              className={styles.promptBarInput}
+              placeholder="Refine architecture..."
+              autoComplete="off"
+            />
+            <button 
+              type="submit" 
+              className={styles.promptBarSubmitBtn}
+              title="Refine Blueprint"
+            >
+              <Send size={12} />
+            </button>
+          </form>
+        )}
+      </div>
 
       <div className={styles.controls}>
         {/* Presence Avatars — max 4 shown */}

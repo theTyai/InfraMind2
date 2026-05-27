@@ -9,7 +9,7 @@ export default function Footer() {
           <Logo size={20} showText={true} />
           <span className={styles.dot}>&middot;</span>
           <span className={styles.copy}>
-            &copy; {new Date().getFullYear()} InfraMind Technologies Inc. All rights reserved.
+            &copy; {new Date().getFullYear()} InfraMind. All rights reserved.
           </span>
         </div>
         <div className={styles.right}>

@@ -6,15 +6,13 @@
   min-height: 0;
   padding: 0 clamp(12px, 3vw, 24px) 24px;
   box-sizing: border-box;
+  position: relative;
 }
 
 /* On mobile, workspace scrolls natively inside the scroll container */
 @media (max-width: 768px) {
   .workspace {
     overflow: visible;
-    min-height: auto;
-    height: auto;
-    flex: none;
   }
 }
 
@@ -1020,7 +1018,7 @@
   min-height: 0;
   overflow-y: auto;
   padding-top: 12px;
-  padding-bottom: 84px; /* Space for the floating prompt bar */
+  padding-bottom: 24px;
 }
 
 /* Tab 1: Canvas Stage Layout */
@@ -1412,16 +1410,16 @@
   align-items: center;
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(5, 5, 8, 0.75);
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(37, 99, 235, 0.35);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 25px rgba(37, 99, 235, 0.15);
+  background: var(--bg-glass);
+  backdrop-filter: var(--glass-blur, blur(24px));
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-lg);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .floatingPromptBarForm:focus-within {
-  border-color: var(--secondary);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 35px rgba(96, 165, 250, 0.3);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
 }
 
 .promptBarIcon {
@@ -1831,7 +1829,7 @@
   box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: clamp(16px, 3vw, 28px) clamp(14px, 3vw, 28px) 84px;
+  padding: clamp(16px, 3vw, 28px) clamp(14px, 3vw, 28px) 24px;
 }
 
 .deckHeaderActions {
@@ -2501,12 +2499,13 @@
   }
   
   .floatingPromptBarWrapper {
-    position: static;
-    transform: none;
-    width: 100%;
-    margin-top: 24px;
-    padding-bottom: 24px;
-    margin-bottom: 40px;
+    position: fixed;
+    bottom: 24px;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    margin: 0;
+    padding-bottom: 0;
+    z-index: 50;
   }
   
   .floatingPromptBarForm {
@@ -4026,10 +4025,18 @@
   }
 }
 
+.activeSpecPanel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 16px;
+}
+
 /* ── Workspace canvas scrolling ─────────────────────── */
 @media (max-width: 768px) {
   .workspaceCanvas {
-    padding: 0 4px 80px;
+    padding: 0 0 80px;
     overflow-x: hidden;
   }
 }
@@ -4044,7 +4051,7 @@
     min-height: auto !important;
     overflow-y: visible !important;
     overflow-x: hidden;
-    padding: 12px 6px 100px;
+    padding: 12px 0 100px;
   }
 
   /* Tab row: horizontally scrollable on small screens */
@@ -4085,5 +4092,10 @@
   /* Two-column bento → single column on phones */
   .deckGridContainer {
     grid-template-columns: 1fr !important;
+  }
+
+  .activeSpecPanel {
+    padding: 10px;
+    margin-top: 8px;
   }
 }

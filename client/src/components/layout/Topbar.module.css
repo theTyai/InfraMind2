@@ -382,18 +382,12 @@
   .headerActionBtn {
     padding: 6px 8px;
   }
-  .orgLabel {
-    display: none;
-  }
-  .projectDivider {
-    display: none;
-  }
-  .viewBadge {
-    display: none;
-  }
 }
 
 @media (max-width: 640px) {
+  .logoAndProject {
+    display: none !important;
+  }
   .statusLabel {
     display: none;
   }
@@ -497,3 +491,63 @@
   cursor: not-allowed;
 }
 
+.topbarPromptForm {
+  width: 100%;
+  min-width: 300px;
+  max-width: 500px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--bg-glass);
+  backdrop-filter: var(--glass-blur, blur(24px));
+  border: 1px solid var(--border-subtle);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.topbarPromptForm:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+  background: var(--bg-surface);
+}
+
+.promptBarIcon {
+  color: var(--secondary);
+  margin-left: 4px;
+}
+
+.promptBarInput {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  width: 100%;
+  height: 24px;
+}
+
+.promptBarSubmitBtn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  border: none;
+}
+
+.promptBarSubmitBtn:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: scale(1.05);
+}
+
+.promptBarSubmitBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}

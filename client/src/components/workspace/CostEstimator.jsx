@@ -763,7 +763,7 @@ const containerStyle = {
   background: 'transparent',
   border: '1px solid var(--border-subtle)',
   borderRadius: 'var(--radius-lg)',
-  padding: 20,
+  padding: 'clamp(12px, 4vw, 20px)',
   display: 'flex',
   flexDirection: 'column',
   gap: 12,
