@@ -52,8 +52,8 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    linear-gradient(var(--bg-card) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bg-card) 1px, transparent 1px);
   background-size: 60px 60px;
   mask-image: radial-gradient(ellipse 70% 70% at 50% 0%, black, transparent);
 }
@@ -63,9 +63,9 @@
   position: sticky;
   top: 0;
   z-index: 200;
-  background: rgba(5, 5, 7, 0.75);
+  background: var(--bg-glass);
   backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-glass);
 }
 
 .navInner {
@@ -113,6 +113,25 @@
   flex-shrink: 0;
 }
 
+.themeToggleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid var(--border-glass);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.themeToggleBtn:hover {
+  background: var(--border-glass);
+  color: var(--text-primary);
+}
+
 .navSignIn {
   color: var(--text-dim);
   font-size: 0.9rem;
@@ -127,7 +146,7 @@
 
 .navSignIn:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--border-glass);
 }
 
 .navCta {
@@ -247,7 +266,7 @@
   gap: 6px;
   padding: 14px 24px;
   color: var(--text-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   font-size: 0.95rem;
   font-weight: 500;
@@ -256,8 +275,8 @@
 
 .heroSecondary:hover {
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--border-active);
+  background: var(--border-glass);
 }
 
 .heroStats {
@@ -290,7 +309,7 @@
 .heroStatDivider {
   width: 1px;
   height: 36px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--border-subtle);
 }
 
 /* ── Hero Visual / Diagram Card ──────────────────────────── */
@@ -304,11 +323,11 @@
 .diagramCard {
   width: 100%;
   max-width: 480px;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);
   overflow: hidden;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.04) inset;
+  box-shadow: 0 24px 60px var(--shadow-md), 0 0 0 1px var(--border-glass) inset;
   backdrop-filter: blur(12px);
 }
 
@@ -317,8 +336,8 @@
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--border-glass);
+  background: var(--bg-card);
 }
 
 .diagramDots {
@@ -374,8 +393,8 @@
   display: flex;
   gap: 8px;
   padding: 12px 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid var(--border-glass);
+  background: var(--bg-card);
 }
 
 .diagramPill {
@@ -400,8 +419,8 @@
   align-items: center;
   gap: 20px;
   padding: 48px 48px;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: 1px solid var(--border-glass);
+  border-bottom: 1px solid var(--border-glass);
 }
 
 .trustLabel {
@@ -423,13 +442,13 @@
 .trustLogo {
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--text-faint);
+  color: var(--text-muted);
   letter-spacing: -0.3px;
   transition: color var(--transition-fast);
 }
 
 .trustLogo:hover {
-  color: var(--text-dim);
+  color: var(--text-primary);
 }
 
 /* ── Section Common ──────────────────────────────────────── */
@@ -484,8 +503,8 @@
 
 .featureCard {
   padding: 32px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
   transition: all var(--transition-med);
   position: relative;
@@ -505,10 +524,10 @@
 }
 
 .featureCard:hover {
-  background: rgba(255, 255, 255, 0.035);
-  border-color: rgba(255, 255, 255, 0.09);
+  background: var(--bg-elevated);
+  border-color: var(--border-subtle);
   transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 40px var(--shadow-sm);
 }
 
 .featureCard:hover::before {
@@ -631,8 +650,8 @@
 
 .testimonialCard {
   padding: 28px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
@@ -641,10 +660,10 @@
 }
 
 .testimonialCard:hover {
-  background: rgba(255, 255, 255, 0.035);
-  border-color: rgba(255, 255, 255, 0.09);
+  background: var(--bg-elevated);
+  border-color: var(--border-subtle);
   transform: translateY(-3px);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 16px 32px var(--shadow-sm);
 }
 
 .testimonialStars {
@@ -720,16 +739,16 @@
   display: flex;
   flex-direction: column;
   padding: 36px 28px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
   border-radius: var(--radius-xl);
   text-align: left;
   transition: all var(--transition-med);
 }
 
 .pricingCard:hover {
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+  border-color: var(--border-subtle);
+  box-shadow: 0 16px 40px var(--shadow-sm);
 }
 
 .pricingCardPro {
@@ -822,8 +841,8 @@
   width: 100%;
   padding: 13px;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  background: var(--border-glass);
   color: var(--text-secondary);
   font-weight: 600;
   font-size: 0.9rem;
@@ -832,9 +851,9 @@
 }
 
 .planBtn:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--border-glass);
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.18);
+  border-color: var(--border);
 }
 
 .planBtnPro {
@@ -871,13 +890,13 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
 .faqItem {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border-glass);
 }
 
 .faqItem:last-child {
@@ -891,7 +910,7 @@
   align-items: center;
   gap: 16px;
   padding: 20px 24px;
-  background: rgba(255, 255, 255, 0.01);
+  background: var(--bg-card);
   border: none;
   cursor: pointer;
   text-align: left;
@@ -902,7 +921,7 @@
 }
 
 .faqQuestion:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-card);
   color: var(--text-primary);
 }
 
@@ -1111,7 +1130,7 @@
 /* "No credit card required" microcopy */
 .heroNoCc {
   font-size: 0.75rem;
-  color: rgba(255,255,255,0.3);
+  color: var(--text-muted);
   margin: 0;
   text-align: center;
 }

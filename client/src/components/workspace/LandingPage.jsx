@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Cpu, ArrowRight, Layers, FileText, Zap, LogIn, Sparkles,
   Shield, Database, Cloud, Activity, HelpCircle, ChevronDown,
-  GitBranch, Globe, Lock, BarChart3, CheckCircle2, Star
+  GitBranch, Globe, Lock, BarChart3, CheckCircle2, Star,
+  Sun, Moon
 } from 'lucide-react'
 import Logo from '../ui/Logo.jsx'
 import Footer from '../Footer.jsx'
@@ -93,6 +94,19 @@ const FAQS = [
 
 export default function LandingPage({ onOpenAuth, onOpenDocs }) {
   const [activeFaq, setActiveFaq] = useState(null)
+  const [theme, setTheme] = useState('dark')
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('inframind_theme') || 'dark'
+    setTheme(savedTheme)
+  }, [])
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(newTheme)
+    localStorage.setItem('inframind_theme', newTheme)
+    document.documentElement.setAttribute('data-theme', newTheme)
+  }
 
   return (
     <div className={styles.page}>
@@ -117,6 +131,9 @@ export default function LandingPage({ onOpenAuth, onOpenDocs }) {
           </div>
 
           <div className={styles.navActions}>
+            <button type="button" className={styles.themeToggleBtn} onClick={toggleTheme} aria-label="Toggle theme">
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
             <button type="button" className={styles.navSignIn} onClick={onOpenAuth}>
               Sign In
             </button>
@@ -133,7 +150,7 @@ export default function LandingPage({ onOpenAuth, onOpenDocs }) {
         <div className={styles.heroContent}>
           <div className={styles.heroBadge}>
             <Zap size={12} />
-            <span>Powered by Gemini 2.5 Pro</span>
+            <span>Powered by Gemini</span>
           </div>
 
           <h1 className={styles.heroTitle}>
