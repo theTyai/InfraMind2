@@ -428,10 +428,56 @@ app.post('/api/projects/:projectId/share', authMiddleware, async (req, res) => {
     // Mark project as shared
     await projectRef.update({ shareId, isPublic: true });
 
-    res.json({ shareId, shareUrl: `/p/${shareId}` });
+    // Return the backend preview URL which will unfurl on social media and redirect to frontend
+    const baseUrl = req.protocol + '://' + req.get('host');
+    res.json({ shareId, shareUrl: `${baseUrl}/api/public/${shareId}/preview` });
   } catch (err) {
     console.error('Share creation failed:', err);
     res.status(500).json({ error: 'Failed to create share link' });
+  }
+});
+
+// GET /api/public/:shareId/preview — dynamic OG tags endpoint
+app.get('/api/public/:shareId/preview', async (req, res) => {
+  if (!db) return res.status(500).send('Database not initialized');
+  const { shareId } = req.params;
+
+  try {
+    const shareSnap = await db.collection('shares').doc(shareId).get();
+    if (!shareSnap.exists) return res.status(404).send('Share not found');
+
+    const data = shareSnap.data();
+    const title = data.title || 'InfraMind Architecture';
+    const description = data.summary || 'Check out this cloud architecture designed with InfraMind.';
+    const imageUrl = 'https://inframind.ai/og-image.png'; // Placeholder for future dynamic image
+    const frontendUrl = process.env.FRONTEND_URL || 'https://inframind.ai';
+
+    const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <meta property="og:title" content="${title}">
+    <meta property="og:description" content="${description}">
+    <meta property="og:image" content="${imageUrl}">
+    <meta property="og:url" content="${frontendUrl}/p/${shareId}">
+    <meta name="twitter:card" content="summary_large_image">
+    <script>
+        // Redirect actual users to the frontend application
+        window.location.href = "${frontendUrl}/p/${shareId}";
+    </script>
+</head>
+<body>
+    <p>Redirecting to architecture view...</p>
+</body>
+</html>`;
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
+  } catch (err) {
+    console.error('Preview meta fetch failed:', err);
+    res.status(500).send('Failed to generate preview');
   }
 });
 

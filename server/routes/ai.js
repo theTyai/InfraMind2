@@ -2,6 +2,8 @@
 
 const { aiRateLimiter, aiRequestTracer, fetchWithRetry } = require('../middleware/aiGateway');
 const AIGatewayService = require('../services/AIGatewayService');
+const { Worker } = require('worker_threads');
+const path = require('path');
 
 const RESPONSE_SCHEMA = {
   type: 'OBJECT',
@@ -161,60 +163,36 @@ function extractJsonText(apiData) {
     .trim();
 }
 
-function extractJsonBlock(raw) {
-  let start = raw.search(/[\{\[]/);
-  if (start === -1) return null;
-
-  let depth = 0;
-  let inString = false;
-  let escape = false;
-  for (let i = start; i < raw.length; i += 1) {
-    const char = raw[i];
-    if (escape) {
-      escape = false;
-      continue;
-    }
-    if (char === '\\') {
-      escape = true;
-      continue;
-    }
-    if (char === '"') {
-      inString = !inString;
-      continue;
-    }
-    if (inString) continue;
-    if (char === '{' || char === '[') {
-      depth += 1;
-    }
-    if (char === '}' || char === ']') {
-      depth -= 1;
-      if (depth === 0) {
-        return raw.slice(start, i + 1);
+async function tryParseJson(raw) {
+  return new Promise((resolve) => {
+    const workerPath = path.join(__dirname, '../utils/jsonWorker.js');
+    const worker = new Worker(workerPath);
+    
+    worker.on('message', (message) => {
+      if (message.error) {
+        console.warn('[JSON Worker Error]', message.error, message.details || '');
+        resolve(null);
+      } else {
+        resolve(message.data);
       }
-    }
-  }
-  return null;
-}
-
-function tryParseJson(raw) {
-  if (!raw) return null;
-  const cleaned = raw
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/\s*```$/i, '')
-    .trim();
-
-  try {
-    return JSON.parse(cleaned);
-  } catch {
-    const block = extractJsonBlock(cleaned);
-    if (!block) return null;
-    try {
-      return JSON.parse(block);
-    } catch {
-      return null;
-    }
-  }
+      worker.terminate();
+    });
+    
+    worker.on('error', (err) => {
+      console.error('[JSON Worker Fatal]', err);
+      resolve(null);
+      worker.terminate();
+    });
+    
+    worker.on('exit', (code) => {
+      if (code !== 0) {
+        console.error(`[JSON Worker] stopped with exit code ${code}`);
+        resolve(null);
+      }
+    });
+    
+    worker.postMessage(raw);
+  });
 }
 
 function validateArchitectureShape(data) {
@@ -440,13 +418,12 @@ Generate a complete architecture recommendation. Where the user knows a technolo
         timestamp: serverTimestamp
       });
 
-      // Write to Redis Read Cache (CQRS) — invalidate old snapshot first
-      const { setProjectSnapshot, invalidateProjectSnapshot } = require('../utils/cacheManager');
+      // Write to Redis Read Cache (CQRS) — invalidate old snapshot to force cache-aside on next read
+      const { invalidateProjectSnapshot } = require('../utils/cacheManager');
       try {
         await invalidateProjectSnapshot(activeProjectId);
-        await setProjectSnapshot(activeProjectId, parsedResponse);
       } catch (cacheErr) {
-        console.warn('[AI Gateway] Cache write failed (non-fatal):', cacheErr.message);
+        console.warn('[AI Gateway] Cache invalidation failed (non-fatal, relying on TTL fallback):', cacheErr.message);
       }
 
       const timestampISO = new Date().toISOString();

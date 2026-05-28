@@ -314,11 +314,16 @@ module.exports = function (app, db, admin, authMiddleware) {
 - **Database Tables:** ${scanResult.collections.matchingCount} / ${scanResult.collections.totalPlanned} matching
 
 ${scanResult.routes.missing.length > 0 ? `#### ⚠️ Missing API Routes in Code
-${scanResult.routes.missing.map(r => `- \`${r.method} ${r.route}\` (${r.description})`).join('\n')}
+| Method | Route | Description |
+|--------|-------|-------------|
+${scanResult.routes.missing.map(r => `| \`${r.method}\` | \`${r.route}\` | ${r.description} |`).join('\n')}
 ` : ''}
 ${scanResult.collections.missing.length > 0 ? `#### ⚠️ Missing Database Collections in Code
-${scanResult.collections.missing.map(c => `- \`${c}\``).join('\n')}
+| Collection Name |
+|-----------------|
+${scanResult.collections.missing.map(c => `| \`${c}\` |`).join('\n')}
 ` : ''}
+
 *Report generated automatically by [InfraMind](https://inframind.ai).*`;
 
             await fetch(`https://api.github.com/repos/${owner}/${repo}/issues/${prNumber}/comments`, {

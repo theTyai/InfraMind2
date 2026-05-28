@@ -298,9 +298,24 @@ export default function PublicShare({ embed }) {
           )}
           
           <div className={styles.navRightActions}>
-            <Link to="/" className={styles.navCta}>
-              Try InfraMind <ArrowRight size={13} />
-            </Link>
+            <button 
+              className={styles.navCta}
+              onClick={() => {
+                try {
+                  import('posthog-js').then(({ default: posthog }) => {
+                    posthog.capture('clicked_clone_architecture', { shareId });
+                  });
+                } catch (e) {}
+                
+                if (appUser) {
+                  window.location.href = `/dashboard?clone=${shareId}`;
+                } else {
+                  window.location.href = `/?clone=${shareId}`;
+                }
+              }}
+            >
+              Clone and Modify in 1-Click <ArrowRight size={13} />
+            </button>
           </div>
         </div>
       </nav>

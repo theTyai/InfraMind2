@@ -82,7 +82,7 @@ class AIGatewayService {
 
     const data = await geminiRes.json();
     const rawText = extractJsonText(data);
-    let parsedResponse = tryParseJson(rawText);
+    let parsedResponse = await tryParseJson(rawText);
 
     // Malformed JSON Repair Pipeline
     if (!parsedResponse || !validateArchitectureShape(parsedResponse)) {
@@ -143,7 +143,7 @@ Preserve the original meaning as closely as possible.`;
       if (!repairRes.ok) return null;
       const repairData = await repairRes.json().catch(() => null);
       const repairedRaw = extractJsonText(repairData);
-      const repairedParsed = tryParseJson(repairedRaw);
+      const repairedParsed = await tryParseJson(repairedRaw);
       return validateArchitectureShape(repairedParsed) ? repairedParsed : null;
     } catch (err) {
       console.error('[AI Gateway] Repair loop failed:', err);

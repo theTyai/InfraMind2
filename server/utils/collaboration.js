@@ -27,13 +27,32 @@ function initCollaboration(server, db) {
         switch (data.type) {
           case 'join': {
             const { roomId, userId, userName, photoUrl } = data;
+            
+            // Check Team Tier for collaboration gating
+            let isTeamTier = false;
+            if (db) {
+              try {
+                const shareSnap = await db.collection('shares').doc(roomId).get();
+                if (shareSnap.exists) {
+                  const ownerId = shareSnap.data().ownerId;
+                  const ownerSnap = await db.collection('users').doc(ownerId).get();
+                  if (ownerSnap.exists && ownerSnap.data().tier === 'team') {
+                    isTeamTier = true;
+                  }
+                }
+              } catch (err) {
+                console.error('[WebSockets] Tier check failed:', err);
+              }
+            }
+
             currentRoomId = roomId;
             currentUser = {
               ws,
               userId,
               userName: userName || 'Anonymous Developer',
               photoUrl: photoUrl || '',
-              cursor: { x: 0, y: 0 }
+              cursor: { x: 0, y: 0 },
+              isTeamTier
             };
 
             if (!rooms.has(roomId)) {
@@ -41,13 +60,17 @@ function initCollaboration(server, db) {
             }
             rooms.get(roomId).add(currentUser);
 
-            // Broadcast presence update
-            broadcastPresence(roomId);
+            // Broadcast presence update if team tier
+            if (isTeamTier) {
+              broadcastPresence(roomId);
+            } else {
+              ws.send(JSON.stringify({ type: 'error', message: 'Collaborative features require the Team Tier.' }));
+            }
             break;
           }
 
           case 'cursor': {
-            if (!currentRoomId || !currentUser) return;
+            if (!currentRoomId || !currentUser || !currentUser.isTeamTier) return;
             currentUser.cursor = { x: data.x, y: data.y };
 
             // Broadcast cursor update to other clients in room
@@ -62,7 +85,7 @@ function initCollaboration(server, db) {
           }
 
           case 'comment': {
-            if (!currentRoomId || !currentUser || !db) return;
+            if (!currentRoomId || !currentUser || !db || !currentUser.isTeamTier) return;
             const { nodeId, commentText } = data;
 
             // Save comment to Firestore

@@ -153,109 +153,101 @@ export default function MermaidDiagram({ code, title, onSelectNode }) {
       return line;
     }).join('\n');
 
-    getMermaid().then(async mermaid => {
-      if (cancelled) return
+    // Use a shared Web Worker for rendering Mermaid to avoid blocking the main thread
+    if (!window.__mermaidWorker) {
+      window.__mermaidWorker = new Worker(new URL('../workers/mermaid.worker.js', import.meta.url), { type: 'module' });
+    }
+    
+    const currentId = idRef.current;
+    
+    const handleMessage = (e) => {
+      if (e.data.id !== currentId || cancelled) return;
+      window.__mermaidWorker.removeEventListener('message', handleMessage);
+      
+      if (!e.data.success) {
+        setError(`Diagram render error: ${e.data.error}`);
+        setSvgContent('');
+        setDimensions({ width: 0, height: 0 });
+        return;
+      }
+      
       try {
-        const svgId = `${idRef.current}-svg`
-        const { svg } = await mermaid.render(svgId, sanitizedCode)
-        if (cancelled) return
-
-        // Parse viewBox dimensions supporting space and comma separators
-        const parser = new DOMParser()
-        const doc = parser.parseFromString(svg, 'image/svg+xml')
-        const svgEl = doc.querySelector('svg')
-        let w = 800
-        let h = 600
+        const svg = e.data.svg;
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(svg, 'image/svg+xml');
+        const svgEl = doc.querySelector('svg');
+        let w = 800;
+        let h = 600;
+        
         if (svgEl) {
-          let viewBox = svgEl.getAttribute('viewBox')
-          const widthAttr = svgEl.getAttribute('width')
-          const heightAttr = svgEl.getAttribute('height')
+          let viewBox = svgEl.getAttribute('viewBox');
+          const widthAttr = svgEl.getAttribute('width');
+          const heightAttr = svgEl.getAttribute('height');
 
           if (!viewBox && widthAttr && heightAttr) {
-            // Synthesize viewBox from width and height attributes if viewBox is missing
-            const parsedW = parseFloat(widthAttr)
-            const parsedH = parseFloat(heightAttr)
+            const parsedW = parseFloat(widthAttr);
+            const parsedH = parseFloat(heightAttr);
             if (!isNaN(parsedW) && !isNaN(parsedH)) {
-              viewBox = `0 0 ${parsedW} ${parsedH}`
-              svgEl.setAttribute('viewBox', viewBox)
+              viewBox = `0 0 ${parsedW} ${parsedH}`;
+              svgEl.setAttribute('viewBox', viewBox);
             }
           }
 
           if (viewBox) {
-            const parts = viewBox.split(/[\s,]+/).filter(Boolean)
+            const parts = viewBox.split(/[\s,]+/).filter(Boolean);
             if (parts.length === 4) {
-              w = parseFloat(parts[2])
-              h = parseFloat(parts[3])
+              w = parseFloat(parts[2]);
+              h = parseFloat(parts[3]);
             }
           }
 
-          // ── Inject a <style> block directly into the SVG ────────────────
-          // This is the most reliable way to force text visibility across ALL
-          // Mermaid versions (v10 uses .node rect; v11 uses rect.basic,
-          // .label-container). We detect the current theme at render time so
-          // both dark and light modes get correct colours.
-          const isDark = document.documentElement.getAttribute('data-theme') !== 'light'
-          const textColor  = isDark ? '#f8fafc' : '#1e293b'
-          const nodeBg     = isDark ? '#0f172a' : '#ffffff'
-          const clusterBg  = isDark ? '#060d1e' : '#eef2ff'
-          const edgeColor  = '#2563eb'
+          const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+          const textColor  = isDark ? '#f8fafc' : '#1e293b';
+          const nodeBg     = isDark ? '#0f172a' : '#ffffff';
+          const clusterBg  = isDark ? '#060d1e' : '#eef2ff';
+          const edgeColor  = '#2563eb';
 
-          const styleEl = doc.createElementNS('http://www.w3.org/2000/svg', 'style')
+          const styleEl = doc.createElementNS('http://www.w3.org/2000/svg', 'style');
           styleEl.textContent = `
-            /* ── Text: Mermaid v10 & v11 ── */
             text, tspan { fill: ${textColor} !important; }
-
-            /* ── Node shapes: v10 (.node rect) and v11 (rect.basic, .label-container) ── */
             .node rect, .node circle, .node polygon, .node path,
             rect.basic, rect.label-container, .label-container,
             path.label-container { fill: ${nodeBg} !important; stroke: ${edgeColor} !important; stroke-width: 1.5px !important; }
-
-            /* ── Actor boxes in sequence diagrams ── */
             .actor { fill: ${nodeBg} !important; stroke: ${edgeColor} !important; }
             .actor text, .actor tspan { fill: ${textColor} !important; }
-
-            /* ── Clusters / subgraphs ── */
             .cluster rect, .subgraph-bgcolor { fill: ${clusterBg} !important; stroke: ${edgeColor} !important; }
             .cluster text, .subgraph-title { fill: ${textColor} !important; }
-
-            /* ── Edges / arrows ── */
             path.flowchart-link, .edgePath path, line { stroke: ${edgeColor} !important; fill: none !important; }
             .marker path, marker path, .arrowheadPath { fill: ${edgeColor} !important; stroke: none !important; }
-
-            /* ── Edge labels ── */
             .edgeLabel rect { fill: ${nodeBg} !important; }
             .edgeLabel text, .edgeLabel tspan { fill: ${textColor} !important; }
             .edgeLabel span { color: ${textColor} !important; }
-
-            /* ── HTML labels inside foreignObject (v11 htmlLabels:true) ── */
             foreignObject div, foreignObject span, .nodeLabel, .label { color: ${textColor} !important; }
-          `
-          svgEl.insertBefore(styleEl, svgEl.firstChild)
+          `;
+          svgEl.insertBefore(styleEl, svgEl.firstChild);
         }
 
-        // Re-serialize SVG (now includes our injected <style>)
-        const updatedSvg = svgEl ? new XMLSerializer().serializeToString(svgEl) : svg
-
-        // Sanitize. We keep <style> and <foreignObject> so neither the injected
-        // CSS nor any HTML labels Mermaid may emit get stripped.
+        const updatedSvg = svgEl ? new XMLSerializer().serializeToString(svgEl) : svg;
         const sanitizedSvg = DOMPurify.sanitize(updatedSvg, {
           USE_PROFILES: { svg: true },
           ADD_TAGS: ['style', 'foreignObject'],
           ADD_ATTR: ['class', 'style', 'xmlns', 'xmlns:xhtml'],
           FORCE_BODY: false,
-        })
+        });
 
-
-        setDimensions({ width: w, height: h })
-        setSvgContent(sanitizedSvg)
-      } catch (e) {
+        setDimensions({ width: w, height: h });
+        setSvgContent(sanitizedSvg);
+      } catch (err) {
         if (!cancelled) {
-          setError(`Diagram render error: ${e.message}`)
-          setSvgContent('')
-          setDimensions({ width: 0, height: 0 })
+          setError(`Post-render error: ${err.message}`);
+          setSvgContent('');
+          setDimensions({ width: 0, height: 0 });
         }
       }
-    })
+    };
+    
+    window.__mermaidWorker.addEventListener('message', handleMessage);
+    window.__mermaidWorker.postMessage({ id: currentId, code: sanitizedCode });
 
     return () => { cancelled = true }
   }, [code])
