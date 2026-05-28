@@ -322,6 +322,21 @@ export function detectStack(architecture) {
   return found
 }
 
+function getSelectedPlanForSlider(options, val) {
+  if (!options || options.length === 0) return null;
+  const sortedOptions = [...options].sort((a, b) => a.cost - b.cost);
+  if (val === 1) return sortedOptions[0];
+  if (val === 2) {
+    const affordable = sortedOptions.filter(o => o.cost <= 25);
+    return affordable.length > 0 ? affordable[affordable.length - 1] : sortedOptions[0];
+  }
+  if (val === 3) {
+    const affordable = sortedOptions.filter(o => o.cost <= 74);
+    return affordable.length > 0 ? affordable[affordable.length - 1] : sortedOptions[0];
+  }
+  return sortedOptions[sortedOptions.length - 1];
+}
+
 function getBudgetTier(total) {
   if (total < 50)  return { label: 'MVP Budget', color: '#10b981', emoji: '🟢', desc: 'Perfect for side projects and MVPs. Zero or near-zero cost.' }
   if (total < 200) return { label: 'Early Startup', color: '#f59e0b', emoji: '🟡', desc: 'Healthy early-stage spend. Consider free-tier limits.' }
@@ -372,21 +387,7 @@ export default function CostEstimator({
     detectedStack.forEach(item => {
       const options = TECH_OPTIONS[item.tech] || []
       if (options.length > 0) {
-        // Plan matching by cost index range
-        let selectedOpt = options[0]
-        if (val === 1) {
-          // Free tier or cheapest
-          selectedOpt = options.find(o => o.cost === 0) || options[0]
-        } else if (val === 2) {
-          // Starter Paid
-          selectedOpt = options.find(o => o.cost > 0 && o.cost <= 25) || options[0]
-        } else if (val === 3) {
-          // Mid Scale
-          selectedOpt = options.find(o => o.cost > 25 && o.cost <= 74) || options[options.length - 1]
-        } else {
-          // Enterprise Scale
-          selectedOpt = options.find(o => o.cost >= 75) || options[options.length - 1]
-        }
+        const selectedOpt = getSelectedPlanForSlider(options, val)
         newCustoms[item.tech] = { service: selectedOpt.service, cost: selectedOpt.cost, isCustom: false }
       }
     })
@@ -406,20 +407,21 @@ export default function CostEstimator({
         }
       }
 
-      // Default choice is the first element of options, or the default database pricing
+      // Default choice based on current sliderVal
       const options = TECH_OPTIONS[item.tech]
       if (options && options.length > 0) {
+        const selectedOpt = getSelectedPlanForSlider(options, sliderVal)
         return {
           ...item,
-          service: options[0].service,
-          cost: options[0].cost,
-          note: options[0].note || item.note
+          service: selectedOpt.service,
+          cost: selectedOpt.cost,
+          note: selectedOpt.note || item.note
         }
       }
 
       return item
     })
-  }, [detectedStack, customCosts])
+  }, [detectedStack, customCosts, sliderVal])
 
   // 3. Sum up values
   const totalCost = useMemo(() => {

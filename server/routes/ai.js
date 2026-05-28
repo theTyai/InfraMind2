@@ -158,9 +158,9 @@ Rules for high conciseness to avoid truncation:
   2. MANDATORY CLUSTERING: You MUST use 'subgraph' blocks for every diagram. 
      - Cluster services using valid Mermaid syntax: subgraph Frontend["Frontend Layer"], subgraph API["API & Microservices Layer"], and subgraph Persistence["Persistence & External Layer"].
   3. MANDATORY NODES: If the user provides a simple project, you must INFER the professional structure:
-     - Frontend: Client["Client (React/Next.js)"]
-     - API Layer: Gateway["API Gateway (Kong/Cloudflare)"], Auth["Auth Service"], Core["Core Business Logic Service"]
-     - Persistence: DB[("Primary Database (PostgreSQL)")], Cache[("Caching Layer (Redis)")], Ext["External API Integration"]
+     - Frontend: Client["<i class='fa fa-mobile'></i> Client (React/Next.js)"]
+     - API Layer: Gateway["<i class='fa fa-network-wired'></i> API Gateway (Kong/Cloudflare)"], Auth["<i class='fa fa-shield'></i> Auth Service"], Core["<i class='fa fa-server'></i> Core Business Logic Service"]
+     - Persistence: DB[("<i class='fa fa-database'></i> Primary Database (PostgreSQL)")], Cache[("<i class='fa fa-bolt'></i> Caching Layer (Redis)")], Ext["<i class='fa fa-plug'></i> External API Integration"]
   4. CONNECTION TYPES:
      - Use '-->' for synchronous API calls (e.g., API_Gateway -->|"Authenticate User"| Auth_Service).
      - Use '-.->' for asynchronous/caching/events (e.g., Service -.->|"Cache Data"| Redis).
@@ -175,6 +175,9 @@ Rules for high conciseness to avoid truncation:
      - Always wrap node labels in double quotes (e.g., NodeID["Label"]).
      - NEVER use colons for edge labels. Instead, use the pipe syntax for connection descriptions: A -->|"Edge Label"| B.
      - Subgraph names must be in double quotes (e.g., subgraph "Edge Layer").
+  8. ICON MANDATE: Use FontAwesome icons for all nodes to represent their function.
+     - Wrap the label in a double-quoted string with an icon class prefix. Syntax: NodeID["<i class='fa fa-iconname'></i> Label"].
+     - Mapping: Users/Clients (fa-user/fa-mobile), Services/APIs (fa-server/fa-code), Databases (fa-database), Auth (fa-shield), Caching (fa-bolt), Analytics (fa-chart-line), External (fa-plug).
   If you produce a diagram with fewer than 6 nodes, you have failed to provide an architectural representation. EXPLAIN the architecture in depth via the diagram complexity.
 - userFlowDiagram: must be a valid Mermaid sequenceDiagram (max 4-5 steps to keep it short). Add event triggers or action labels to the lines between components (e.g., Client-->>API: GET /users).
 - efficiencyScorecard: Generate 2-3 proactive suggestions (e.g., "Add Caching Layer") for the architecture. Limit reason to 1 short sentence.

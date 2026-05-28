@@ -320,6 +320,7 @@ export default function ArchitectureTabs({
   const fetchSecurityHistory = useArchitectureStore(s => s.fetchSecurityHistory)
   const securityHistory = useArchitectureStore(s => s.securityHistory)
   const runDriftScan = useArchitectureStore(s => s.runDriftScan)
+  const runDriftFix = useArchitectureStore(s => s.runDriftFix)
   const fetchDriftHistory = useArchitectureStore(s => s.fetchDriftHistory)
   const driftHistory = useArchitectureStore(s => s.driftHistory)
 
@@ -490,7 +491,7 @@ export default function ArchitectureTabs({
   }
 
   const badgeImgUrl = data.shareId 
-    ? `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':' + (window.location.port === '3000' ? '5000' : window.location.port) : ''}/api/public/${data.shareId}/badge`
+    ? `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':' + (['3000', '5173'].includes(window.location.port) ? '5000' : window.location.port) : ''}/api/public/${data.shareId}/badge`
     : ''
   const badgeLinkUrl = data.shareId
     ? `${window.location.protocol}//${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/p/${data.shareId}`

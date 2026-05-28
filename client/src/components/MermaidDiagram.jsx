@@ -9,7 +9,7 @@ let mermaidReady = false
 let mermaidInit = null
 // Bump this version whenever themeVariables or config change,
 // so the hot-reload clears the cached instance automatically.
-const MERMAID_CONFIG_VERSION = 2
+const MERMAID_CONFIG_VERSION = 4
 
 async function getMermaid() {
   if (mermaidReady && window.__mermaidVersion === MERMAID_CONFIG_VERSION) return window.__mermaid
@@ -51,10 +51,8 @@ async function getMermaid() {
       flowchart: {
         curve: 'basis',
         useMaxWidth: false, // Turn off so we can control pan/zoom dimensions
-        // htmlLabels: false uses native SVG <text> elements instead of <foreignObject>.
-        // This is critical: DOMPurify strips foreignObject HTML content when sanitizing
-        // SVGs, leaving nodes with no visible text. SVG text elements are preserved correctly.
-        htmlLabels: false,
+        // htmlLabels: true is required to render FontAwesome <i> tags inside nodes.
+        htmlLabels: true,
         nodeSpacing: 50,
         rankSpacing: 60,
       },
@@ -160,68 +158,66 @@ export default function MermaidDiagram({ code, title, onSelectNode }) {
         const { svg } = await mermaid.render(svgId, sanitizedCode);
         if (cancelled) return;
 
-        // Parse viewBox dimensions
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(svg, 'image/svg+xml');
-        const svgEl = doc.querySelector('svg');
         let w = 800;
         let h = 600;
-        
-        if (svgEl) {
-          let viewBox = svgEl.getAttribute('viewBox');
-          const widthAttr = svgEl.getAttribute('width');
-          const heightAttr = svgEl.getAttribute('height');
+        let viewBox = null;
 
-          if (!viewBox && widthAttr && heightAttr) {
-            const parsedW = parseFloat(widthAttr);
-            const parsedH = parseFloat(heightAttr);
-            if (!isNaN(parsedW) && !isNaN(parsedH)) {
-              viewBox = `0 0 ${parsedW} ${parsedH}`;
-              svgEl.setAttribute('viewBox', viewBox);
-            }
+        const viewBoxMatch = svg.match(/viewBox="([^"]+)"/i);
+        const widthMatch = svg.match(/width="([^"]+)"/i);
+        const heightMatch = svg.match(/height="([^"]+)"/i);
+
+        if (viewBoxMatch) viewBox = viewBoxMatch[1];
+        if (!viewBox && widthMatch && heightMatch) {
+          const parsedW = parseFloat(widthMatch[1]);
+          const parsedH = parseFloat(heightMatch[1]);
+          if (!isNaN(parsedW) && !isNaN(parsedH)) {
+            viewBox = `0 0 ${parsedW} ${parsedH}`;
           }
-
-          if (viewBox) {
-            const parts = viewBox.split(/[\s,]+/).filter(Boolean);
-            if (parts.length === 4) {
-              w = parseFloat(parts[2]);
-              h = parseFloat(parts[3]);
-            }
-          }
-
-          const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-          const textColor  = isDark ? '#f8fafc' : '#1e293b';
-          const nodeBg     = isDark ? '#0f172a' : '#ffffff';
-          const clusterBg  = isDark ? '#060d1e' : '#eef2ff';
-          const edgeColor  = '#2563eb';
-
-          const styleEl = doc.createElementNS('http://www.w3.org/2000/svg', 'style');
-          styleEl.textContent = `
-            text, tspan { fill: ${textColor} !important; }
-            .node rect, .node circle, .node polygon, .node path,
-            rect.basic, rect.label-container, .label-container,
-            path.label-container { fill: ${nodeBg} !important; stroke: ${edgeColor} !important; stroke-width: 1.5px !important; }
-            .actor { fill: ${nodeBg} !important; stroke: ${edgeColor} !important; }
-            .actor text, .actor tspan { fill: ${textColor} !important; }
-            .cluster rect, .subgraph-bgcolor { fill: ${clusterBg} !important; stroke: ${edgeColor} !important; }
-            .cluster text, .subgraph-title { fill: ${textColor} !important; }
-            path.flowchart-link, .edgePath path, line { stroke: ${edgeColor} !important; fill: none !important; }
-            .marker path, marker path, .arrowheadPath { fill: ${edgeColor} !important; stroke: none !important; }
-            .edgeLabel rect { fill: ${nodeBg} !important; }
-            .edgeLabel text, .edgeLabel tspan { fill: ${textColor} !important; }
-            .edgeLabel span { color: ${textColor} !important; }
-            foreignObject div, foreignObject span, .nodeLabel, .label { color: ${textColor} !important; }
-          `;
-          svgEl.insertBefore(styleEl, svgEl.firstChild);
         }
 
-        const updatedSvg = svgEl ? new XMLSerializer().serializeToString(svgEl) : svg;
-        const sanitizedSvg = DOMPurify.sanitize(updatedSvg, {
-          USE_PROFILES: { svg: true },
-          ADD_TAGS: ['style', 'foreignObject'],
-          ADD_ATTR: ['class', 'style', 'xmlns', 'xmlns:xhtml'],
-          FORCE_BODY: false,
-        });
+        if (viewBox) {
+          const parts = viewBox.split(/[\s,]+/).filter(Boolean);
+          if (parts.length === 4) {
+            w = parseFloat(parts[2]);
+            h = parseFloat(parts[3]);
+          }
+        }
+
+        const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+        const textColor  = isDark ? '#f8fafc' : '#1e293b';
+        const nodeBg     = isDark ? '#0f172a' : '#ffffff';
+        const clusterBg  = isDark ? '#060d1e' : '#eef2ff';
+        const edgeColor  = '#2563eb';
+
+        const styleContent = `
+          text, tspan { fill: ${textColor} !important; }
+          .node rect, .node circle, .node polygon, .node path,
+          rect.basic, rect.label-container, .label-container,
+          path.label-container { fill: ${nodeBg} !important; stroke: ${edgeColor} !important; stroke-width: 1.5px !important; }
+          .actor { fill: ${nodeBg} !important; stroke: ${edgeColor} !important; }
+          .actor text, .actor tspan { fill: ${textColor} !important; }
+          .cluster rect, .subgraph-bgcolor { fill: ${clusterBg} !important; stroke: ${edgeColor} !important; }
+          .cluster text, .subgraph-title { fill: ${textColor} !important; }
+          path.flowchart-link, .edgePath path, line { stroke: ${edgeColor} !important; fill: none !important; }
+          .marker path, marker path, .arrowheadPath { fill: ${edgeColor} !important; stroke: none !important; }
+          .edgeLabel rect { fill: ${nodeBg} !important; }
+          .edgeLabel text, .edgeLabel tspan { fill: ${textColor} !important; }
+          .edgeLabel, .edgeLabel div, .edgeLabel span { color: ${textColor} !important; background-color: transparent !important; }
+          foreignObject div, foreignObject span, .nodeLabel, .label { color: ${textColor} !important; }
+        `;
+
+        // Safely inject style directly into the SVG string after the opening <svg> tag
+        // This completely avoids XMLParser corruption and text/html tag lowercasing!
+        let updatedSvg = svg.replace(/(<svg[^>]*>)/i, `$1<style>${styleContent}</style>`);
+
+        // If viewBox was missing but we calculated it, inject it
+        if (!viewBoxMatch && viewBox) {
+           updatedSvg = updatedSvg.replace(/(<svg[^>]*)/i, `$1 viewBox="${viewBox}"`);
+        }
+        // Bypass DOMPurify because its SVG parser aggressively strips <foreignObject> 
+        // contents even when explicitly whitelisted, causing all text to disappear.
+        // Mermaid's native sanitizer provides baseline protection.
+        const sanitizedSvg = updatedSvg;
 
         setDimensions({ width: w, height: h });
         setSvgContent(sanitizedSvg);

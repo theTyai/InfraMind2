@@ -1,13 +1,18 @@
 const path = require('path');
 const fs = require('fs');
 
+const serverEnvPath = path.join(__dirname, '.env');
 const clientEnvPath = path.join(__dirname, '../client/.env');
 const rootEnvPath = path.join(__dirname, '../.env');
 
+if (fs.existsSync(rootEnvPath)) {
+  require('dotenv').config({ path: rootEnvPath });
+}
 if (fs.existsSync(clientEnvPath)) {
   require('dotenv').config({ path: clientEnvPath });
-} else {
-  require('dotenv').config({ path: rootEnvPath });
+}
+if (fs.existsSync(serverEnvPath)) {
+  require('dotenv').config({ path: serverEnvPath });
 }
 
 const express = require('express');

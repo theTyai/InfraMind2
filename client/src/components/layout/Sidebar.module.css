@@ -460,10 +460,21 @@
   height: 24px;
 }
 
-@media (min-width: 769px) {
-  .collapseBtn {
-    display: none !important;
-  }
+.sidebar.collapsed .navGroup {
+  padding: 8px;
+  align-items: center;
+}
+
+.sidebar.collapsed .navItem {
+  justify-content: center;
+  padding: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+.sidebar.collapsed .navItem svg {
+  margin-right: 0 !important;
 }
 
 /* Sidebar hierarchical navigation styles */

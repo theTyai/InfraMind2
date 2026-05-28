@@ -359,11 +359,10 @@
   background: var(--primary-hover);
 }
 
-/* Tablet collapsing — only applies to tablet sizes, NOT mobile */
+/* Ensure the sidebar behaves responsively without hardcoding state */
 @media (min-width: 769px) and (max-width: 1024px) {
   .shell {
-    /* Keep sidebar visible on tablets */
-    grid-template-columns: 220px minmax(0, 1fr);
+    /* Base tablet desktop view, relies on state classes (e.g. .sidebarCollapsed) */
   }
 
   .rightColumn {
@@ -379,11 +378,5 @@
 
   .shell.rightPanelActive .rightColumn {
     transform: translateX(0);
-  }
-}
-
-@media (min-width: 769px) and (max-width: 900px) {
-  .shell {
-    grid-template-columns: 60px minmax(0, 1fr);
   }
 }
