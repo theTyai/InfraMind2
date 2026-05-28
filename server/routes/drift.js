@@ -347,5 +347,68 @@ ${scanResult.collections.missing.map(c => `| \`${c}\` |`).join('\n')}
       console.error('[GitHub Webhook] Background processor failed:', bgErr);
     }
   });
+
+  // POST /api/projects/:projectId/drift/fix — Generate drift remediation code
+  app.post('/api/projects/:projectId/drift/fix', authMiddleware, async (req, res) => {
+    if (!db) return res.status(500).json({ error: 'Database not initialized' });
+    const userId = req.user.uid;
+    const { projectId } = req.params;
+
+    try {
+      const projectRef = db.collection('users').doc(userId).collection('projects').doc(projectId);
+      const projectSnap = await projectRef.get();
+      if (!projectSnap.exists) return res.status(404).json({ error: 'Project not found' });
+
+      const historyRef = projectRef.collection('driftHistory');
+      const latestReportSnap = await historyRef.orderBy('timestamp', 'desc').limit(1).get();
+      
+      if (latestReportSnap.empty) {
+        return res.status(400).json({ error: 'No drift scan found. Run an audit first.' });
+      }
+
+      const latestReport = latestReportSnap.docs[0].data();
+      
+      const missingRoutes = latestReport.routes?.missing || [];
+      const missingCollections = latestReport.collections?.missing || [];
+
+      if (missingRoutes.length === 0 && missingCollections.length === 0) {
+        return res.json({ message: 'No drift detected. Architecture is fully compliant.', fixes: [] });
+      }
+
+      // Generate remediation code for missing routes and collections
+      const fixes = [];
+      
+      if (missingRoutes.length > 0) {
+        fixes.push({
+          fixId: 'drift-routes',
+          title: 'Add Missing API Routes',
+          category: 'API',
+          severity: 'HIGH',
+          what: `Found ${missingRoutes.length} missing API routes that were planned but not implemented in code.`,
+          how: 'Add the following routes to your Express router configuration:',
+          codeHint: missingRoutes.map(r => `// ${r.description}\nrouter.${(r.method || 'GET').toLowerCase()}('${r.route}', (req, res) => {\n  res.status(501).json({ message: 'Not Implemented' });\n});`).join('\n\n'),
+          impact: 'Aligns codebase with API specifications'
+        });
+      }
+
+      if (missingCollections.length > 0) {
+        fixes.push({
+          fixId: 'drift-db',
+          title: 'Add Missing Database Collections',
+          category: 'Database',
+          severity: 'HIGH',
+          what: `Found ${missingCollections.length} missing database collections that were planned but not implemented.`,
+          how: 'Add the following schemas to your database models:',
+          codeHint: missingCollections.map(c => `// ${c} Schema\nconst ${c}Schema = new mongoose.Schema({\n  // TODO: Add fields based on specification\n  createdAt: { type: Date, default: Date.now }\n});\nmodule.exports = mongoose.model('${c}', ${c}Schema);`).join('\n\n'),
+          impact: 'Aligns database with data specifications'
+        });
+      }
+
+      res.json({ fixes });
+    } catch (err) {
+      console.error('[Drift API] Fix generation failed:', err);
+      res.status(500).json({ error: `Drift fix generation failed: ${err.message}` });
+    }
+  });
 };
 

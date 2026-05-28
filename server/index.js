@@ -165,6 +165,35 @@ app.get('/api/projects', authMiddleware, async (req, res) => {
   }
 });
 
+// POST /api/projects/:projectId/review - Request Team Review
+app.post('/api/projects/:projectId/review', authMiddleware, async (req, res) => {
+  if (!db) {
+    return res.status(500).json({ error: 'Database not initialized' });
+  }
+
+  const userId = req.user.uid;
+  const { projectId } = req.params;
+
+  try {
+    const projectRef = db.collection('users').doc(userId).collection('projects').doc(projectId);
+    const docSnap = await projectRef.get();
+    
+    if (!docSnap.exists) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    await projectRef.update({
+      reviewStatus: 'Pending Review',
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    res.json({ success: true, message: 'Review requested' });
+  } catch (error) {
+    console.error('Error requesting review:', error);
+    res.status(500).json({ error: 'Failed to request review' });
+  }
+});
+
 // GET /api/projects/:projectId/history - Get project chat history
 app.get('/api/projects/:projectId/history', authMiddleware, async (req, res) => {
   if (!db) {

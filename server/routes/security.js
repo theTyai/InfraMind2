@@ -214,4 +214,58 @@ Evaluate all components, detect vulnerabilities, map them to OWASP/CWE, and prov
       res.status(500).json({ error: 'Failed to fetch security audit history' });
     }
   });
+
+  // POST /api/projects/:projectId/security/fix — Generate remediation plan
+  app.post('/api/projects/:projectId/security/fix', authMiddleware, async (req, res) => {
+    if (!db) return res.status(500).json({ error: 'Database not initialized' });
+    const userId = req.user.uid;
+    const { projectId } = req.params;
+
+    try {
+      const projectRef = db.collection('users').doc(userId).collection('projects').doc(projectId);
+      const projectSnap = await projectRef.get();
+      if (!projectSnap.exists) return res.status(404).json({ error: 'Project not found' });
+
+      const reportsRef = projectRef.collection('securityReports');
+      const latestReportSnap = await reportsRef.orderBy('timestamp', 'desc').limit(1).get();
+      
+      if (latestReportSnap.empty) {
+        return res.status(400).json({ error: 'No security scan found. Run an audit first.' });
+      }
+
+      const latestReport = latestReportSnap.docs[0].data();
+      
+      if (!latestReport.alerts || latestReport.alerts.length === 0) {
+        return res.json({
+          securityScore: latestReport.securityScore,
+          grade: latestReport.grade,
+          fixes: []
+        });
+      }
+
+      // Generate a mock response for now, in a real app this would call Gemini again
+      // to generate detailed code snippets based on the alerts.
+      const fixes = latestReport.alerts.map((alert, idx) => ({
+        fixId: `fix-${idx}`,
+        title: `Remediate ${alert.title}`,
+        severity: alert.severity,
+        category: alert.owasp || 'Security',
+        what: alert.description,
+        how: alert.remediation,
+        codeHint: alert.target.includes('API') ? 
+          `// Apply middleware to ${alert.target}\napp.use('${alert.target}', rateLimiter, authMiddleware);` :
+          `-- Apply fix to ${alert.target}\nALTER TABLE ${alert.target} ADD COLUMN is_secure BOOLEAN;`,
+        impact: 'Reduces vulnerability footprint'
+      }));
+
+      res.json({
+        securityScore: latestReport.securityScore,
+        grade: latestReport.grade,
+        fixes
+      });
+    } catch (err) {
+      console.error('[Security API] Fix generation failed:', err);
+      res.status(500).json({ error: `Security fix generation failed: ${err.message}` });
+    }
+  });
 };

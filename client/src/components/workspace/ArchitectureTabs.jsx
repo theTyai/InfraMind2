@@ -22,6 +22,10 @@ function CollaboratorsInvite() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [sending, setSending] = useState(false)
+  const [reviewStatus, setReviewStatus] = useState(localStorage.getItem('inframind_review_status') || 'Idle')
+
+  const { idToken } = useAuthContext()
+  const currentProjectId = useArchitectureStore(s => s.currentProjectId)
 
   const handleInvite = (e) => {
     e.preventDefault()
@@ -86,6 +90,48 @@ function CollaboratorsInvite() {
           </button>
         </form>
       )}
+
+      <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid var(--border-subtle)' }}>
+        <h4 style={{ margin: '0 0 6px 0', fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-primary)' }}>Approval Workflow</h4>
+        <p style={{ margin: '0 0 14px', fontSize: '0.73rem', color: 'var(--text-muted)' }}>Flag this project for review. Notifies your team that architecture decisions are pending approval.</p>
+        
+        <button
+          onClick={async () => {
+            if (!idToken || !currentProjectId) return;
+            setReviewStatus('Requesting...');
+            try {
+              const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/projects/${currentProjectId}/review`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${idToken}` }
+              });
+              if (!res.ok) throw new Error('Failed to request review');
+              setReviewStatus('Pending Review');
+              localStorage.setItem('inframind_review_status', 'Pending Review');
+            } catch (err) {
+              console.error(err);
+              setReviewStatus('Error');
+            }
+          }}
+          disabled={reviewStatus === 'Pending Review' || reviewStatus === 'Requesting...'}
+          style={{
+            background: reviewStatus === 'Pending Review' ? 'rgba(234, 179, 8, 0.15)' : 'var(--bg-elevated)',
+            color: reviewStatus === 'Pending Review' ? '#eab308' : 'var(--text-primary)',
+            border: `1px solid ${reviewStatus === 'Pending Review' ? 'rgba(234, 179, 8, 0.4)' : 'var(--border-subtle)'}`,
+            padding: '8px 16px',
+            borderRadius: '6px',
+            fontSize: '0.78rem',
+            fontWeight: 600,
+            cursor: reviewStatus === 'Pending Review' ? 'default' : 'pointer',
+            transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          {reviewStatus === 'Pending Review' && <CheckCircle size={14} />}
+          {reviewStatus === 'Pending Review' ? 'Status: Pending Review' : 'Request Team Review'}
+        </button>
+      </div>
     </div>
   )
 }
@@ -180,10 +226,33 @@ export default function ArchitectureTabs({
           return comp;
         });
       }
+
+      // 4. Patch stack and filter disabled services
+      if (Array.isArray(newData.stack)) {
+        newData.stack = newData.stack.map(s => {
+          if (s.recommendation) {
+            s.recommendation = s.recommendation.replace(regex, newService);
+          }
+          return s;
+        });
+      }
     });
+    
+    // Filter out disabled services
+    if (Array.isArray(newData.stack)) {
+      newData.stack = newData.stack.filter(s => {
+        let isDisabled = false;
+        Object.keys(enabledServices).forEach(tech => {
+          if (enabledServices[tech] === false && s.recommendation?.toLowerCase().includes(tech.toLowerCase())) {
+            isDisabled = true;
+          }
+        });
+        return !isDisabled;
+      });
+    }
 
     return newData;
-  }, [data, customCosts]);
+  }, [data, customCosts, enabledServices]);
 
   useEffect(() => {
     const initial = {}
@@ -284,6 +353,8 @@ export default function ArchitectureTabs({
   const [fixPlan, setFixPlan] = useState(null)
   const [showFixModal, setShowFixModal] = useState(false)
   const [fixLoading, setFixLoading] = useState(false)
+  const [showDriftFixModal, setShowDriftFixModal] = useState(false)
+  const [driftFixPlan, setDriftFixPlan] = useState(null)
 
   useEffect(() => {
     if (idToken && currentProjectId) {
@@ -396,6 +467,25 @@ export default function ArchitectureTabs({
       setOpsError(err.message || 'Drift scan failed')
     } finally {
       setOpsLoading(false)
+    }
+  }
+
+  const handleDriftFix = async () => {
+    if (!idToken || !currentProjectId) return
+    setFixLoading(true)
+    setOpsError('')
+    try {
+      const plan = await runDriftFix(currentProjectId, idToken)
+      if (plan.fixes && plan.fixes.length > 0) {
+        setDriftFixPlan(plan)
+        setShowDriftFixModal(true)
+      } else {
+        setOpsSuccess('No drift detected. Architecture is fully compliant.')
+      }
+    } catch (err) {
+      setOpsError(err.message || 'Could not generate drift fix plan')
+    } finally {
+      setFixLoading(false)
     }
   }
 
@@ -566,7 +656,7 @@ export default function ArchitectureTabs({
           className={styles.deckActionBtn}
           onClick={() => {
             localStorage.setItem('inframind_checklist_scaffold', 'true')
-            onScaffold()
+            onScaffold(patchedData)
           }}
           title="Download project scaffold .zip"
         >
@@ -1358,9 +1448,22 @@ export default function ArchitectureTabs({
                                 disabled={opsLoading}
                                 style={{ fontSize: '0.72rem', padding: '4px 10px', background: 'var(--primary)', color: 'var(--bg-base)', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
                               >
-                                Check Alignment
+                                {opsLoading ? 'Scanning...' : 'Check Alignment'}
                               </button>
                             </div>
+                            {latestDriftReport && latestDriftReport.complianceScore < 100 && (
+                              <div style={{ marginTop: '12px' }}>
+                                <button
+                                  type="button"
+                                  onClick={handleDriftFix}
+                                  disabled={fixLoading}
+                                  style={{ width: '100%', fontSize: '0.74rem', padding: '6px', background: 'var(--primary)', color: 'var(--bg-base)', borderRadius: '4px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+                                >
+                                  <Zap size={12} style={{ display: 'inline', marginRight: '4px' }} />
+                                  {fixLoading ? 'Generating...' : 'Apply Fix (Remediate)'}
+                                </button>
+                              </div>
+                            )}
                           </>
                         )}
                       </>
@@ -1773,6 +1876,87 @@ export default function ArchitectureTabs({
               </span>
               <button type="button" className={styles.modalCloseFooterBtn} onClick={() => setShowFixModal(false)}>
                 Close Plan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======= DRIFT FIX PLAN MODAL ======= */}
+      {showDriftFixModal && driftFixPlan && (
+        <div className={styles.modalBackdrop} onClick={() => setShowDriftFixModal(false)}>
+          <div className={`${styles.modalContent} ${styles.securityFixModal}`} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <div className={styles.modalHeaderTitleGroup}>
+                <Activity size={18} className={styles.securityFixModalIcon} />
+                <div>
+                  <h3>AI Drift Remediation Plan</h3>
+                  <span className={styles.securityFixModalSubtitle}>
+                    {driftFixPlan.fixes?.length} configurations updated
+                  </span>
+                </div>
+              </div>
+              <button type="button" className={styles.modalCloseBtn} onClick={() => setShowDriftFixModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className={styles.modalBody}>
+              <div className={styles.securityFixIntro}>
+                <AlertCircle size={14} />
+                <span>Apply these generated configuration files to resolve drift between your planned architecture and code repository.</span>
+              </div>
+
+              <div className={styles.securityFixList}>
+                {driftFixPlan.fixes?.map((fix, idx) => (
+                  <div key={fix.fixId} className={`${styles.securityFixCard} ${styles.sevCardHIGH}`}>
+                    <div className={styles.securityFixCardHeader}>
+                      <div className={styles.securityFixCardLeft}>
+                        <span className={styles.securityFixNumber}>#{idx + 1}</span>
+                        <div>
+                          <div className={styles.securityFixCardTitle}>{fix.title}</div>
+                        </div>
+                      </div>
+                      <div className={styles.securityFixCardBadges}>
+                        <span className={`${styles.fixCategoryBadge} ${styles['cat' + fix.category]}`}>
+                          {fix.category}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className={styles.securityFixWhat}>
+                      <ChevronRight size={12} className={styles.securityFixChevron} />
+                      <span><strong>What:</strong> {fix.what}</span>
+                    </div>
+
+                    {fix.how && (
+                      <div className={styles.securityFixHow}>
+                        <Info size={12} className={styles.securityFixInfoIcon} />
+                        <span><strong>How:</strong> {fix.how}</span>
+                      </div>
+                    )}
+
+                    {fix.codeHint && (
+                      <pre className={styles.securityFixCodeHint}><code>{fix.codeHint}</code></pre>
+                    )}
+
+                    {fix.impact && (
+                      <div className={styles.securityFixImpact}>
+                        <CheckCircle size={11} />
+                        <span>{fix.impact}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <span className={styles.modalFooterTip}>
+                💡 Copy these snippets to your codebase or commit them directly.
+              </span>
+              <button type="button" className={styles.modalCloseFooterBtn} onClick={() => setShowDriftFixModal(false)}>
+                Close
               </button>
             </div>
           </div>

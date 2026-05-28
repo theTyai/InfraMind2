@@ -547,6 +547,21 @@ export const useArchitectureStore = create((set, get) => ({
     }
   },
 
+  runDriftFix: async (projectId, idToken) => {
+    if (!idToken || idToken === 'null' || idToken === 'undefined') return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/projects/${projectId}/drift/fix`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${idToken}` }
+      });
+      if (!res.ok) throw new Error((await res.json()).error || 'Drift fix generation failed');
+      return await res.json();
+    } catch (err) {
+      console.error('Error running drift fix:', err);
+      throw err;
+    }
+  },
+
   fetchDriftHistory: async (projectId, idToken) => {
     if (!idToken || idToken === 'null' || idToken === 'undefined') return [];
     try {

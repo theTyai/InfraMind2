@@ -153,26 +153,14 @@ export default function MermaidDiagram({ code, title, onSelectNode }) {
       return line;
     }).join('\n');
 
-    // Use a shared Web Worker for rendering Mermaid to avoid blocking the main thread
-    if (!window.__mermaidWorker) {
-      window.__mermaidWorker = new Worker(new URL('../workers/mermaid.worker.js', import.meta.url), { type: 'module' });
-    }
-    
-    const currentId = idRef.current;
-    
-    const handleMessage = (e) => {
-      if (e.data.id !== currentId || cancelled) return;
-      window.__mermaidWorker.removeEventListener('message', handleMessage);
-      
-      if (!e.data.success) {
-        setError(`Diagram render error: ${e.data.error}`);
-        setSvgContent('');
-        setDimensions({ width: 0, height: 0 });
-        return;
-      }
-      
+    getMermaid().then(async mermaid => {
+      if (cancelled) return;
       try {
-        const svg = e.data.svg;
+        const svgId = `${idRef.current}-svg`;
+        const { svg } = await mermaid.render(svgId, sanitizedCode);
+        if (cancelled) return;
+
+        // Parse viewBox dimensions
         const parser = new DOMParser();
         const doc = parser.parseFromString(svg, 'image/svg+xml');
         const svgEl = doc.querySelector('svg');
@@ -239,15 +227,12 @@ export default function MermaidDiagram({ code, title, onSelectNode }) {
         setSvgContent(sanitizedSvg);
       } catch (err) {
         if (!cancelled) {
-          setError(`Post-render error: ${err.message}`);
+          setError(`Diagram render error: ${err.message}`);
           setSvgContent('');
           setDimensions({ width: 0, height: 0 });
         }
       }
-    };
-    
-    window.__mermaidWorker.addEventListener('message', handleMessage);
-    window.__mermaidWorker.postMessage({ id: currentId, code: sanitizedCode });
+    });
 
     return () => { cancelled = true }
   }, [code])

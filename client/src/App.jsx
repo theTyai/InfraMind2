@@ -233,16 +233,17 @@ function AuthenticatedApp({ modals, setModals, onAuthRequired }) {
     }
   }, [data, lastIdea, currentProjectId, showToast])
 
-  const handleScaffold = useCallback(async () => {
-    if (!data) return
+  const handleScaffold = useCallback(async (customData) => {
+    const activeData = (customData && !customData.type) ? customData : (data || currentArch);
+    if (!activeData) return
     try {
-      await generateScaffold(data)
+      await generateScaffold(activeData)
       trackEvent(EVENTS.SCAFFOLD_DOWNLOADED, { projectId: currentProjectId })
     } catch (e) {
       console.error('Scaffold failed:', e)
       showToast('Scaffold failed: ' + e.message, 'error')
     }
-  }, [data, currentProjectId, showToast])
+  }, [data, currentArch, currentProjectId, showToast])
 
   const handleLogout = useCallback(async () => {
     try { await logout(); handleReset() } catch (err) { console.error(err) }
