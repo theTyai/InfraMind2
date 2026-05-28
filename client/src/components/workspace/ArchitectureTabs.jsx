@@ -717,6 +717,30 @@ export default function ArchitectureTabs({
   }
 
 
+
+  if (workspaceView === 'services') {
+    return (
+      <div className={styles.controlDeckWrapper}>
+        <div className={styles.ideationHeader} style={{ marginBottom: '24px' }}>
+          <div className={styles.ideationTitleRow}>
+            <div>
+              <div className={styles.ideationEyebrow}>SYSTEM TOPOLOGY CANVAS</div>
+              <h1 className={styles.ideationTitle}>Services Architecture</h1>
+            </div>
+            {headerActions}
+          </div>
+          <p className={styles.ideationSummary}>Explore internal service boundaries and microservice data flow.</p>
+        </div>
+        <div className={styles.canvasEmbed} style={{ height: '600px', background: 'var(--bg-base)', border: '1px solid var(--border-subtle)', borderRadius: '12px', overflow: 'hidden' }}>
+          <MermaidDiagram
+            code={patchedData.mermaidDiagram}
+            onSelectNode={handleSelectNodePerspective}
+          />
+        </div>
+      </div>
+    )
+  }
+
   if (workspaceView === 'dataflows') {
     return (
       <div className={styles.controlDeckWrapper}>
@@ -1050,19 +1074,201 @@ export default function ArchitectureTabs({
         </div>
       )}
 
-      {/* 3. Interactive Topology Canvas */}
-      <div className={styles.canvasCard} style={{ marginBottom: '24px' }}>
-        <div className={styles.canvasHeader} style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: 'var(--bg-surface)', borderBottom: '1px solid var(--border-subtle)' }}>
-          <span className={styles.canvasTitle} style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>SYSTEM TOPOLOGY</span>
-          <span className={styles.canvasTip} style={{ fontSize: '0.68rem', color: 'var(--text-muted)', flex: '1 1 auto', textAlign: 'right' }}>💡 Scroll to zoom · Drag to pan · Click nodes</span>
-        </div>
-        <div className={styles.canvasEmbed} style={{ height: '350px', background: 'var(--bg-base)', border: 'none' }}>
-          <MermaidDiagram
-            code={patchedData.mermaidDiagram}
-            onSelectNode={handleSelectNodePerspective}
-          />
-        </div>
+      {/* 3. Executive Dashboard: Operations & Audits */}
+      <div className={styles.canvasCard} style={{ marginBottom: '24px', padding: '24px', background: 'var(--bg-surface)' }}>
+        <h4 style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '20px' }}>System Integrity & Operations</h4>
+                {/* Operations & Audits Dashboard inside Deployment */}
+                <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '16px' }}>
+                  <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '10px', marginBottom: '12px' }}>
+                    <button 
+                      type="button" 
+                      onClick={() => { setOpsTab('security'); setOpsError(''); setOpsSuccess(''); }}
+                      style={{ fontSize: '0.72rem', padding: '4px 8px', borderRadius: '4px', background: opsTab === 'security' ? 'var(--primary-soft)' : 'transparent', color: opsTab === 'security' ? 'var(--primary)' : 'var(--text-secondary)', border: 'none', cursor: 'pointer' }}
+                    >
+                      <Shield size={12} style={{ display: 'inline', marginRight: '4px' }} />
+                      <span>Security Auditor</span>
+                    </button>
+                    
+                    <button 
+                      type="button" 
+                      onClick={() => { setOpsTab('drift'); setOpsError(''); setOpsSuccess(''); }}
+                      style={{ fontSize: '0.72rem', padding: '4px 8px', borderRadius: '4px', background: opsTab === 'drift' ? 'var(--primary-soft)' : 'transparent', color: opsTab === 'drift' ? 'var(--primary)' : 'var(--text-secondary)', border: 'none', cursor: 'pointer' }}
+                    >
+                      <Activity size={12} style={{ display: 'inline', marginRight: '4px' }} />
+                      <span>Drift Monitor</span>
+                    </button>
+
+                    <button 
+                      type="button" 
+                      onClick={() => { setOpsTab('badge'); setOpsError(''); setOpsSuccess(''); }}
+                      style={{ fontSize: '0.72rem', padding: '4px 8px', borderRadius: '4px', background: opsTab === 'badge' ? 'var(--primary-soft)' : 'transparent', color: opsTab === 'badge' ? 'var(--primary)' : 'var(--text-secondary)', border: 'none', cursor: 'pointer' }}
+                    >
+                      <Share2 size={12} style={{ display: 'inline', marginRight: '4px' }} />
+                      <span>Readme Badge</span>
+                    </button>
+                  </div>
+
+                  {opsError && <div style={{ color: 'var(--danger)', fontSize: '0.74rem', marginBottom: '8px' }}>{opsError}</div>}
+                  {opsSuccess && <div style={{ color: 'var(--success)', fontSize: '0.74rem', marginBottom: '8px' }}>{opsSuccess}</div>}
+
+                  <div>
+                    {opsTab === 'security' && (
+                      <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                          <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>
+                            Security Posture:{' '}
+                            {latestSecurityReport ? (
+                              <>
+                                <strong style={{ color: 'var(--primary)' }}>{latestSecurityReport.securityScore}%</strong>
+                                <span className={`${styles.scoreGrade} ${styles['grade' + latestSecurityReport.grade]}`} style={{ marginLeft: '6px', fontSize: '0.7rem' }}>
+                                  Grade {latestSecurityReport.grade}
+                                </span>
+                              </>
+                            ) : (
+                              <span style={{ color: 'var(--text-muted)' }}>No scans executed</span>
+                            )}
+                          </div>
+                          <button 
+                            type="button" 
+                            onClick={handleSecurityScan}
+                            disabled={opsLoading}
+                            style={{ fontSize: '0.72rem', padding: '4px 10px', background: 'var(--primary)', color: 'var(--bg-base)', borderRadius: '4px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+                          >
+                            {opsLoading ? 'Running...' : 'Run Audit'}
+                          </button>
+                        </div>
+
+                        {latestSecurityReport && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div className={styles.vulnList}>
+                              {latestSecurityReport.alerts?.length === 0 ? (
+                                <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>✓ Zero critical issues detected.</p>
+                              ) : (
+                                latestSecurityReport.alerts.map((alert) => (
+                                  <div key={alert.id} style={{ padding: '10px', border: '1px solid var(--border-subtle)', borderRadius: '6px', marginBottom: '6px', background: 'var(--bg-elevated)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.76rem', marginBottom: '4px' }}>
+                                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{alert.title}</span>
+                                      <span className={`${styles.severityTag} ${styles['sev' + alert.severity]}`} style={{ fontSize: '0.66rem' }}>
+                                        {alert.severity}
+                                      </span>
+                                    </div>
+                                    <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', margin: '4px 0' }}>{alert.description}</p>
+                                    <p style={{ fontSize: '0.72rem', margin: 0, color: 'var(--text-primary)' }}><strong>Remediation:</strong> {alert.remediation}</p>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+
+                            {latestSecurityReport.securityScore < 80 && latestSecurityReport.alerts?.length > 0 && (
+                              <div style={{ marginTop: '12px' }}>
+                                <button
+                                  type="button"
+                                  onClick={handleSecurityFix}
+                                  disabled={fixLoading}
+                                  style={{ width: '100%', fontSize: '0.74rem', padding: '6px', background: 'var(--primary)', color: 'var(--bg-base)', borderRadius: '4px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+                                >
+                                  <Zap size={12} style={{ display: 'inline', marginRight: '4px' }} />
+                                  {fixLoading ? 'Generating...' : 'AI Fix Security Issues'}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {opsTab === 'drift' && (
+                      <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                          <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>
+                            GitHub Status: <strong>{githubLinked ? 'Linked' : 'Not Linked'}</strong>
+                          </div>
+                          {!githubLinked ? (
+                            <button type="button" onClick={handleLinkGithub} disabled={opsLoading} style={{ fontSize: '0.72rem', padding: '4px 10px', background: 'var(--primary)', color: 'var(--bg-base)', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
+                              Link GitHub
+                            </button>
+                          ) : (
+                            <button type="button" onClick={handleUnlinkGithub} disabled={opsLoading} style={{ fontSize: '0.72rem', padding: '4px 10px', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', borderRadius: '4px', cursor: 'pointer' }}>
+                              Unlink
+                            </button>
+                          )}
+                        </div>
+
+                        {githubLinked && (
+                          <>
+                            <form onSubmit={handleConnectRepo} style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
+                              <input 
+                                type="text" 
+                                placeholder="owner/repository" 
+                                value={repoName}
+                                onChange={(e) => setRepoName(e.target.value)}
+                                required
+                                style={{ background: 'var(--bg-base)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '6px', borderRadius: '4px', flex: 1, fontSize: '0.78rem', outline: 'none' }}
+                              />
+                              <button type="submit" disabled={opsLoading} style={{ fontSize: '0.72rem', padding: '6px 12px', background: 'var(--primary)', color: 'var(--bg-base)', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
+                                Link Repo
+                              </button>
+                            </form>
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>
+                                Drift Compliance:{' '}
+                                {latestDriftReport ? (
+                                  <strong style={{ color: 'var(--primary)' }}>{latestDriftReport.complianceScore}% alignment</strong>
+                                ) : (
+                                  <span style={{ color: 'var(--text-muted)' }}>No scans run</span>
+                                )}
+                              </div>
+                              <button 
+                                type="button" 
+                                onClick={handleDriftScan}
+                                disabled={opsLoading}
+                                style={{ fontSize: '0.72rem', padding: '4px 10px', background: 'var(--primary)', color: 'var(--bg-base)', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
+                              >
+                                {opsLoading ? 'Scanning...' : 'Check Alignment'}
+                              </button>
+                            </div>
+                            {latestDriftReport && latestDriftReport.complianceScore < 100 && (
+                              <div style={{ marginTop: '12px' }}>
+                                <button
+                                  type="button"
+                                  onClick={handleDriftFix}
+                                  disabled={fixLoading}
+                                  style={{ width: '100%', fontSize: '0.74rem', padding: '6px', background: 'var(--primary)', color: 'var(--bg-base)', borderRadius: '4px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+                                >
+                                  <Zap size={12} style={{ display: 'inline', marginRight: '4px' }} />
+                                  {fixLoading ? 'Generating...' : 'Apply Fix (Remediate)'}
+                                </button>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </>
+                    )}
+
+                    {opsTab === 'badge' && (
+                      <div>
+                        {data.shareId ? (
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <input 
+                              type="text" 
+                              value={badgeMarkdown} 
+                              readOnly 
+                              style={{ background: 'var(--bg-base)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)', padding: '6px', borderRadius: '4px', flex: 1, fontSize: '0.74rem', outline: 'none' }}
+                            />
+                            <button type="button" onClick={handleCopyBadge} style={{ fontSize: '0.72rem', padding: '6px 12px', background: 'var(--primary)', color: 'var(--bg-base)', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
+                              {copied ? 'Copied' : 'Copy'}
+                            </button>
+                          </div>
+                        ) : (
+                          <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Share links must be enabled.</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
       </div>
+
 
       {/* 4. Specifications Card Grid & Expanded View */}
       <div style={{ marginTop: '32px', marginBottom: '24px' }}>
@@ -1300,196 +1506,6 @@ export default function ArchitectureTabs({
                   </div>
                 )}
 
-                {/* Operations & Audits Dashboard inside Deployment */}
-                <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '16px' }}>
-                  <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '10px', marginBottom: '12px' }}>
-                    <button 
-                      type="button" 
-                      onClick={() => { setOpsTab('security'); setOpsError(''); setOpsSuccess(''); }}
-                      style={{ fontSize: '0.72rem', padding: '4px 8px', borderRadius: '4px', background: opsTab === 'security' ? 'var(--primary-soft)' : 'transparent', color: opsTab === 'security' ? 'var(--primary)' : 'var(--text-secondary)', border: 'none', cursor: 'pointer' }}
-                    >
-                      <Shield size={12} style={{ display: 'inline', marginRight: '4px' }} />
-                      <span>Security Auditor</span>
-                    </button>
-                    
-                    <button 
-                      type="button" 
-                      onClick={() => { setOpsTab('drift'); setOpsError(''); setOpsSuccess(''); }}
-                      style={{ fontSize: '0.72rem', padding: '4px 8px', borderRadius: '4px', background: opsTab === 'drift' ? 'var(--primary-soft)' : 'transparent', color: opsTab === 'drift' ? 'var(--primary)' : 'var(--text-secondary)', border: 'none', cursor: 'pointer' }}
-                    >
-                      <Activity size={12} style={{ display: 'inline', marginRight: '4px' }} />
-                      <span>Drift Monitor</span>
-                    </button>
-
-                    <button 
-                      type="button" 
-                      onClick={() => { setOpsTab('badge'); setOpsError(''); setOpsSuccess(''); }}
-                      style={{ fontSize: '0.72rem', padding: '4px 8px', borderRadius: '4px', background: opsTab === 'badge' ? 'var(--primary-soft)' : 'transparent', color: opsTab === 'badge' ? 'var(--primary)' : 'var(--text-secondary)', border: 'none', cursor: 'pointer' }}
-                    >
-                      <Share2 size={12} style={{ display: 'inline', marginRight: '4px' }} />
-                      <span>Readme Badge</span>
-                    </button>
-                  </div>
-
-                  {opsError && <div style={{ color: 'var(--danger)', fontSize: '0.74rem', marginBottom: '8px' }}>{opsError}</div>}
-                  {opsSuccess && <div style={{ color: 'var(--success)', fontSize: '0.74rem', marginBottom: '8px' }}>{opsSuccess}</div>}
-
-                  <div>
-                    {opsTab === 'security' && (
-                      <>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                          <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>
-                            Security Posture:{' '}
-                            {latestSecurityReport ? (
-                              <>
-                                <strong style={{ color: 'var(--primary)' }}>{latestSecurityReport.securityScore}%</strong>
-                                <span className={`${styles.scoreGrade} ${styles['grade' + latestSecurityReport.grade]}`} style={{ marginLeft: '6px', fontSize: '0.7rem' }}>
-                                  Grade {latestSecurityReport.grade}
-                                </span>
-                              </>
-                            ) : (
-                              <span style={{ color: 'var(--text-muted)' }}>No scans executed</span>
-                            )}
-                          </div>
-                          <button 
-                            type="button" 
-                            onClick={handleSecurityScan}
-                            disabled={opsLoading}
-                            style={{ fontSize: '0.72rem', padding: '4px 10px', background: 'var(--primary)', color: 'var(--bg-base)', borderRadius: '4px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
-                          >
-                            {opsLoading ? 'Running...' : 'Run Audit'}
-                          </button>
-                        </div>
-
-                        {latestSecurityReport && (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <div className={styles.vulnList}>
-                              {latestSecurityReport.alerts?.length === 0 ? (
-                                <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>✓ Zero critical issues detected.</p>
-                              ) : (
-                                latestSecurityReport.alerts.map((alert) => (
-                                  <div key={alert.id} style={{ padding: '10px', border: '1px solid var(--border-subtle)', borderRadius: '6px', marginBottom: '6px', background: 'var(--bg-elevated)' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.76rem', marginBottom: '4px' }}>
-                                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{alert.title}</span>
-                                      <span className={`${styles.severityTag} ${styles['sev' + alert.severity]}`} style={{ fontSize: '0.66rem' }}>
-                                        {alert.severity}
-                                      </span>
-                                    </div>
-                                    <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', margin: '4px 0' }}>{alert.description}</p>
-                                    <p style={{ fontSize: '0.72rem', margin: 0, color: 'var(--text-primary)' }}><strong>Remediation:</strong> {alert.remediation}</p>
-                                  </div>
-                                ))
-                              )}
-                            </div>
-
-                            {latestSecurityReport.securityScore < 80 && latestSecurityReport.alerts?.length > 0 && (
-                              <div style={{ marginTop: '12px' }}>
-                                <button
-                                  type="button"
-                                  onClick={handleSecurityFix}
-                                  disabled={fixLoading}
-                                  style={{ width: '100%', fontSize: '0.74rem', padding: '6px', background: 'var(--primary)', color: 'var(--bg-base)', borderRadius: '4px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
-                                >
-                                  <Zap size={12} style={{ display: 'inline', marginRight: '4px' }} />
-                                  {fixLoading ? 'Generating...' : 'AI Fix Security Issues'}
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </>
-                    )}
-
-                    {opsTab === 'drift' && (
-                      <>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                          <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>
-                            GitHub Status: <strong>{githubLinked ? 'Linked' : 'Not Linked'}</strong>
-                          </div>
-                          {!githubLinked ? (
-                            <button type="button" onClick={handleLinkGithub} disabled={opsLoading} style={{ fontSize: '0.72rem', padding: '4px 10px', background: 'var(--primary)', color: 'var(--bg-base)', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
-                              Link GitHub
-                            </button>
-                          ) : (
-                            <button type="button" onClick={handleUnlinkGithub} disabled={opsLoading} style={{ fontSize: '0.72rem', padding: '4px 10px', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', borderRadius: '4px', cursor: 'pointer' }}>
-                              Unlink
-                            </button>
-                          )}
-                        </div>
-
-                        {githubLinked && (
-                          <>
-                            <form onSubmit={handleConnectRepo} style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
-                              <input 
-                                type="text" 
-                                placeholder="owner/repository" 
-                                value={repoName}
-                                onChange={(e) => setRepoName(e.target.value)}
-                                required
-                                style={{ background: 'var(--bg-base)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '6px', borderRadius: '4px', flex: 1, fontSize: '0.78rem', outline: 'none' }}
-                              />
-                              <button type="submit" disabled={opsLoading} style={{ fontSize: '0.72rem', padding: '6px 12px', background: 'var(--primary)', color: 'var(--bg-base)', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
-                                Link Repo
-                              </button>
-                            </form>
-
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>
-                                Drift Compliance:{' '}
-                                {latestDriftReport ? (
-                                  <strong style={{ color: 'var(--primary)' }}>{latestDriftReport.complianceScore}% alignment</strong>
-                                ) : (
-                                  <span style={{ color: 'var(--text-muted)' }}>No scans run</span>
-                                )}
-                              </div>
-                              <button 
-                                type="button" 
-                                onClick={handleDriftScan}
-                                disabled={opsLoading}
-                                style={{ fontSize: '0.72rem', padding: '4px 10px', background: 'var(--primary)', color: 'var(--bg-base)', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
-                              >
-                                {opsLoading ? 'Scanning...' : 'Check Alignment'}
-                              </button>
-                            </div>
-                            {latestDriftReport && latestDriftReport.complianceScore < 100 && (
-                              <div style={{ marginTop: '12px' }}>
-                                <button
-                                  type="button"
-                                  onClick={handleDriftFix}
-                                  disabled={fixLoading}
-                                  style={{ width: '100%', fontSize: '0.74rem', padding: '6px', background: 'var(--primary)', color: 'var(--bg-base)', borderRadius: '4px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
-                                >
-                                  <Zap size={12} style={{ display: 'inline', marginRight: '4px' }} />
-                                  {fixLoading ? 'Generating...' : 'Apply Fix (Remediate)'}
-                                </button>
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </>
-                    )}
-
-                    {opsTab === 'badge' && (
-                      <div>
-                        {data.shareId ? (
-                          <div style={{ display: 'flex', gap: '6px' }}>
-                            <input 
-                              type="text" 
-                              value={badgeMarkdown} 
-                              readOnly 
-                              style={{ background: 'var(--bg-base)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)', padding: '6px', borderRadius: '4px', flex: 1, fontSize: '0.74rem', outline: 'none' }}
-                            />
-                            <button type="button" onClick={handleCopyBadge} style={{ fontSize: '0.72rem', padding: '6px 12px', background: 'var(--primary)', color: 'var(--bg-base)', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
-                              {copied ? 'Copied' : 'Copy'}
-                            </button>
-                          </div>
-                        ) : (
-                          <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Share links must be enabled.</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
               </div>
             )}
 

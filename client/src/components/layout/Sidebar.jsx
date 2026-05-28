@@ -1,4 +1,4 @@
-import { Plus, Home, Layers, BookOpen, Settings2, ChevronLeft, ChevronRight, LogOut, Clock, Cpu, Network, Users } from 'lucide-react'
+import { Plus, Home, Layers, BookOpen, Settings2, ChevronLeft, ChevronRight, LogOut, Clock, Cpu, Network, Users, Server } from 'lucide-react'
 import Logo from '../ui/Logo.jsx'
 import styles from './Sidebar.module.css'
 
@@ -112,6 +112,14 @@ export default function Sidebar({
         >
           <Layers size={14} style={{ marginRight: '8px' }} />
           {!collapsed && <span>Components</span>}
+        </button>
+        <button 
+          className={`${styles.navItem} ${workspaceView === 'services' ? styles.navItemActive : ''}`}
+          type="button" 
+          onClick={() => handleNavClick(() => setWorkspaceView('services'))}
+        >
+          <Server size={14} style={{ marginRight: '8px' }} />
+          {!collapsed && <span>Services</span>}
         </button>
         <button 
           className={`${styles.navItem} ${workspaceView === 'dataflows' ? styles.navItemActive : ''}`}

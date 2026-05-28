@@ -127,6 +127,17 @@ const RESPONSE_SCHEMA = {
         },
       },
     },
+    efficiencyScorecard: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        required: ['suggestion', 'reason'],
+        properties: {
+          suggestion: { type: 'STRING' },
+          reason: { type: 'STRING' },
+        },
+      },
+    },
   },
 };
 
@@ -136,16 +147,37 @@ Your job is to analyze a project idea and the user's known tech stack, then prod
 Return only JSON that matches the provided schema.
 
 Rules for high conciseness to avoid truncation:
+- projectTitle: You MUST generate a unique, creative, and highly specific title that accurately reflects the user's exact project idea. ABSOLUTELY NEVER use the generic title "High-Availability E-commerce Platform".
+- projectSummary: MUST be a concise summary of the user's specific project idea.
 - stack: must have 5-7 items. The "reason" for each item must be at most 1 short sentence (15 words max).
 - apis: must have 6-8 realistic, project-specific routes (limit description to 10 words).
 - dbSchema: must have 3 collections or tables with 3-4 fields each (limit note to 10 words).
 - mermaidDiagram: must be a valid Mermaid flowchart TD diagram (graph TD)
-  - Do NOT use subgraphs (subgraph ... end) to keep the diagram layout flat, clean, and avoid parsing syntax errors.
-  - Ensure all node shapes are modern and labels are concise. Use shapes like [Client], ((Gateway)), [(Database)], etc.
-  - Append 'click' event handles to all primary architecture nodes so they can be selected in the UI. Example click binding format at the end of the diagram definition:
-    click Client onNodeClick
-    click Database onNodeClick
-- userFlowDiagram: must be a valid Mermaid sequenceDiagram (max 4-5 steps to keep it short).
+  STRICT FORMATTING RULES:
+  1. NEVER generate simple 'User -> Frontend -> Backend' diagrams. This is a failure state.
+  2. MANDATORY CLUSTERING: You MUST use 'subgraph' blocks for every diagram. 
+     - Cluster services using valid Mermaid syntax: subgraph Frontend["Frontend Layer"], subgraph API["API & Microservices Layer"], and subgraph Persistence["Persistence & External Layer"].
+  3. MANDATORY NODES: If the user provides a simple project, you must INFER the professional structure:
+     - Frontend: Client["Client (React/Next.js)"]
+     - API Layer: Gateway["API Gateway (Kong/Cloudflare)"], Auth["Auth Service"], Core["Core Business Logic Service"]
+     - Persistence: DB[("Primary Database (PostgreSQL)")], Cache[("Caching Layer (Redis)")], Ext["External API Integration"]
+  4. CONNECTION TYPES:
+     - Use '-->' for synchronous API calls (e.g., API_Gateway -->|"Authenticate User"| Auth_Service).
+     - Use '-.->' for asynchronous/caching/events (e.g., Service -.->|"Cache Data"| Redis).
+  5. VISUAL HIERARCHY:
+     - Service nodes MUST be rectangles.
+     - Database/Cache nodes MUST be cylinders.
+     - Use 'graph TD' for a Top-Down hierarchical view.
+  6. CLICK HANDLERS: Append 'click' event handles to all primary architecture nodes so they can be selected in the UI. Example click binding format at the end of the diagram definition:
+     click Client onNodeClick
+     click Database onNodeClick
+  7. CRITICAL SYNTAX RULE:
+     - Always wrap node labels in double quotes (e.g., NodeID["Label"]).
+     - NEVER use colons for edge labels. Instead, use the pipe syntax for connection descriptions: A -->|"Edge Label"| B.
+     - Subgraph names must be in double quotes (e.g., subgraph "Edge Layer").
+  If you produce a diagram with fewer than 6 nodes, you have failed to provide an architectural representation. EXPLAIN the architecture in depth via the diagram complexity.
+- userFlowDiagram: must be a valid Mermaid sequenceDiagram (max 4-5 steps to keep it short). Add event triggers or action labels to the lines between components (e.g., Client-->>API: GET /users).
+- efficiencyScorecard: Generate 2-3 proactive suggestions (e.g., "Add Caching Layer") for the architecture. Limit reason to 1 short sentence.
 - scalability: must have exactly 3 items, with details limited to 1 sentence.
 - architectureExplanation: keyDecisions and tradeoffs must be short arrays of 3 items max. whyThisStack must be at most 1 sentence.
 - deploymentStrategy: development, staging, production must be at most 1 sentence each.
@@ -209,6 +241,7 @@ function validateArchitectureShape(data) {
     Array.isArray(data.scalability),
     data.deploymentStrategy && typeof data.deploymentStrategy === 'object',
     Array.isArray(data.mvpRoadmap),
+    Array.isArray(data.efficiencyScorecard),
   ].every(Boolean);
 }
 
@@ -302,7 +335,7 @@ Generate a complete architecture recommendation. Where the user knows a technolo
       ],
       generationConfig: {
         temperature: 0.3,
-        maxOutputTokens: 4096,
+        maxOutputTokens: 8192,
         responseMimeType: 'application/json',
         responseSchema: RESPONSE_SCHEMA,
       },

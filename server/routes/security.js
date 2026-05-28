@@ -40,6 +40,7 @@ Look for vulnerability vectors such as:
 6. Missing Rate Limiting or DDoS exposures.
 
 Format your output as valid JSON matching the provided schema.
+Limit your alerts array to the top 5 most critical vulnerabilities to avoid output truncation.
 For each alert, map it precisely to:
 - OWASP Top 10 API Security Risks (2023 edition) or OWASP Top 10 (2021).
 - Common Weakness Enumeration (CWE) identifier.
@@ -48,6 +49,7 @@ For each alert, map it precisely to:
 
 Ensure the overall score is an integer between 0 and 100, and the grade is A (90+), B (80-89), C (70-79), D (60-69), or F (below 60).
 Be realistic: if the architecture is well-designed, give a fair score, but point out potential implementation pitfalls.
+Keep the summary concise (max 3 sentences) to avoid output truncation.
 `;
 
 module.exports = function (app, db, admin, authMiddleware) {
@@ -111,7 +113,7 @@ Evaluate all components, detect vulnerabilities, map them to OWASP/CWE, and prov
         ],
         generationConfig: {
           temperature: 0.2,
-          maxOutputTokens: 4096,
+          maxOutputTokens: 8192,
           responseMimeType: 'application/json',
           responseSchema: SECURITY_RESPONSE_SCHEMA
         }

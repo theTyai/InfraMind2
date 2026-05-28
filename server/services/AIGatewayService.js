@@ -127,7 +127,7 @@ Preserve the original meaning as closely as possible.`;
       ],
       generationConfig: {
         temperature: 0,
-        maxOutputTokens: 4096,
+        maxOutputTokens: 8192,
         responseMimeType: 'application/json',
         responseSchema: RESPONSE_SCHEMA,
       },
