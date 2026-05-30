@@ -165,6 +165,16 @@ export default function ArchitectureTabs({
   workspaceView,
   setWorkspaceView
 }) {
+  const [input, setInput] = useState("")
+  const [debouncedInput, setDebouncedInput] = useState("")
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedInput(input)
+    }, 1500) // 1.5s wait
+    return () => clearTimeout(handler)
+  }, [input])
+
   const [refinementText, setRefinementText] = useState('')
 
   // Lifted state from CostEstimator to share with Dataflow SVG

@@ -2,6 +2,7 @@
 
 const { markModelDegraded, resolveAvailableModel } = require('../config/models');
 const { fetchWithRetry } = require('../middleware/aiGateway');
+const CircuitBreaker = require('opossum');
 
 class AIGatewayService {
   /**
@@ -12,25 +13,16 @@ class AIGatewayService {
       return resolveAvailableModel(customModelSetting);
     }
     
-    // High-complexity / reasoning tasks
-    if (intent === 'INITIAL_COMPILE' || intent === 'SECURITY_AUDIT' || intent === 'SCALABILITY_ANALYSIS') {
-      return resolveAvailableModel('gemini-3.5-flash');
-    }
-    
-    // Fast, lightweight refinements
-    if (intent === 'REFINEMENT') {
-      return resolveAvailableModel('gemini-3.1-flash-lite');
-    }
-    
-    // Default to the reliable 2.5 flash
-    return resolveAvailableModel('gemini-2.5-flash');
+    // Always prefer the Flash Lite for diagrams to save "main" quota
+    const models = ["gemini-3.1-flash-lite", "gemini-2.5-flash", "gemini-3.5-flash"];
+    return resolveAvailableModel(models[0]); // Logic: start with Lite, fail over to others if 429 occurs
   }
 
   /**
    * Generates architecture by securely calling the Gemini API through the gateway.
    * Handles JSON parsing, validation, and zero-temperature repair loops.
    */
-  static async generateArchitecture({
+  static async _generateArchitectureCore({
     requestBody,
     apiKey,
     intent = 'INITIAL_COMPILE',
@@ -150,6 +142,26 @@ Preserve the original meaning as closely as possible.`;
       return null;
     }
   }
+
+  static async generateArchitecture(params) {
+    return await breaker.fire(params);
+  }
 }
+
+const options = {
+  timeout: 10000, // 10 seconds timeout
+  errorThresholdPercentage: 50, // Trip if 50% of requests fail
+  resetTimeout: 60000 // Wait 60 seconds before trying again
+};
+
+// Wrap the core logic in a breaker
+const breaker = new CircuitBreaker(async (params) => {
+  return await AIGatewayService._generateArchitectureCore(params);
+}, options);
+
+// Define a fallback so the app returns a clean message instead of crashing
+breaker.fallback(() => ({
+  error: "AI service is temporarily unavailable. Please try again in a minute."
+}));
 
 module.exports = AIGatewayService;

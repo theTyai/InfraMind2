@@ -138,6 +138,49 @@ export const useArchitectureStore = create((set, get) => ({
     if (!idToken || idToken === 'null' || idToken === 'undefined') {
       throw new Error('Authentication token is missing. Please sign in again.');
     }
+
+    const cacheKey = `arch_${btoa(idea + (projectId || ''))}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      const data = JSON.parse(cached);
+      const newMessage = {
+        id: data.messageId,
+        prompt: data.prompt,
+        geminiResponse: data.geminiResponse,
+        timestamp: data.timestamp
+      };
+      set((state) => {
+        const existingHistory = state.chatHistories[data.projectId] || [];
+        const updatedHistory = [...existingHistory, newMessage];
+        const projectExists = state.projects.some(p => p.id === data.projectId);
+        let updatedProjects = [...state.projects];
+        const title = data.geminiResponse.projectTitle;
+        const summary = data.geminiResponse.projectSummary;
+
+        if (!projectExists) {
+          updatedProjects = [{ id: data.projectId, title, summary, timestamp: data.timestamp }, ...updatedProjects];
+        } else {
+          updatedProjects = [
+            { id: data.projectId, title, summary, timestamp: data.timestamp },
+            ...updatedProjects.filter(p => p.id !== data.projectId)
+          ];
+        }
+
+        return {
+          chatHistories: { ...state.chatHistories, [data.projectId]: updatedHistory },
+          projects: updatedProjects,
+          currentProjectId: data.projectId,
+          currentArchitecture: data.geminiResponse,
+          securityHistory: [],
+          driftHistory: [],
+          activeModel: data.modelUsed || state.activeModel,
+          loading: false,
+          isRouting: false
+        };
+      });
+      return data.projectId;
+    }
+
     set({ loading: true, error: null, isRouting: true });
     try {
       const customKey = localStorage.getItem('inframind_api_key') || '';
@@ -226,6 +269,8 @@ export const useArchitectureStore = create((set, get) => ({
           isRouting: false
         };
       });
+
+      localStorage.setItem(cacheKey, JSON.stringify(data));
 
       return data.projectId;
     } catch (err) {

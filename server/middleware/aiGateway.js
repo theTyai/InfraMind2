@@ -69,25 +69,15 @@ function aiRateLimiter(req, res, next) {
  * @param {number} retries
  * @param {number} delay
  */
-async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
+async function fetchWithRetry(url, options) {
   try {
     const res = await fetch(url, options);
-    if (res.ok) return res;
-
-    // If rate-limited (429) or server error (5xx), retry
-    if ((res.status === 429 || res.status >= 500) && retries > 0) {
-      console.warn(`[AI Gateway] Fetch failed with status ${res.status}. Retrying in ${delay}ms... (Retries left: ${retries})`);
-      await new Promise(resolve => setTimeout(resolve, delay));
-      return fetchWithRetry(url, options, retries - 1, delay * 2);
+    if (!res.ok) {
+       console.warn(`[AI Gateway] Fetch failed with status ${res.status}. No retries (Circuit Breaker active).`);
     }
-
     return res;
   } catch (error) {
-    if (retries > 0) {
-      console.warn(`[AI Gateway] Fetch network error. Retrying in ${delay}ms... (Retries left: ${retries}):`, error.message);
-      await new Promise(resolve => setTimeout(resolve, delay));
-      return fetchWithRetry(url, options, retries - 1, delay * 2);
-    }
+    console.warn(`[AI Gateway] Fetch network error:`, error.message);
     throw error;
   }
 }

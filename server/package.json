@@ -14,6 +14,7 @@
     "firebase-admin": "^12.1.0",
     "helmet": "^7.1.0",
     "ioredis": "^5.4.0",
+    "opossum": "^9.0.0",
     "ws": "^8.21.0"
   },
   "devDependencies": {

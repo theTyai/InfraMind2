@@ -358,6 +358,11 @@ Generate a complete architecture recommendation. Where the user knows a technolo
         tryParseJson,
         validateArchitectureShape
       });
+
+      if (gatewayResult.error) {
+        return res.status(503).json({ error: gatewayResult.error });
+      }
+
       parsedResponse = gatewayResult.parsedResponse;
       modelUsed = gatewayResult.modelUsed;
       
