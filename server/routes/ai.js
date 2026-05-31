@@ -178,8 +178,9 @@ Rules for high conciseness to avoid truncation:
   8. ICON MANDATE: Use FontAwesome icons for all nodes to represent their function.
      - Wrap the label in a double-quoted string with an icon class prefix. Syntax: NodeID["<i class='fa fa-iconname'></i> Label"].
      - Mapping: Users/Clients (fa-user/fa-mobile), Services/APIs (fa-server/fa-code), Databases (fa-database), Auth (fa-shield), Caching (fa-bolt), Analytics (fa-chart-line), External (fa-plug).
+  9. NEWLINES (CRITICAL): The Mermaid parser will CRASH if the diagram is a single flat string. You MUST include actual newline characters (\\n) between every statement (e.g., after 'graph TD', before/after 'subgraph', before 'end', before 'click').
   If you produce a diagram with fewer than 6 nodes, you have failed to provide an architectural representation. EXPLAIN the architecture in depth via the diagram complexity.
-- userFlowDiagram: must be a valid Mermaid sequenceDiagram (max 4-5 steps to keep it short). Add event triggers or action labels to the lines between components (e.g., Client-->>API: GET /users).
+- userFlowDiagram: must be a valid Mermaid sequenceDiagram (max 4-5 steps to keep it short). Add event triggers or action labels to the lines between components (e.g., Client-->>API: GET /users). Use actual newline characters (\\n) between steps.
 - efficiencyScorecard: Generate 2-3 proactive suggestions (e.g., "Add Caching Layer") for the architecture. Limit reason to 1 short sentence.
 - scalability: must have exactly 3 items, with details limited to 1 sentence.
 - architectureExplanation: keyDecisions and tradeoffs must be short arrays of 3 items max. whyThisStack must be at most 1 sentence.

@@ -1,23 +1,16 @@
 // server/services/AIGatewayService.js
 
-const { markModelDegraded, resolveAvailableModel } = require('../config/models');
+const { markModelDegraded, resolveAvailableModel, isModelHealthy } = require('../config/models');
 const { fetchWithRetry } = require('../middleware/aiGateway');
 const CircuitBreaker = require('opossum');
 
-class AIGatewayService {
-  /**
-   * Intelligently routes the request to the appropriate model tier based on task complexity.
-   */
-  static determineOptimalModel(intent, customModelSetting) {
-    if (customModelSetting) {
-      return resolveAvailableModel(customModelSetting);
-    }
-    
-    // Always prefer the Flash Lite for diagrams to save "main" quota
-    const models = ["gemini-3.1-flash-lite", "gemini-2.5-flash", "gemini-3.5-flash"];
-    return resolveAvailableModel(models[0]); // Logic: start with Lite, fail over to others if 429 occurs
-  }
+const MODEL_MAP = {
+    INITIAL_COMPILE: ["gemma-4-31b-it", "gemma-4-26b-a4b-it", "gemini-3.5-flash", "gemini-2.5-pro"],
+    REFINEMENT: ["gemini-3.1-flash-lite", "gemini-2.5-flash"],
+    METADATA_ANALYSIS: ["gemini-3.1-flash-lite"]
+};
 
+class AIGatewayService {
   /**
    * Generates architecture by securely calling the Gemini API through the gateway.
    * Handles JSON parsing, validation, and zero-temperature repair loops.
@@ -32,44 +25,61 @@ class AIGatewayService {
     tryParseJson,
     validateArchitectureShape
   }) {
-    let selectedModel = this.determineOptimalModel(intent, customModelSetting);
-    let endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent`;
+    let candidates = MODEL_MAP[intent] || MODEL_MAP.METADATA_ANALYSIS;
+    if (customModelSetting) {
+      candidates = [customModelSetting, ...candidates];
+    }
 
-    console.log(`[AI Gateway] Routing generation to model ${selectedModel} (Intent: ${intent})`);
-    
-    let geminiRes;
-    try {
-      geminiRes = await fetchWithRetry(`${endpoint}?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      });
+    let geminiRes = null;
+    let selectedModel = null;
+    let lastError = null;
 
-      // Graceful degradation on 429/503 during execution
-      if (!geminiRes.ok && (geminiRes.status === 429 || geminiRes.status >= 500)) {
-        console.warn(`[AI Gateway] ${selectedModel} returned status ${geminiRes.status}. Triggering graceful degradation...`);
-        markModelDegraded(selectedModel, 60000); // Degrade for 60s
-        
-        // Re-resolve a new fallback model
-        selectedModel = resolveAvailableModel(selectedModel);
-        endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent`;
-        console.log(`[AI Gateway] Fallback Routing generation to model ${selectedModel}`);
-        
+    for (const modelId of candidates) {
+      if (!isModelHealthy(modelId)) continue;
+      
+      selectedModel = modelId;
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent`;
+      console.log(`[AI Gateway] Routing generation to model ${selectedModel} (Intent: ${intent})`);
+
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 12000); // 12s hard timeout
+
         geminiRes = await fetchWithRetry(`${endpoint}?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestBody),
+          signal: controller.signal
         });
-      }
+        
+        clearTimeout(timeout);
 
-      if (!geminiRes.ok) {
-        const errDetails = await geminiRes.json().catch(() => ({}));
-        const errMsg = errDetails?.error?.message || `Gemini API returned error status ${geminiRes.status}`;
-        throw new Error(errMsg);
+        if (!geminiRes.ok) {
+          if (geminiRes.status === 429 || geminiRes.status === 503 || geminiRes.status >= 500) {
+            markModelDegraded(selectedModel, 120000); // 2 minutes blacklist
+            console.warn(`[AI Gateway] Model ${selectedModel} blacklisted for 2 minutes (HTTP ${geminiRes.status}).`);
+            lastError = new Error(`HTTP ${geminiRes.status}`);
+            continue; // Try next model
+          }
+          const errDetails = await geminiRes.json().catch(() => ({}));
+          throw new Error(errDetails?.error?.message || `Gemini API returned error status ${geminiRes.status}`);
+        }
+        
+        break; // Success
+      } catch (err) {
+        console.error(`[AI Gateway] Failed ${selectedModel}: ${err.message}`);
+        if (err.message.includes('timeout') || err.message.includes('network') || err.name === 'AbortError') {
+          markModelDegraded(selectedModel, 120000);
+          console.warn(`[AI Gateway] Model ${selectedModel} blacklisted for 2 minutes due to timeout.`);
+          lastError = err;
+          continue;
+        }
+        throw err;
       }
-    } catch (err) {
-      console.error('[AI Gateway] Fetch failed entirely:', err);
-      throw err;
+    }
+
+    if (!geminiRes || !geminiRes.ok) {
+      throw new Error("All attempts failed. Please wait a moment.");
     }
 
     const data = await geminiRes.json();
@@ -149,7 +159,7 @@ Preserve the original meaning as closely as possible.`;
 }
 
 const options = {
-  timeout: 10000, // 10 seconds timeout
+  timeout: 60000, // 60 seconds timeout (LLM requests can be slow)
   errorThresholdPercentage: 50, // Trip if 50% of requests fail
   resetTimeout: 60000 // Wait 60 seconds before trying again
 };

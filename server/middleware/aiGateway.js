@@ -71,7 +71,8 @@ function aiRateLimiter(req, res, next) {
  */
 async function fetchWithRetry(url, options) {
   try {
-    const res = await fetch(url, options);
+    const signal = AbortSignal.timeout(15000);
+    const res = await fetch(url, { ...options, signal });
     if (!res.ok) {
        console.warn(`[AI Gateway] Fetch failed with status ${res.status}. No retries (Circuit Breaker active).`);
     }

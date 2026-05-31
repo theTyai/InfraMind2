@@ -20,6 +20,7 @@ export const useArchitectureStore = create((set, get) => ({
   
   activeModel: 'gemini-3.5-flash',
   isRouting: false,
+  cooldownUntil: 0,
   
   infrastructureMode: 'AUTO_FREE',
   serviceOverrides: {}, // Map of serviceId: selectedPlanId
@@ -135,6 +136,11 @@ export const useArchitectureStore = create((set, get) => ({
   },
 
   generateArchitecture: async (projectId, idea, knownStack, idToken) => {
+    if (Date.now() < get().cooldownUntil) {
+      const remaining = Math.ceil((get().cooldownUntil - Date.now()) / 1000);
+      throw new Error(`System busy, please wait ${remaining}s.`);
+    }
+
     if (!idToken || idToken === 'null' || idToken === 'undefined') {
       throw new Error('Authentication token is missing. Please sign in again.');
     }
@@ -274,8 +280,9 @@ export const useArchitectureStore = create((set, get) => ({
 
       return data.projectId;
     } catch (err) {
-      set({ error: err.message, loading: false, isRouting: false });
-      throw err;
+      const busyMsg = "System busy, please wait 30s.";
+      set({ error: busyMsg, loading: false, isRouting: false, cooldownUntil: Date.now() + 30000 });
+      throw new Error(busyMsg);
     }
   },
 

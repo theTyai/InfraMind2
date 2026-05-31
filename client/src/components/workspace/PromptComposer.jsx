@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import styles from './Workspace.module.css'
+import { useArchitectureStore } from '../../store/useArchitectureStore.js'
 
 const TECH_SUGGESTIONS = [
   'React', 'TypeScript', 'Node.js', 'Express', 'PostgreSQL', 'MongoDB', 'Redis', 'Docker', 'Kubernetes', 'AWS', 'GCP', 'Stripe', 'GraphQL', 'Tailwind', 'Prisma', 'Svelte', 'Vue', 'Next.js', 'FastAPI', 'Django', 'Rust', 'Go', 'Kafka', 'Supabase', 'Firebase', 'Auth.js', 'Clerk'
@@ -22,6 +23,26 @@ export default function PromptComposer({ compact = false, onSubmit, error, envKe
   const [isStartup, setIsStartup] = useState(
     () => localStorage.getItem('inframind_startup_mode') === 'true'
   )
+
+  const cooldownUntil = useArchitectureStore((state) => state.cooldownUntil)
+  const [remaining, setRemaining] = useState(0)
+
+  useEffect(() => {
+    if (cooldownUntil > Date.now()) {
+      const update = () => {
+        const left = Math.ceil((cooldownUntil - Date.now()) / 1000);
+        if (left <= 0) setRemaining(0);
+        else setRemaining(left);
+      };
+      update();
+      const interval = setInterval(update, 1000);
+      return () => clearInterval(interval);
+    } else {
+      setRemaining(0);
+    }
+  }, [cooldownUntil]);
+
+  const isCoolingDown = remaining > 0;
 
   function handleToggleMode(val) {
     setIsStartup(val)
@@ -198,7 +219,9 @@ export default function PromptComposer({ compact = false, onSubmit, error, envKe
         </div>
 
         <div className={styles.actionRow}>
-          <button className={styles.submitButton} type="submit">Generate architecture</button>
+          <button className={styles.submitButton} type="submit" disabled={isCoolingDown}>
+            {isCoolingDown ? `System busy, please wait ${remaining}s...` : 'Generate architecture'}
+          </button>
           <button className={styles.ghostButton} type="button" onClick={() => setIdea('')}>Clear prompt</button>
         </div>
       </form>

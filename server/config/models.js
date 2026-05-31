@@ -2,10 +2,26 @@
 // Centralized Model Registry for the AI Gateway
 
 const MODEL_REGISTRY = {
+  'gemma-4-31b-it': {
+    id: 'gemma-4-31b-it',
+    name: 'Gemma 4 31B IT',
+    description: 'Heavy reasoning for new architectures',
+    isHealthy: true,
+    cooldownUntil: 0,
+    fallback: 'gemini-3.5-flash'
+  },
+  'gemma-4-26b-a4b-it': {
+    id: 'gemma-4-26b-a4b-it',
+    name: 'Gemma 4 26B',
+    description: 'Alternative reasoning model',
+    isHealthy: true,
+    cooldownUntil: 0,
+    fallback: 'gemini-3.5-flash'
+  },
   'gemini-3.5-flash': {
     id: 'gemini-3.5-flash',
     name: '3.5 Flash',
-    description: 'Frontier-class default',
+    description: 'Frontier-class default for agentic tasks',
     isHealthy: true,
     cooldownUntil: 0,
     fallback: 'gemini-2.5-flash'
@@ -13,42 +29,26 @@ const MODEL_REGISTRY = {
   'gemini-2.5-flash': {
     id: 'gemini-2.5-flash',
     name: '2.5 Flash',
-    description: 'Reliable fallback',
+    description: 'Reliable, high-speed standard',
     isHealthy: true,
     cooldownUntil: 0,
-    fallback: 'gemini-2.5-flash-lite'
+    fallback: 'gemini-3.1-flash-lite'
   },
   'gemini-3.1-flash-lite': {
     id: 'gemini-3.1-flash-lite',
     name: '3.1 Flash-Lite',
-    description: 'Low-latency tasks & JSON repair',
+    description: 'High-volume, cost-effective automation',
     isHealthy: true,
     cooldownUntil: 0,
-    fallback: 'gemini-2.5-flash-lite'
-  },
-  'gemini-2.5-flash-lite': {
-    id: 'gemini-2.5-flash-lite',
-    name: '2.5 Flash-Lite',
-    description: 'Lightweight budget fallback',
-    isHealthy: true,
-    cooldownUntil: 0,
-    fallback: null // Absolute bottom
+    fallback: 'gemini-2.5-flash'
   },
   'gemini-2.5-pro': {
     id: 'gemini-2.5-pro',
     name: '2.5 Pro',
-    description: 'Deep reasoning (Strictly Gated)',
+    description: 'For complex reasoning',
     isHealthy: true,
     cooldownUntil: 0,
     fallback: 'gemini-3.5-flash'
-  },
-  'gemini-2.0-flash-001': {
-    id: 'gemini-2.0-flash-001',
-    name: '2.0 Flash (Legacy)',
-    description: 'Legacy compatibility',
-    isHealthy: true,
-    cooldownUntil: 0,
-    fallback: 'gemini-2.5-flash'
   }
 };
 

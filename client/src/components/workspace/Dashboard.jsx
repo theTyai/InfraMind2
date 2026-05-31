@@ -96,6 +96,25 @@ export default function Dashboard({
 
   const activeModel = useArchitectureStore((state) => state.activeModel)
   const isRouting = useArchitectureStore((state) => state.isRouting)
+  const cooldownUntil = useArchitectureStore((state) => state.cooldownUntil)
+  const [remaining, setRemaining] = useState(0)
+
+  useEffect(() => {
+    if (cooldownUntil > Date.now()) {
+      const update = () => {
+        const left = Math.ceil((cooldownUntil - Date.now()) / 1000);
+        if (left <= 0) setRemaining(0);
+        else setRemaining(left);
+      };
+      update();
+      const interval = setInterval(update, 1000);
+      return () => clearInterval(interval);
+    } else {
+      setRemaining(0);
+    }
+  }, [cooldownUntil]);
+
+  const isCoolingDown = remaining > 0;
 
   // Onboarding Checklist stats from localStorage
   const [checklist, setChecklist] = useState({
@@ -413,9 +432,9 @@ export default function Dashboard({
               )}
 
               {isComposerActive && (
-                <button type="submit" className={styles.generateBtn} disabled={!idea.trim()}>
+                <button type="submit" className={styles.generateBtn} disabled={!idea.trim() || isCoolingDown}>
                   <Zap size={16} />
-                  Generate Architecture Blueprint
+                  {isCoolingDown ? `System busy, please wait ${remaining}s...` : 'Generate Architecture Blueprint'}
                   <ArrowRight size={16} className={styles.btnArrow} />
                 </button>
               )}

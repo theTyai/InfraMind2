@@ -133,8 +133,14 @@ export default function MermaidDiagram({ code, title, onSelectNode }) {
 
     setError('')
 
-    // Sanitize code to resolve common Mermaid syntax issues (e.g., SubGraph casing, unquoted spaces in subgraph titles)
-    const sanitizedCode = code.split('\n').map(line => {
+    // Sanitize code to resolve common Mermaid syntax issues
+    // 1. If the AI returns a single flat string, forcefully inject newlines before major block keywords
+    let preprocessedCode = code
+      .replace(/^graph (TD|LR|TB|BT|RL)\s+/i, 'graph $1\n')
+      .replace(/\s+(subgraph |click )/gi, '\n$1')
+      .replace(/\s+end\s+/gi, '\nend\n');
+
+    const sanitizedCode = preprocessedCode.split('\n').map(line => {
       const trimmed = line.trim();
       if (/^subgraph\b/i.test(trimmed)) {
         const content = trimmed.substring(8).trim();
